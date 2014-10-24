@@ -1,0 +1,29 @@
+{
+    "common": {
+        "name":                     "zwave",
+        "title":                    "ZWave",
+        "desc":                     "ZWave support based on openzwave packet",
+        "version":                  "0.0.1",
+        "mode":                     "daemon",
+        "platform":                 "javascript/Node.js",
+        "os":                       ["osx", "linux"],
+        "loglevel":                 "info",
+        "keywords":                 ["zwave", "control", "openzwave"],
+        "main":                     "main.js",
+        "authors": [
+            "bluefox <bluefox@ccu.io>"
+        ],
+        "license":                  "LGPL",
+        "singletonHost":             true,
+        "readme":                   "https://github.com/ioBroker/ioBroker.zwave/blob/master/README.md",
+        "icon":                     "zwave.png",
+        "extIcon":                  "https://raw.githubusercontent.com/ioBroker/ioBroker.zwave/master/admin/zwave.png"
+    },
+    "native": {
+        "usb": "ttyXXX"
+    },
+    "objects": [
+    ],
+    "instanceObjects": [
+    ]
+}

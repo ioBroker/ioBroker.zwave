@@ -1,4 +1,17 @@
-ZWave adater for ioBroker
+![Logo](admin/zwave.png)
+ioBroker zwave Adapter
+==============
+
+Zwave support with openzwave.
+
+NOT USEABLE
+
+## Changelog
+
+## Todo
+
+
+## License
 
 Copyright (c) 2014 bluefox <bluefox@ccu.io>
 
