@@ -11,6 +11,13 @@
 
 <script type="text/javascript">
     changed = false;
+    systemDictionary = {
+        "OpenZWave adapter settings": {
+            "en": "OpenZWave adapter settings",
+            "de": "OpenZWave Adapter-Einstellungen",
+            "ru": "Настройки драйвера OpenZWave"
+        }
+    };
 
     function setValue(id, value) {
         // example: select elements with id=key and class=value and insert value
@@ -109,43 +116,15 @@
 </script>
 
 <div id="adapter-container">
+    <table><tr>
+        <td><img src="zwave.png"></td>
+        <td style="padding-top: 20px;padding-left: 10px"><h3 class="translate">OpenZWave adapter settings</h3></td>
+    </tr></table>
 
     <table>
         <tr>
-            <td class="translate">Hostname:</td>
-            <td><input class="value" id="host" type="text"/></td>
-        </tr>
-        <tr>
-            <td class="translate">Username:</td>
-            <td><input class="value" id="user" type="text"/></td>
-        </tr>
-        <tr>
-            <td class="translate">Password:</td>
-            <td><input class="value" id="pass" type="text"/></td>
-        </tr>
-        <tr>
-            <td class="translate">Bundesland:</td>
-            <td>
-                <select class="value" id="dienststelle">
-                    <option value="HA">Schleswig-Holstein/Hamburg</option>
-                    <option value="HA">Niedersachsen/Bremen</option>
-                    <option value="PD">Berlin/Brandenburg</option>
-                    <option value="PD">Mecklenburg-Vorpommern</option>
-                    <option value="EM">Nordrhein-Westfalen</option>
-                    <option value="LZ">Sachsen-Anhalt</option>
-                    <option value="LZ">Sachsen</option>
-                    <option value="LZ">Thüringen</option>
-                    <option value="OF">Hessen</option>
-                    <option value="OF">Rheinland-Pfalz/Saarland</option>
-                    <option value="SU">Baden-Württemberg</option>
-                    <option value="MS">Bayern</option>
-                </select>
-
-            </td>
-        </tr>
-        <tr>
-            <td class="translate">Kreis:</td>
-            <td><input class="value" id="kreis" type="text"/>(KFZ-Kennzeichen)</td>
+            <td class="translate">USB name:</td>
+            <td><input class="value" id="usb" type="text"/></td>
         </tr>
     </table>
 </div>

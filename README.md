@@ -7,6 +7,8 @@ Zwave support with openzwave.
 NOT USEABLE
 
 ## Changelog
+### 0.0.2 (2014-10-28)
+ - Initial commit. Still non-functional.
 
 ## Todo
 
