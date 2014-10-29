@@ -2,7 +2,7 @@
     "name": "zwave",
     "private": true,
     "dependencies": {
-	    "openzwave": "~0.0.32"
+        "openzwave": "~0.0.32"
     },
     "devDependencies": {
         "grunt": "~0.4.4",

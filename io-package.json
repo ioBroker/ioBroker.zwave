@@ -23,17 +23,6 @@
         "usb": "ttyACM0"
     },
     "objects": [
-        {
-            "_id":  "ZWave",
-            "type": "device",
-            "role": "control",
-            "common": {
-                "name": ""
-            },
-            "native": {},
-            "children": [],
-            "parent": null
-        }
     ],
     "instanceObjects": [
     ]
