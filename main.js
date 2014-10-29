@@ -5,7 +5,7 @@
  *
  *      License: LGPL
  */
-if (yargs.argv._[0] == '--install') {
+if (process.argv[2] == '--install') {
     // If install
     var spawn = require('child_process').spawn;
     var args = ['apt-get', 'install', 'libudev-dev'];
