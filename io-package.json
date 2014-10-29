@@ -17,7 +17,8 @@
         "singletonHost":             true,
         "readme":                   "https://github.com/ioBroker/ioBroker.zwave/blob/master/README.md",
         "icon":                     "zwave.png",
-        "extIcon":                  "https://raw.githubusercontent.com/ioBroker/ioBroker.zwave/master/admin/zwave.png"
+        "extIcon":                  "https://raw.githubusercontent.com/ioBroker/ioBroker.zwave/master/admin/zwave.png",
+        "install":                  true
     },
     "native": {
         "usb": "ttyACM0"
