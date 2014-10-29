@@ -9,7 +9,7 @@ if (process.argv[2] == '--install') {
     // If install
     var spawn = require('child_process').spawn;
     var args = ['apt-get', 'install', 'libudev-dev'];
-    logger.info('ZWave install ' + args.slice(1).join(' '));
+    console.log('ZWave install ' + args.slice(1).join(' '));
 
     var child = spawn('sudo', args);
     child.stdout.on('data', function (data) {
