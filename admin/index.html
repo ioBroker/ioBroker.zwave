@@ -78,13 +78,12 @@
                 var text = "";
                 for (var t = 0; t < res.length; t++) {
                     if (res[t].substring(0, 'ttyA'.length) == 'ttyA') {
-                        text += '<option value="' + res[t] + ' ' + (settings.usb == res[t] ? 'selected' : '') + '">' + res[t] + '</option>';
+                        text += '<option value="' + res[t] + ' ' + (settings.usb == res[t] ? 'selected' : '') + '">' + res + '</option>';
                     }
                 }
                 $('#usb').html(text);
-            } else {
-                $('#usb').html('<option value="">' + _('no USB zwave devices found') + '</option>');
             }
+            $('#usb').html('<option value="">' + _('no zwave devices found') + '</option>');
         });
     }
 
