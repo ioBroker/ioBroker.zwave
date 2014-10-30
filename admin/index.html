@@ -72,6 +72,19 @@
         loadHelper(settings);
         $('#pass_confirm').val($('#pass').val());
         $('#save').button("disable");
+
+        sendToHost(null, 'getDevList', null, function (res) {
+            if (res) {
+                var text = "";
+                for (var t = 0; t < res.length; t++) {
+                    if (res.match(/^ttyA/)) {
+                        text += '<option value="' + res[t] + '">' + res + '</option>';
+                    }
+                }
+                $('#usb').html(text);
+            }
+            $('#usb').html('<option value="">' + _('no zwave devices found') + '</option>');
+        });
     }
 
     function saveHelper(obj, id, value) {
@@ -117,14 +130,14 @@
 
 <div id="adapter-container">
     <table><tr>
-        <td><img src="zwave.png"></td>
+        <td><img src="zwave.png" width="64" height="64"></td>
         <td style="padding-top: 20px;padding-left: 10px"><h3 class="translate">OpenZWave adapter settings</h3></td>
     </tr></table>
 
     <table>
         <tr>
             <td class="translate">USB name:</td>
-            <td><input class="value" id="usb" type="text"/></td>
+            <td><select class="value" id="usb"></select></td>
         </tr>
     </table>
 </div>

@@ -4,9 +4,14 @@ ioBroker zwave Adapter
 
 Zwave support with openzwave.
 
-NOT USEABLE
+For this adapter is used rather good supported npm module: https://github.com/jperkin/node-openzwave
+You should find out what the name has USB port of the Z-Wave stick and setup it in the adapter settings.
+
 
 ## Changelog
+### 0.0.3 (2014-10-30)
+ - Classify channels.
+
 ### 0.0.2 (2014-10-28)
  - Initial commit. Still non-functional.
 
