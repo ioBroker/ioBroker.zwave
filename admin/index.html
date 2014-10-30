@@ -77,7 +77,7 @@
             if (res) {
                 var text = "";
                 for (var t = 0; t < res.length; t++) {
-                    if (res.match(/^ttyA/)) {
+                    if (res.substring(0, 'ttyA'.length) == 'ttyA') {
                         text += '<option value="' + res[t] + '">' + res + '</option>';
                     }
                 }

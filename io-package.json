@@ -3,7 +3,7 @@
         "name":                     "zwave",
         "title":                    "ZWave",
         "desc":                     "ZWave support based on openzwave packet",
-        "version":                  "0.0.3",
+        "version":                  "0.0.4",
         "mode":                     "daemon",
         "platform":                 "javascript/Node.js",
         "os":                       ["darwin", "linux"],
