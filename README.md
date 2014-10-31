@@ -9,6 +9,9 @@ You should find out what the name has USB port of the Z-Wave stick and setup it 
 
 
 ## Changelog
+### 0.0.7 (2014-10-31)
+ - Fix names of classes.
+ 
 ### 0.0.6 (2014-10-30)
  - Show in config found tty ports.
  

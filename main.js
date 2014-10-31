@@ -289,7 +289,7 @@ var comclasses = {
 function calcName(nodeid, comclass, idx) {
     var name = adapter.namespace + ".NODE" + nodeid;
     if (comclass) {
-        name += '.' + (comclasses[comclass] || ('CLASSES' + comclass));
+        name += '.' + ((comclasses[comclass] ? comclasses[comclass].name : null) || ('CLASSES' + comclass));
 
         if (idx !== undefined) {
             name = 'io.' + name + '.' + idx.replace(/ /g, '_');

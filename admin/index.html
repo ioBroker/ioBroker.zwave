@@ -77,7 +77,7 @@
             if (res) {
                 var text = "";
                 for (var t = 0; t < res.length; t++) {
-                    if (res[t].substring(0, 'ttyA'.length) == 'ttyA') {
+                    if (res[t].substring(0, 'tty'.length) == 'tty') {
                         text += '<option value="' + res[t] + ' ' + (settings.usb == res[t] ? 'selected' : '') + '">' + res + '</option>';
                     }
                 }
