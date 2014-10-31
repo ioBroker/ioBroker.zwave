@@ -74,16 +74,15 @@
         $('#save').button("disable");
 
         sendToHost(null, 'getDevList', null, function (res) {
+            var text = '<option value="">' + _('no zwave devices found') + '</option>';
             if (res) {
-                var text = "";
                 for (var t = 0; t < res.length; t++) {
                     if (res[t].substring(0, 'tty'.length) == 'tty') {
-                        text += '<option value="' + res[t] + ' ' + (settings.usb == res[t] ? 'selected' : '') + '">' + res + '</option>';
+                        text += '<option value="' + res[t] + ' ' + (settings.usb == res[t] ? 'selected' : '') + '">' + res[t] + '</option>';
                     }
                 }
-                $('#usb').html(text);
             }
-            $('#usb').html('<option value="">' + _('no zwave devices found') + '</option>');
+            $('#usb').html();
         });
     }
 
