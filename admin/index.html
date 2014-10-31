@@ -74,7 +74,7 @@
         $('#save').button("disable");
 
         sendToHost(null, 'getDevList', null, function (res) {
-            var text = '<option value="">' + _('no zwave devices found') + '</option>';
+            var text = '<option value="">' + _('none') + '</option>';
             if (res) {
                 for (var t = 0; t < res.length; t++) {
                     if (res[t].substring(0, 'tty'.length) == 'tty') {
