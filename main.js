@@ -292,7 +292,7 @@ function calcName(nodeid, comclass, idx) {
         name += '.' + ((comclasses[comclass] ? comclasses[comclass].name : null) || ('CLASSES' + comclass));
 
         if (idx !== undefined) {
-            name = 'io.' + name + '.' + idx.replace(/ /g, '_');
+            name = name + '.' + idx.replace(/ /g, '_');
         }
     }
     return name;

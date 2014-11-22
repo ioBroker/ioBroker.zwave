@@ -74,15 +74,17 @@
         $('#save').button("disable");
 
         sendToHost(null, 'getDevList', null, function (res) {
-            var text = '<option value="">' + _('none') + '</option>';
+            var availableTags = [' '];
             if (res) {
                 for (var t = 0; t < res.length; t++) {
                     if (res[t].substring(0, 'tty'.length) == 'tty') {
-                        text += '<option value="' + res[t] + ' ' + (settings.usb == res[t] ? 'selected' : '') + '">' + res[t] + '</option>';
+                        availableTags.push(res[t]);
                     }
                 }
             }
-            $('#usb').html(text);
+            $("#usb").autocomplete({
+                source: availableTags
+            });
         });
     }
 
@@ -136,7 +138,7 @@
     <table>
         <tr>
             <td class="translate">USB name:</td>
-            <td><select class="value" id="usb"></select></td>
+            <td><input class="value" id="usb"/></td>
         </tr>
     </table>
 </div>
