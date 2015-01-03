@@ -9,6 +9,9 @@ You should find out what the name has USB port of the Z-Wave stick and setup it 
 
 
 ## Changelog
+### 0.1.0 (2015-01-03)
+ - enable npm install.
+ 
 ### 0.0.9 (2014-11-22)
  - Support of new naming concept.
  

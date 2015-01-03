@@ -32,7 +32,8 @@ if (process.argv[2] == '--install') {
     });
 } else {
     // Normal run
-    adapter = require(__dirname + '/../../lib/adapter.js')('zwave');
+    var utils =   require(__dirname + '/lib/utils'); // Get common adapter utils
+    adapter = utils.adapter('zwave');
 
     adapter.on('objectChange', function (id, obj) {
 
