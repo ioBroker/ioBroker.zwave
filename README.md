@@ -32,11 +32,7 @@ Following Nodes are tested:
 
 ## Changelog
 ### 0.2.0 (2015-08-05)
- - (husky-koglhof) 
- -- Added OpenZWave Configurator
- -- changed Dependency from openzwave to openzwave-shared
- -- Implemented stateChange, objectChange Functions
- -- Implemented extended Settings
+ - (husky-koglhof) Added OpenZWave Configurator, changed Dependency from openzwave to openzwave-shared, Implemented stateChange, objectChange Functions, Implemented extended Settings
  
 ### 0.1.0 (2015-01-03)
  - enable npm install.
