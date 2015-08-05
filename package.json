@@ -25,9 +25,9 @@
     "url": "https://github.com/ioBroker/ioBroker.zwave"
   },
   "dependencies": {
-    "openzwave-shared": "1.0.1",
-    "deep-diff": "0.3.2",
-    "xml2object": "0.1.2"
+    "openzwave-shared": "~1.0.1",
+    "deep-diff": "~0.3.2",
+    "xml2object": "~0.1.2"
   },
   "devDependencies": {
     "grunt": "~0.4.4",
