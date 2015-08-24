@@ -30,6 +30,8 @@ Following Nodes are tested:
 - FGS222 Double Relay Switch 2x1.5kW
 - FGWPE Wall Plug
 
+Objects can changed after "zwave.0 Scan completed" is found in iobroker.log.
+
 ## Changelog
 ### 0.2.0 (2015-08-05)
  - (husky-koglhof) Added OpenZWave Configurator, changed Dependency from openzwave to openzwave-shared, Implemented stateChange, objectChange Functions, Implemented extended Settings

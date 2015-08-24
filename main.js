@@ -7,154 +7,29 @@
  */
 
 var zwave;
+var utils =             require(__dirname + '/lib/utils'); // Get common adapter utils
+var fs =                require('fs');
 var objects =           {};
 var zobjects =          {};
 var states =            {};
 var enums =             [];
 var scanComplete = 0;
 
-var adapter;
+var adapter = utils.adapter({
+    name: 'zwave',
 
-var allConfigs = {};
+    ready: function () {
+        getData(function () {
+            adapter.subscribeObjects('*');
+            adapter.subscribeStates('*');
 
-function parseProductConfig(product, callback) {
-    var xml2object = require('xml2object');
-    var fs = require('fs');
-    var done;
-
-    var productConfig = product.productConfig;
-    var ID = product.ID;
-    var TYPE = product.TYPE;
-    var productName =  product.productName;
-
-    var productSource = fs.createReadStream(productConfig);
-    var productParser = new xml2object(['CommandClass'], productSource);
-
-    productParser.start();
-
-    productParser.on('end', function () {
-        done = true;
-    });
-
-    productParser.on('object', function (name, obj) {
-        if (obj.id == "112") {
-            for (var v in obj.Value) {
-                var oValue = obj.Value[v];
-                var help = oValue.Help;
-                var instance = oValue.instance;
-                var index = oValue.index;
-                var label = oValue.label;
-                var type = oValue.type;
-                var value = oValue.value;
-                var size = oValue.size;
-                var genre = oValue.genre;
-                if (type == "list") {
-                    var Items = oValue.Item;
-
-                    var key = 'zwave.meta.VALUES.' + productName + "." + ID + "." + TYPE + "." + label.replace(/\./g, '_');
-                    var paramset = {
-                        'type': 'meta',
-                        'meta': {
-                            adapter: 'zwave',
-                            type: 'paramsetDescription'
-                        },
-                        'common': {},
-                        'native': Items
-                    };
-                    adapter.log.debug('setObject ' + key);
-                    adapter.objects.setObject(key, paramset);
-                }
-            }
-        }
-        if (done && typeof callback === 'function') callback();
-    });
-}
-function parseManufacturerConfig() {
-    var xml2object = require('xml2object');
-    var fs = require('fs');
-
-    var ozw_configPath = __dirname + "/config/openzwave/";
-    var manufacturerConfig = ozw_configPath + "manufacturer_specific.xml";
-
-    var source = fs.createReadStream(manufacturerConfig);
-    var parser = new xml2object([ 'Manufacturer' ], source);
-
-    parser.on('object', function(name, obj) {
-        var productName = obj.name; //.replace(/ /g, '_');
-        for (var p in obj.Product) {
-            var product = obj.Product[p];
-
-            if (product.config != undefined) {
-                var productConfig = ozw_configPath + product.config;
-
-                allConfigs[productName+productConfig+product.id+product.type] = {productConfig: productConfig, ID: product.id, TYPE: product.type, productName: productName};
-            }
-        }
-    });
-
-    parser.start();
-
-    parser.on('end', function() {
-        adapter.log.debug('Finished parsing xml!');
-
-        for (var c in allConfigs) {
-            var product = allConfigs[c];
-
-            parseProductConfig(product, function() {
-                adapter.log.debug("done");
-            });
-        }
-    });
-}
-
-if (process.argv[2] == '--install') {
-    // If install
-    var spawn = require('child_process').spawn;
-    var args = ['apt-get', 'install', 'libudev-dev'];
-    console.log('ZWave: ' + args.slice(1).join(' '));
-
-    var child = spawn('sudo', args);
-    child.stdout.on('data', function (data) {
-        console.log(data);
-    });
-    child.stderr.on('data', function (data) {
-        console.log('ERROR| ' + data);
-    });
-
-    child.on('exit', function (exitCode) {
-        console.log('ZWave install exit ' + exitCode);
-        process.exit();
-    });
-} else {
-    // Normal run
-    var utils =   require(__dirname + '/lib/utils'); // Get common adapter utils
-    adapter = utils.adapter('zwave');
-
-    adapter.on('objectChange', function (id, obj) {
+            main();
+        });
+    },
+    objectChange: function (id, obj) {
         adapter.log.debug("objectChange for " + id + " found");
-
-        var diff = require('deep-diff').diff;
-        var object = objects[id];
-        var differences = diff(object, obj);
-        adapter.log.debug(JSON.stringify(differences));
-
-        // We must inform zwave that something has changed
-        // TODO: Currently only Fully Qualified Object is working (e.g. zwave.0.NODE7.CONFIGURATION.Enable/Disable ALL ON/OFF)
-        adapter.setState(id, {
-            val: {
-                nodeid: obj.native.nodeid,
-                action:"changeConfig",
-                paramId: obj.native.index,
-                paramValue: obj.native.value,
-                label: obj.native.label,
-                index: obj.native.index,
-                comclass: obj.native.comclass,
-                changed: true
-            },
-            ack: true});
-    });
-
-    adapter.on('stateChange', function (id, state) {
+    },
+    stateChange: function (id, state) {
         adapter.log.debug("ID: " + id + ", state: " + JSON.stringify(state));
 
         var obj = objects[id];
@@ -169,25 +44,11 @@ if (process.argv[2] == '--install') {
                                 var nodeid = state.val.nodeid;
                                 var name = state.val.name;
                                 zwave.setName(nodeid, name);
-                                var old_type = obj.type;
-                                var old_native = obj.native;
-                                var old_common = obj.common;
-                                old_native.name = name;
-                                var objx = {type: old_type, native: old_native, common: old_common};
-
-                                adapter.setObject(adapter.namespace + ".NODE" + nodeid, objx);
                             }
                             if (action == "setLocation") {
                                 var nodeid = state.val.nodeid;
                                 var location = state.val.name;
                                 zwave.setLocation(nodeid, location);
-                                var old_type = obj.type;
-                                var old_native = obj.native;
-                                var old_common = obj.common;
-                                old_native.loc = location;
-                                var objx = {type: old_type, native: old_native, common: old_common};
-
-                                adapter.setObject(adapter.namespace + ".NODE" + nodeid, objx);
                             }
                         } else if (state.val.paramId != undefined &&
                             state.val.paramValue != undefined &&
@@ -203,54 +64,60 @@ if (process.argv[2] == '--install') {
                             var comclass = state.val.comclass;
                             var index = state.val.index;
                             var changed = state.val.changed;
-
-                            var old_type = obj.type;
                             var old_native = obj.native;
-                            var old_common = obj.common;
 
-                            var old_value = obj.native.value;
+                            var root_type;
+                            var root_native;
+                            var root_common;
+                            var objr;
+                            var namedValue;
+                            var address;
+                            var rootObject;
 
                             if (action == "changeConfig") {
                                 adapter.log.debug("setConfigParam for " + id + ", paramId = " + paramId + ", paramValue = " + paramValue);
-                                // TODO:
                                 zwave.setConfigParam(nodeid, paramId, paramValue, paramValue.length);
                                 old_native.value = paramValue;
 
                                 adapter.log.debug("setObject for " + id + ", label = " + label);
-                                var objx = {type: old_type, native: old_native, common: old_common};
-                                var address = adapter.namespace + ".NODE" + nodeid;
+                                address = adapter.namespace + ".NODE" + nodeid;
 
-                                if (changed == undefined) {
-                                    adapter.setObject(address + ".CONFIGURATION." + label, objx);
-                                }
+                                rootObject = objects[address];
 
-                                // TODO: We must set Root Object too...
-                                var rootObject = objects[address];
                                 if (rootObject != undefined) {
-                                    var root_type = rootObject.type;
-                                    var root_native = rootObject.native;
-                                    var root_common = rootObject.common;
-                                    var objr = {type: root_type, native: root_native, common: root_common};
-                                    root_native.classes[comclass][index].value = paramValue;
+                                    root_type = rootObject.type;
+                                    root_native = rootObject.native;
+                                    root_common = rootObject.common;
+                                    objr = {type: root_type, native: root_native, common: root_common};
+                                    namedValue = root_native.classes[comclass][index].values[paramValue];
+                                    root_native.classes[comclass][index].value = namedValue;
                                 }
                                 if (changed == undefined) {
                                     adapter.setObject(address, objr);
                                 }
 
                             } else if (action == "changeSystem") {
-                                /*
-                                // TODO: Check if this is working
-                                adapter.log.debug("setSystemParam for " + id + ", paramId = " + paramId + ", paramValue = " + paramValue);
-                                // TODO: zwave.setConfigParam(nodeid, paramId, paramValue, paramValue.length);
+                                // Todo: Not working
+                                adapter.log.debug("setConfigParam for " + id + ", paramId = " + paramId + ", paramValue = " + paramValue);
+                                zwave.setValue(obj.native.nodeid, obj.native.comclass, obj.native.instance, obj.native.index, state.val);
                                 old_native.value = paramValue;
-                                */
-
-                                // TODO:
-                                zwave.setValue(obj.native.nodeid, obj.native.comclass, obj.native.index, obj.native.instance, state.val);
 
                                 adapter.log.debug("setObject for " + id + ", label = " + label);
-                                var objx = {type: old_type, native: old_native, common: old_common};
-                                adapter.setObject(adapter.namespace + ".NODE" + nodeid + ".CONFIGURATION." + label, objx);
+                                address = adapter.namespace + ".NODE" + nodeid;
+
+                                rootObject = objects[address];
+                                if (rootObject != undefined) {
+                                    root_type = rootObject.type;
+                                    root_native = rootObject.native;
+                                    root_common = rootObject.common;
+                                    objr = {type: root_type, native: root_native, common: root_common};
+                                    namedValue = root_native.classes[comclass][index].values[paramValue];
+                                    root_native.classes[comclass][index].value = namedValue;
+                                }
+
+                                if (changed == undefined) {
+                                    adapter.setObject(address, objr);
+                                }
                             }
                         }
                     } else {
@@ -260,7 +127,10 @@ if (process.argv[2] == '--install') {
                         } else if (state.val == false) {
                             value = 1;
                         }
-                        zwave.setValue(obj.native.nodeid, obj.native.comclass, obj.native.index, obj.native.instance, state.val);
+
+                        if (state.ack == false) { // Passiert nur innerhalb von ioBroker, sonst ist ack true
+                            zwave.setValue(obj.native.nodeid, obj.native.comclass, obj.native.instance, obj.native.index, state.val);
+                        }
                         adapter.log.debug('setState for: nodeid='+obj.native.nodeid+': comclass='+obj.native.comclass+': index='+obj.native.index+': instance='+obj.native.instance+': value='+state.val);
                     }
                 }
@@ -268,31 +138,18 @@ if (process.argv[2] == '--install') {
         } else {
             adapter.log.error("Object '"+id+"' not found for stateChange");
         }
-    });
-
-    adapter.on('unload', function (callback) {
+    },
+    unload: function (callback) {
         if (zwave) zwave.disconnect();
 
         var allNodes = adapter.states.getStates(adapter.namespace + ".NODE*");
-        var nodeid;
-        for (var node in allNodes) {
+        for (var nodeid in allNodes) {
             var rName = adapter.namespace + ".NODE" + nodeid + ".ready";
             adapter.setState(rName, {val: false, ack: true});
         }
         callback();
-    });
-
-    adapter.on('ready', function () {
-        // TODO: Remove Function, no longer needed
-        // parseManufacturerConfig();
-        getData(function () {
-            adapter.subscribeObjects('*');
-            adapter.subscribeStates('*');
-
-            main();
-        });
-    });
-}
+    },
+});
 
 function getData(callback) {
     var statesReady;
@@ -564,19 +421,17 @@ function calcName(nodeid, comclass, idx, instance) {
 }
 
 function main() {
-    // Use new version of openzwave nodejs implementation
-    //var OZW = require('./node_modules/openzwave/lib/openzwave.js');
     var OZW = require('./node_modules/openzwave-shared/lib/openzwave-shared.js');
 
     zwave = new OZW('/dev/' + adapter.config.usb, {
+        // TODO: Check if we really need this
+        //modpath:         adapter.config.path,             // __dirname + /../deps/open-zwave/config   // set's config path, should be
         logging:         adapter.config.logging,            // true                                     // enable logging to OZW_Log.txt
         consoleoutput:   adapter.config.consoleoutput,      // true                                     // copy logging to the console
         saveconfig:      adapter.config.saveconfig,         // true                                     // write an XML network layout
         driverattempts:  adapter.config.driverattempts,     // 3                                        // try this many times before giving up
         pollinterval:    adapter.config.pollintervall,      // 500                                      // interval between polls in milliseconds
-        suppressrefresh: adapter.config.suppressrefresh,    // false                                    // do not send updates if nothing changed
-        // TODO: Check if we really need this
-        //modpath:         adapter.config.path              // __dirname + /../deps/open-zwave/config   // set's config path, should be
+        suppressrefresh: adapter.config.suppressrefresh     // false                                    // do not send updates if nothing changed
     });
 
     var nodes = [];
@@ -659,7 +514,7 @@ function main() {
         3: 'node awake',
         4: 'node sleep',
         5: 'node dead (Undead Undead Undead)',
-        6: 'node alive',
+        6: 'node alive'
     };
     zwave.on('notification', function(nodeid, notif) {
         adapter.log.debug('node'+nodeid+': '+notificationCodes[notif]+', currently not implemented');
@@ -676,7 +531,7 @@ function main() {
         7: 'The command has completed successfully',
         8: 'The command has failed',
         9: 'The controller thinks the node is OK',
-        10: 'The controller thinks the node has failed',
+        10: 'The controller thinks the node has failed'
     };
     var ctrlError = {
         0: 'No error',
@@ -691,21 +546,34 @@ function main() {
         9: 'Busy',
         10: 'Failed',
         11: 'Disabled',
-        12: 'Overflow',
+        12: 'Overflow'
     }
     zwave.on('controller command', function (state, error) {
         adapter.log.debug('controller command feedback: state:'+ctrlState[state]+' error:'+ctrlError[error]+', currently not implemented');
     });
 
     zwave.on('node naming', function (nodeid, nodeinfo) {
-        adapter.log.debug('node naming nodeid:'+nodeid+' nodeinfo:'+JSON.stringify(nodeinfo)+', currently not implemented');
+        adapter.log.debug('node naming nodeid:'+nodeid+' nodeinfo:'+JSON.stringify(nodeinfo));
+
+        var address = adapter.namespace + ".NODE" + nodeid;
+        var obj = objects[address];
+
+        var old_type = obj.type;
+        var old_native = obj.native;
+        var old_common = obj.common;
+
+        old_native.name = nodeinfo.name;
+        old_native.location = nodeinfo.loc;
+
+        var objx = {type: old_type, native: old_native, common: old_common};
+        adapter.setObject(address, objx);
     });
 
     zwave.on('value refreshed', function(nodeid, commandclass, value) {
         adapter.log.debug('value refreshed nodeid:'+nodeid+' commandclass:'+commandclass+' value:'+value+', currently not implemented');
     });
 
-    /**************************************************************/
+/**************************************************************/
 
     zwave.on('node ready', function (nodeid, nodeinfo) {
         nodes[nodeid].manufacturer   = nodeinfo.manufacturer;
@@ -862,6 +730,3 @@ function main() {
 
     zwave.connect();
 }
-
-
-

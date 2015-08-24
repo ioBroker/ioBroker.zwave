@@ -20,14 +20,15 @@
         "icon":                     "zwave.png",
         "extIcon":                  "https://raw.githubusercontent.com/ioBroker/ioBroker.zwave/master/admin/zwave.png",
         "install":                  true,
-        "supportStopInstance":      true,
+        "dependencies":             ["web"],
+        "onlyWWW":                  false,
+        "singleton":                true,
         "messagebox":               true,
-        "adminTab": {
-            "singleton":  true,
-            "name":       "ZWave",
-            "link":       "http://%ip%:%webServerPort%"
-        },
-        "localLink":                "http://%ip%:%webServerPort%"
+        "adminTab":                {
+            "singleton":    true,
+            "name":         "ZWave",
+            "link":         "http://%ip%:%web_port%/zwave/index.html"
+        }
     },
     "native": {
         "usb": "ttyACM0",

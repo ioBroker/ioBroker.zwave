@@ -69,13 +69,11 @@ $(document).ready(function () {
 
             servConn._socket.emit('getObject', "system.config", function (err, config) {
                 language = config.language || 'de';
-
                 translate();
 
                 initTabs();
                 initDialogsMisc();
                 initGridDevices();
-
                 var tmp = window.location.hash.slice(1).split('/');
                 hash = tmp[1];
 
@@ -611,7 +609,11 @@ $(document).ready(function () {
                                     device.max = clz.max;
                                     device.min = clz.min;
                                     device.nodeid = clz.nodeid;
-                                    device.read_only = clz.read_only;
+                                    if (clz.genre == "basic") {
+                                        device.read_only = true;
+                                    } else {
+                                        device.read_only = clz.read_only;
+                                    }
                                     device.type = clz.type;
                                     device.units = clz.units;
                                     device.value = clz.value;
@@ -637,9 +639,10 @@ $(document).ready(function () {
                 {title: _("Change Parameter(s)"), cmd: "paramsetValues", uiIcon: "ui-icon-gear"}
             ],
             beforeOpen: function(event, ui) {
-                 var read_only = ui.target.parent().find('[aria-describedby$="_read_only"]').text();
+                var read_only = ui.target.parent().find('[aria-describedby$="_read_only"]').text();
+                var genre = ui.target.parent().find('[aria-describedby$="_genre"]').text();
 
-                if (read_only.search("false") == 0) {
+                if (read_only == "false") {
                     $body.contextmenu("enableEntry", 'paramsetValues', true);
                 } else {
                     $body.contextmenu("enableEntry", 'paramsetValues', false);
@@ -676,6 +679,15 @@ $(document).ready(function () {
                         var genre = $('#genre').val();
                         var comclass = $('#comclass').val();
 
+                        /*
+                         "value_id": "7-39-1-0",
+                         "node_id": 7,
+                         "class_id": 39,
+                         "type": "list",
+                         "genre": "system",
+                         "instance": 1,
+                         "index": "0",
+                         */
                         if (genre == "config") {
                             servConn._socket.emit('setState', address, {
                                 val: {nodeid:nodeid, action:"changeConfig", paramId: index, paramValue: val, label: label, index: index, comclass: comclass},
@@ -688,7 +700,7 @@ $(document).ready(function () {
                             });
                         } else if (genre == "system") {
                             servConn._socket.emit('setState', address, {
-                                val: {nodeid:nodeid, action:"changeSystem", paramId: index, paramValue: val, label: label},
+                                val: {nodeid:nodeid, action:"changeSystem", paramId: index, paramValue: val, label: label, index: index, comclass: comclass},
                                 ack: true
                             }, function (res, err) {
                                 console.log("result: " + res);
@@ -807,9 +819,10 @@ $(document).ready(function () {
         // TODO: Implement Help Function
         // $('#help').val(help);
 
+        var address;
+        address = 'zwave.0.NODE'+nodeid+'.CONFIGURATION.'+label;
         if (type == "list") {
             if (objects['zwave.0.NODE'+nodeid] != undefined) {
-                var address;
                 label = label.replace(/\./g, '_'); //.replace(/ /g, '_');
                 if (genre == "config") {
                     address = 'zwave.0.NODE'+nodeid+".CONFIGURATION."+label;
@@ -823,7 +836,6 @@ $(document).ready(function () {
                         }
                     }
                 }
-                $('#address').val(address);
                 var obj = metadata[address];
                 if (obj == undefined) {
                     alert("This Address is not configured :" + address);
@@ -832,9 +844,9 @@ $(document).ready(function () {
                 for (var l = 0; l < obj.native.values.length; l++) {
                     var lbl = obj.native.values[l];
                     if (lbl == value) {
-                        selectObject += '<option selected=selected value="'+lbl+'">'+lbl+'</option>';
+                        selectObject += '<option selected=selected value="'+l+'">'+lbl+'</option>';
                     } else {
-                        selectObject += '<option value="'+lbl+'">'+lbl+'</option>';
+                        selectObject += '<option value="'+l+'">'+lbl+'</option>';
                     }
                 }
                 $('#input-value').replaceWith(selectObject+'</select>');
@@ -869,6 +881,7 @@ $(document).ready(function () {
             $('#input-value').val(value);
             $dialogparamsetValues.dialog('open');
         }
+        $('#address').val(address);
     }
 
     function dialogSetLocation() {
