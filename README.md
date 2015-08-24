@@ -33,6 +33,9 @@ Following Nodes are tested:
 Objects can changed after "zwave.0 Scan completed" is found in iobroker.log.
 
 ## Changelog
+### 0.2.1 (2015-08-24)
+ - (husky-koglhof) Fixed Errors with Config save at OpenZwave Configurator
+
 ### 0.2.0 (2015-08-05)
  - (husky-koglhof) Added OpenZWave Configurator, changed Dependency from openzwave to openzwave-shared, Implemented stateChange, objectChange Functions, Implemented extended Settings
  
