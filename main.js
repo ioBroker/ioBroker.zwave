@@ -89,7 +89,11 @@ var adapter = utils.adapter({
                                     root_native = rootObject.native;
                                     root_common = rootObject.common;
                                     objr = {type: root_type, native: root_native, common: root_common};
-                                    namedValue = root_native.classes[comclass][index].values[paramValue];
+                                    if (root_native.classes[comclass][index].values != undefined) {
+                                        namedValue = root_native.classes[comclass][index].values[paramValue];
+                                    } else {
+                                        namedValue = paramValue;
+                                    }
                                     root_native.classes[comclass][index].value = namedValue;
                                 }
                                 if (changed == undefined) {
@@ -136,7 +140,7 @@ var adapter = utils.adapter({
                 }
             }
         } else {
-            adapter.log.error("Object '"+id+"' not found for stateChange");
+            adapter.log.warn("Object '"+id+"' not found for stateChange");
         }
     },
     unload: function (callback) {
@@ -302,98 +306,98 @@ var comclasses = {
      #define COMMAND_CLASS_ZIP_SERVICES			             0x23
      */
 
-0x20:{name: 'BASIC',                                  role: 'switch', children: {
-    Basic: {role: 'level'}
-}},
-0x86:{name: 'VERSION',                                role: 'meta.version', children: {
-    'Library Version':    {type: 'text'},
-    'Protocol Version':   {type: 'text'},
-    'Application Version':{type: 'text'}
-}},
-0x80:{name: 'BATTERY',                                role: 'info', children: {
-    'Battery Level':    {role: 'value.battery'}
-}},
-0x84:{name: 'WAKE_UP',                                role: ''},
-0x21:{name: 'CONTROLLER_REPLICATION',                 role: ''},
-0x26:{name: 'SWITCH_MULTILEVEL',                      role: 'light.dimmer', children: {
-    Level: {role: 'level.dimmer'}
-}},
-0x27:{name: 'SWITCH_ALL',                             role: ''},
-0x30:{name: 'SENSOR_BINARY',                          role: 'sensor'},
-0x31:{name: 'SENSOR_MULTILEVEL',                      role: 'sensor', children: {
-    Temperature: {role: 'value.temperature'}
-}},
-0x9c:{name: 'SENSOR_ALARM',                           role: 'alarm'},
-0x71:{name: 'ALARM',                                  role: ''},
-0x8F:{name: 'MULTI_CMD',                              role: ''},
-0x46:{name: 'CLIMATE_CONTROL_SCHEDULE',               role: ''},
-0x81:{name: 'CLOCK',                                  role: ''},
-0x85:{name: 'ASSOCIATION',                            role: ''},
-0x70:{name: 'CONFIGURATION',                          role: 'meta.config', children: {
-    Level: {role: 'level.dimmer'}
-}},
-0x72:{name: 'MANUFACTURER_SPECIFIC',                  role: ''},
-0x22:{name: 'APPLICATION_STATUS',                     role: ''},
-0x9B:{name: 'ASSOCIATION_COMMAND_CONFIGURATION',      role: ''},
-0x95:{name: 'AV_CONTENT_DIRECTORY_MD',                role: ''},
-0x97:{name: 'AV_CONTENT_SEARCH_MD',                   role: ''},
-0x96:{name: 'AV_RENDERER_STATUS',                     role: ''},
-0x99:{name: 'AV_TAGGING_MD',                          role: ''},
-0x50:{name: 'BASIC_WINDOW_COVERING',                  role: ''},
-0x2A:{name: 'CHIMNEY_FAN',                            role: ''},
-0x8D:{name: 'COMPOSITE',                              role: ''},
-0x62:{name: 'DOOR_LOCK',                              role: ''},
-0x90:{name: 'ENERGY_PRODUCTION',                      role: ''},
-0x7a:{name: 'FIRMWARE_UPDATE_MD',                     role: ''},
-0x8C:{name: 'GEOGRAPHIC_LOCATION',                    role: ''},
-0x7B:{name: 'GROUPING_NAME',                          role: ''},
-0x82:{name: 'HAIL',                                   role: ''},
-0x87:{name: 'INDICATOR',                              role: ''},
-0x9A:{name: 'IP_CONFIGURATION',                       role: 'meta.config'},
-0x89:{name: 'LANGUAGE',                               role: ''},
-0x76:{name: 'LOCK',                                   role: ''},
-0x91:{name: 'MANUFACTURER_PROPRIETARY',               role: ''},
-0x35:{name: 'METER_PULSE',                            role: ''},
-0x32:{name: 'METER',                                  role: ''},
-0x51:{name: 'MTP_WINDOW_COVERING',                    role: ''},
-0x8E:{name: 'MULTI_INSTANCE_ASSOCIATION',             role: ''},
-0x60:{name: 'MULTI_INSTANCE',                         role: ''},
-0x00:{name: 'NO_OPERATION',                           role: ''},
-0x77:{name: 'NODE_NAMING',                            role: ''},
-0xf0:{name: 'NON_INTEROPERABLE',                      role: ''},
-0x73:{name: 'POWERLEVEL',                             role: ''},
-0x88:{name: 'PROPRIETARY',                            role: ''},
-0x75:{name: 'PROTECTION',                             role: ''},
-0x7c:{name: 'REMOTE_ASSOCIATION_ACTIVATE',            role: ''},
-0x7d:{name: 'REMOTE_ASSOCIATION',                     role: ''},
-0x2b:{name: 'SCENE_ACTIVATION',                       role: ''},
-0x2C:{name: 'SCENE_ACTUATOR_CONF',                    role: ''},
-0x2D:{name: 'SCENE_CONTROLLER_CONF',                  role: ''},
-0x93:{name: 'SCREEN_ATTRIBUTES',                      role: ''},
-0x92:{name: 'SCREEN_MD',                              role: ''},
-0x98:{name: 'SECURITY',                               role: ''},
-0x9E:{name: 'SENSOR_CONFIGURATION',                   role: ''},
-0x9d:{name: 'SILENCE_ALARM',                          role: ''},
-0x94:{name: 'SIMPLE_AV_CONTROL',                      role: ''},
-0x25:{name: 'SWITCH_BINARY',                          role: 'switch'},
-0x28:{name: 'SWITCH_TOGGLE_BINARY',                   role: ''},
-0x29:{name: 'SWITCH_TOGGLE_MULTILEVEL',               role: ''},
-0x44:{name: 'THERMOSTAT_FAN_MODE',                    role: ''},
-0x45:{name: 'THERMOSTAT_FAN_STATE',                   role: ''},
-0x38:{name: 'THERMOSTAT_HEATING',                     role: ''},
-0x40:{name: 'THERMOSTAT_MODE',                        role: ''},
-0x42:{name: 'THERMOSTAT_OPERATING_STATE',             role: ''},
-0x47:{name: 'THERMOSTAT_SETBACK',                     role: ''},
-0x43:{name: 'THERMOSTAT_SETPOINT',                    role: ''},
-0x8B:{name: 'TIME_PARAMETERS',                        role: ''},
-0x8a:{name: 'TIME',                                   role: ''},
-0x63:{name: 'USER_CODE',                              role: ''},
-0x34:{name: 'ZIP_ADV_CLIENT',                         role: ''},
-0x33:{name: 'ZIP_ADV_SERVER',                         role: ''},
-0x2F:{name: 'ZIP_ADV_SERVICES',                       role: ''},
-0x2e:{name: 'ZIP_CLIENT',                             role: ''},
-0x24:{name: 'ZIP_SERVER',                             role: ''},
-0x23:{name: 'ZIP_SERVICES',                           role: ''}
+    0x20:{name: 'BASIC',                                  role: 'switch', children: {
+        Basic: {role: 'level'}
+    }},
+    0x86:{name: 'VERSION',                                role: 'meta.version', children: {
+        'Library Version':    {type: 'text'},
+        'Protocol Version':   {type: 'text'},
+        'Application Version':{type: 'text'}
+    }},
+    0x80:{name: 'BATTERY',                                role: 'info', children: {
+        'Battery Level':    {role: 'value.battery'}
+    }},
+    0x84:{name: 'WAKE_UP',                                role: ''},
+    0x21:{name: 'CONTROLLER_REPLICATION',                 role: ''},
+    0x26:{name: 'SWITCH_MULTILEVEL',                      role: 'light.dimmer', children: {
+        Level: {role: 'level.dimmer'}
+    }},
+    0x27:{name: 'SWITCH_ALL',                             role: ''},
+    0x30:{name: 'SENSOR_BINARY',                          role: 'sensor'},
+    0x31:{name: 'SENSOR_MULTILEVEL',                      role: 'sensor', children: {
+        Temperature: {role: 'value.temperature'}
+    }},
+    0x9c:{name: 'SENSOR_ALARM',                           role: 'alarm'},
+    0x71:{name: 'ALARM',                                  role: ''},
+    0x8F:{name: 'MULTI_CMD',                              role: ''},
+    0x46:{name: 'CLIMATE_CONTROL_SCHEDULE',               role: ''},
+    0x81:{name: 'CLOCK',                                  role: ''},
+    0x85:{name: 'ASSOCIATION',                            role: ''},
+    0x70:{name: 'CONFIGURATION',                          role: 'meta.config', children: {
+        Level: {role: 'level.dimmer'}
+    }},
+    0x72:{name: 'MANUFACTURER_SPECIFIC',                  role: ''},
+    0x22:{name: 'APPLICATION_STATUS',                     role: ''},
+    0x9B:{name: 'ASSOCIATION_COMMAND_CONFIGURATION',      role: ''},
+    0x95:{name: 'AV_CONTENT_DIRECTORY_MD',                role: ''},
+    0x97:{name: 'AV_CONTENT_SEARCH_MD',                   role: ''},
+    0x96:{name: 'AV_RENDERER_STATUS',                     role: ''},
+    0x99:{name: 'AV_TAGGING_MD',                          role: ''},
+    0x50:{name: 'BASIC_WINDOW_COVERING',                  role: ''},
+    0x2A:{name: 'CHIMNEY_FAN',                            role: ''},
+    0x8D:{name: 'COMPOSITE',                              role: ''},
+    0x62:{name: 'DOOR_LOCK',                              role: ''},
+    0x90:{name: 'ENERGY_PRODUCTION',                      role: ''},
+    0x7a:{name: 'FIRMWARE_UPDATE_MD',                     role: ''},
+    0x8C:{name: 'GEOGRAPHIC_LOCATION',                    role: ''},
+    0x7B:{name: 'GROUPING_NAME',                          role: ''},
+    0x82:{name: 'HAIL',                                   role: ''},
+    0x87:{name: 'INDICATOR',                              role: ''},
+    0x9A:{name: 'IP_CONFIGURATION',                       role: 'meta.config'},
+    0x89:{name: 'LANGUAGE',                               role: ''},
+    0x76:{name: 'LOCK',                                   role: ''},
+    0x91:{name: 'MANUFACTURER_PROPRIETARY',               role: ''},
+    0x35:{name: 'METER_PULSE',                            role: ''},
+    0x32:{name: 'METER',                                  role: ''},
+    0x51:{name: 'MTP_WINDOW_COVERING',                    role: ''},
+    0x8E:{name: 'MULTI_INSTANCE_ASSOCIATION',             role: ''},
+    0x60:{name: 'MULTI_INSTANCE',                         role: ''},
+    0x00:{name: 'NO_OPERATION',                           role: ''},
+    0x77:{name: 'NODE_NAMING',                            role: ''},
+    0xf0:{name: 'NON_INTEROPERABLE',                      role: ''},
+    0x73:{name: 'POWERLEVEL',                             role: ''},
+    0x88:{name: 'PROPRIETARY',                            role: ''},
+    0x75:{name: 'PROTECTION',                             role: ''},
+    0x7c:{name: 'REMOTE_ASSOCIATION_ACTIVATE',            role: ''},
+    0x7d:{name: 'REMOTE_ASSOCIATION',                     role: ''},
+    0x2b:{name: 'SCENE_ACTIVATION',                       role: ''},
+    0x2C:{name: 'SCENE_ACTUATOR_CONF',                    role: ''},
+    0x2D:{name: 'SCENE_CONTROLLER_CONF',                  role: ''},
+    0x93:{name: 'SCREEN_ATTRIBUTES',                      role: ''},
+    0x92:{name: 'SCREEN_MD',                              role: ''},
+    0x98:{name: 'SECURITY',                               role: ''},
+    0x9E:{name: 'SENSOR_CONFIGURATION',                   role: ''},
+    0x9d:{name: 'SILENCE_ALARM',                          role: ''},
+    0x94:{name: 'SIMPLE_AV_CONTROL',                      role: ''},
+    0x25:{name: 'SWITCH_BINARY',                          role: 'switch'},
+    0x28:{name: 'SWITCH_TOGGLE_BINARY',                   role: ''},
+    0x29:{name: 'SWITCH_TOGGLE_MULTILEVEL',               role: ''},
+    0x44:{name: 'THERMOSTAT_FAN_MODE',                    role: ''},
+    0x45:{name: 'THERMOSTAT_FAN_STATE',                   role: ''},
+    0x38:{name: 'THERMOSTAT_HEATING',                     role: ''},
+    0x40:{name: 'THERMOSTAT_MODE',                        role: ''},
+    0x42:{name: 'THERMOSTAT_OPERATING_STATE',             role: ''},
+    0x47:{name: 'THERMOSTAT_SETBACK',                     role: ''},
+    0x43:{name: 'THERMOSTAT_SETPOINT',                    role: ''},
+    0x8B:{name: 'TIME_PARAMETERS',                        role: ''},
+    0x8a:{name: 'TIME',                                   role: ''},
+    0x63:{name: 'USER_CODE',                              role: ''},
+    0x34:{name: 'ZIP_ADV_CLIENT',                         role: ''},
+    0x33:{name: 'ZIP_ADV_SERVER',                         role: ''},
+    0x2F:{name: 'ZIP_ADV_SERVICES',                       role: ''},
+    0x2e:{name: 'ZIP_CLIENT',                             role: ''},
+    0x24:{name: 'ZIP_SERVER',                             role: ''},
+    0x23:{name: 'ZIP_SERVICES',                           role: ''}
 };
 
 function calcName(nodeid, comclass, idx, instance) {
@@ -499,7 +503,7 @@ function main() {
         if (zobjects[name]) delete zobjects[name];
     });
 
-/**************************************************************/
+    /**************************************************************/
     zwave.on('polling enabled', function(nodeid) {
         adapter.log.debug('node'+nodeid+': polling ENABLED, currently not implemented');
     });
@@ -518,6 +522,29 @@ function main() {
     };
     zwave.on('notification', function(nodeid, notif) {
         adapter.log.debug('node'+nodeid+': '+notificationCodes[notif]+', currently not implemented');
+        switch (notif) {
+            case 0:
+                adapter.log.debug('node'+nodeid+': message complete');
+                break;
+            case 1:
+                adapter.log.warn('node'+nodeid+': timeout');
+                break;
+            case 2:
+                adapter.log.info('node'+nodeid+': nop');
+                break;
+            case 3:
+                adapter.log.info('node'+nodeid+': node awake');
+                break;
+            case 4:
+                adapter.log.info('node'+nodeid+': node sleep');
+                break;
+            case 5:
+                adapter.log.warn('node'+nodeid+': node dead');
+                break;
+            case 6:
+                adapter.log.info('node'+nodeid+': node alive');
+                break;
+        }
     });
 
     var ctrlState = {
@@ -558,22 +585,26 @@ function main() {
         var address = adapter.namespace + ".NODE" + nodeid;
         var obj = objects[address];
 
-        var old_type = obj.type;
-        var old_native = obj.native;
-        var old_common = obj.common;
+        if (obj != undefined) {
+            if (obj.type != undefined && obj.native != undefined && obj.common != undefined) {
+                var old_type = obj.type;
+                var old_native = obj.native;
+                var old_common = obj.common;
 
-        old_native.name = nodeinfo.name;
-        old_native.location = nodeinfo.loc;
+                old_native.name = nodeinfo.name;
+                old_native.location = nodeinfo.loc;
 
-        var objx = {type: old_type, native: old_native, common: old_common};
-        adapter.setObject(address, objx);
+                var objx = {type: old_type, native: old_native, common: old_common};
+                adapter.setObject(address, objx);
+            }
+        }
     });
 
     zwave.on('value refreshed', function(nodeid, commandclass, value) {
         adapter.log.debug('value refreshed nodeid:'+nodeid+' commandclass:'+commandclass+' value:'+value+', currently not implemented');
     });
 
-/**************************************************************/
+    /**************************************************************/
 
     zwave.on('node ready', function (nodeid, nodeinfo) {
         nodes[nodeid].manufacturer   = nodeinfo.manufacturer;
@@ -587,9 +618,8 @@ function main() {
         nodes[nodeid].ready          = true;
         nodes[nodeid].nodeid         = nodeid;
         if (adapter.config.forceinit) {
-
             adapter.log.debug('node'+nodeid+': '+nodeinfo.manufacturer ? nodeinfo.manufacturer : 'id=' + nodeinfo.manufacturerid+', '+(nodeinfo.product ? nodeinfo.product :
-                'product=' + nodeinfo.productid + ', type=' + nodeinfo.producttype));
+            'product=' + nodeinfo.productid + ', type=' + nodeinfo.producttype));
             adapter.log.debug('node'+nodeid+': name="'+nodeinfo.name+'", type="'+nodeinfo.type+'", location="'+nodeinfo.loc+'"');
 
             // Create channel
@@ -689,32 +719,6 @@ function main() {
 
             var rName = adapter.namespace + ".NODE" + nodeid + ".ready";
             adapter.setState(rName, {val: true, ack: true});
-        }
-    });
-
-    zwave.on('notification', function (nodeid, notif) {
-        switch (notif) {
-            case 0:
-                adapter.log.debug('node'+nodeid+': message complete');
-                break;
-            case 1:
-                adapter.log.warn('node'+nodeid+': timeout');
-                break;
-            case 2:
-                adapter.log.info('node'+nodeid+': nop');
-                break;
-            case 3:
-                adapter.log.info('node'+nodeid+': node awake');
-                break;
-            case 4:
-                adapter.log.info('node'+nodeid+': node sleep');
-                break;
-            case 5:
-                adapter.log.warn('node'+nodeid+': node dead');
-                break;
-            case 6:
-                adapter.log.info('node'+nodeid+': node alive');
-                break;
         }
     });
 
