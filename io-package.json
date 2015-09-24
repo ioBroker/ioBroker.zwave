@@ -3,7 +3,7 @@
         "name":                     "zwave",
         "title":                    "ZWave",
         "desc":                     "ZWave support based on openzwave packet",
-        "version":                  "0.1.0",
+        "version":                  "0.2.0",
         "mode":                     "daemon",
         "platform":                 "javascript/Node.js",
         "os":                       ["darwin", "linux"],
@@ -11,17 +11,34 @@
         "keywords":                 ["zwave", "control", "openzwave"],
         "main":                     "main.js",
         "authors": [
-            "Boris Kondratenko", "bluefox <bluefox@ccu.io>"
+            "Boris Kondratenko", "bluefox <bluefox@ccu.io>",
+            "Christian Baumgartner", "husky-koglhof <husky.koglhof@icloud.com>"
         ],
         "license":                  "LGPL",
         "singletonHost":             true,
         "readme":                   "https://github.com/ioBroker/ioBroker.zwave/blob/master/README.md",
         "icon":                     "zwave.png",
         "extIcon":                  "https://raw.githubusercontent.com/ioBroker/ioBroker.zwave/master/admin/zwave.png",
-        "install":                  true
+        "install":                  true,
+        "dependencies":             ["web"],
+        "onlyWWW":                  false,
+        "singleton":                true,
+        "messagebox":               true,
+        "adminTab":                {
+            "singleton":    true,
+            "name":         "ZWave",
+            "link":         "http://%ip%:%web_port%/zwave/index.html"
+        }
     },
     "native": {
-        "usb": "ttyACM0"
+        "usb": "ttyACM0",
+        "logging": false,
+        "consoleoutput": false,
+        "saveconfig": true,
+        "driverattempts": "3",
+        "pollinterval": "500",
+        "suppressrefresh": false,
+        "forceinit": false
     },
     "objects": [
     ],

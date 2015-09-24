@@ -1,5 +1,5 @@
 <html>
-
+<head>
 <link rel="stylesheet" type="text/css" href="../../lib/css/themes/jquery-ui/redmond/jquery-ui.min.css"/>
 <script type="text/javascript" src="../../lib/js/jquery-1.11.1.min.js"></script>
 <script type="text/javascript" src="../../socket.io/socket.io.js"></script>
@@ -9,6 +9,15 @@
 <script type="text/javascript" src="../../js/translate.js"></script>
 <script type="text/javascript" src="../../js/adapter-settings.js"></script>
 
+<style>
+    table {
+        border-collapse: collapse;
+    }
+    td.line{
+        border-top:1px solid black;
+    }
+</style>
+
 <script type="text/javascript">
     changed = false;
     systemDictionary = {
@@ -16,6 +25,46 @@
             "en": "OpenZWave adapter settings",
             "de": "OpenZWave Adapter-Einstellungen",
             "ru": "Настройки драйвера OpenZWave"
+        },
+        "Force objects re-init": {
+            "en": "Synchronize objects (once)",
+            "de": "Synchronisiere Geräte neu (einmalig)",
+            "ru": "Синхронизировать объекты (один раз)"
+        },
+        "USB name": {
+            "en": "USB name",
+            "de": "USB Device Name",
+            "ru": "название USB-"
+        },
+        "Logging": {
+            "en": "Logging",
+            "de": "Logdatei schreiben",
+            "ru": "лесозаготовки"
+        },
+        "Console Output": {
+            "en": "Console Output",
+            "de": "Ausgabe in iobroker.log",
+            "ru": "Консоль вывода"
+        },
+        "Save Config": {
+            "en": "Save Config",
+            "de": "Konfiguration speichern",
+            "ru": "сохранить конфигурацию"
+        },
+        "Driver Attempts": {
+            "en": "Driver Attempts",
+            "de": "Anzahl Versuche",
+            "ru": "Водитель Попытки"
+        },
+        "Poll Interval": {
+            "en": "Poll Interval",
+            "de": "Intervall der Abfragen",
+            "ru": "интервал опроса"
+        },
+        "Suppress Refresh": {
+            "en": "Suppress Refresh",
+            "de": "Neuladen verhindern",
+            "ru": "подавить обновление"
         }
     };
 
@@ -128,7 +177,8 @@
     }
 
 </script>
-
+</head>
+<body>
 <div id="adapter-container">
     <table><tr>
         <td><img src="zwave.png" width="64" height="64"></td>
@@ -136,10 +186,43 @@
     </tr></table>
 
     <table>
+        <tbody>
+        <tr>
+            <td class="translate">Force objects re-init:</td>
+            <td><input class="value" id="forceinit" type="checkbox"/></td>
+        </tr>
+        <tr><td class="line" colspan="2"> </td></tr>
         <tr>
             <td class="translate">USB name:</td>
             <td><input class="value" id="usb"/></td>
         </tr>
+        <tr><td class="line" colspan="2"> </td></tr>
+        <tr>
+            <td class="translate">Logging:</td>
+            <td><input class="value" id="logging" type="checkbox"/></td>
+        </tr>
+        <tr>
+            <td class="translate">Console Output:</td>
+            <td><input class="value" id="consoleoutput" type="checkbox"/></td>
+        </tr>
+        <tr>
+            <td class="translate">Save Config:</td>
+            <td><input class="value" id="saveconfig" type="checkbox"/></td>
+        </tr>
+        <tr><td class="line" colspan="2"> </td></tr>
+        <tr>
+            <td class="translate">Driver Attempts:</td>
+            <td><input class="value" id="driverattempts"/></td>
+        </tr>
+        <tr>
+            <td class="translate">Poll Interval:</td>
+            <td><input class="value" id="pollinterval"/></td>
+        </tr>
+        <tr>
+            <td class="translate">Suppress Refresh:</td>
+            <td><input class="value" id="suppressrefresh" type="checkbox"/></td>
+        </tr>
+        </tbody>
     </table>
 </div>
-</html>
+</body></html>

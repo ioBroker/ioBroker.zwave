@@ -1,8 +1,11 @@
 {
   "name": "iobroker.zwave",
   "description": "ZWave support for ioBroker based on openzwave packet",
-  "version": "0.1.0",
-  "author": "bluefox <bluefox@ccu.io>",
+  "version": "0.2.1",
+  "author": {
+    "name": "bluefox",
+    "email": "bluefox@ccu.io"
+  },
   "contributors": [
     "bluefox <bluefox@ccu.io>"
   ],
@@ -19,7 +22,7 @@
     "url": "https://github.com/ioBroker/ioBroker.zwave"
   },
   "dependencies": {
-    "openzwave": "~0.0.32"
+    "openzwave-shared": "~1.0.0"
   },
   "devDependencies": {
     "grunt": "~0.4.4",
@@ -42,5 +45,6 @@
   "bugs": {
     "url": "https://github.com/ioBroker/ioBroker.zwave/issues"
   },
-  "main": "main.js"
+  "main": "main.js",
+  "readmeFilename": "README.md"
 }

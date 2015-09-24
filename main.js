@@ -7,65 +7,178 @@
  */
 
 var zwave;
-var objects = {};
+var utils =             require(__dirname + '/lib/utils'); // Get common adapter utils
+var fs =                require('fs');
+var objects =           {};
+var zobjects =          {};
+var states =            {};
+var enums =             [];
 var scanComplete = 0;
 
-var adapter;
+var adapter = utils.adapter({
+    name: 'zwave',
 
-if (process.argv[2] == '--install') {
-    // If install
-    var spawn = require('child_process').spawn;
-    var args = ['apt-get', 'install', 'libudev-dev'];
-    console.log('ZWave: ' + args.slice(1).join(' '));
+    ready: function () {
+        getData(function () {
+            adapter.subscribeObjects('*');
+            adapter.subscribeStates('*');
 
-    var child = spawn('sudo', args);
-    child.stdout.on('data', function (data) {
-        console.log(data);
-    });
-    child.stderr.on('data', function (data) {
-        console.log('ERROR| ' + data);
-    });
+            main();
+        });
+    },
+    objectChange: function (id, obj) {
+        adapter.log.debug("objectChange for " + id + " found");
+    },
+    stateChange: function (id, state) {
+        adapter.log.debug("ID: " + id + ", state: " + JSON.stringify(state));
 
-    child.on('exit', function (exitCode) {
-        console.log('ZWave install exit ' + exitCode);
-        process.exit();
-    });
-} else {
-    // Normal run
-    var utils =   require(__dirname + '/lib/utils'); // Get common adapter utils
-    adapter = utils.adapter('zwave');
+        var obj = objects[id];
+        if (obj != undefined) {
+            if (obj.native != undefined) {
+                // Todo: Use NodeReady instead of scanComplete
+                if (scanComplete) {
+                    if (state.val.action != undefined && state.val.nodeid != undefined) {
+                        if (state.val.name != undefined) {
+                            var action = state.val.action;
+                            if (action == "setName") {
+                                var nodeid = state.val.nodeid;
+                                var name = state.val.name;
+                                zwave.setName(nodeid, name);
+                            }
+                            if (action == "setLocation") {
+                                var nodeid = state.val.nodeid;
+                                var location = state.val.name;
+                                zwave.setLocation(nodeid, location);
+                            }
+                        } else if (state.val.paramId != undefined &&
+                            state.val.paramValue != undefined &&
+                            state.val.label != undefined &&
+                            state.val.comclass != undefined &&
+                            state.val.index != undefined) {
+                            var action = state.val.action;
 
-    adapter.on('objectChange', function (id, obj) {
+                            var nodeid = state.val.nodeid;
+                            var paramId = state.val.paramId;
+                            var paramValue = state.val.paramValue;
+                            var label = state.val.label.replace(/\./g, '_'); //.replace(/ /g, '_')
+                            var comclass = state.val.comclass;
+                            var index = state.val.index;
+                            var changed = state.val.changed;
+                            var old_native = obj.native;
 
-    });
+                            var root_type;
+                            var root_native;
+                            var root_common;
+                            var objr;
+                            var namedValue;
+                            var address;
+                            var rootObject;
 
-    adapter.on('stateChange', function (id, state) {
-        if (state.ack) return;
+                            if (action == "changeConfig") {
+                                adapter.log.debug("setConfigParam for " + id + ", paramId = " + paramId + ", paramValue = " + paramValue);
+                                zwave.setConfigParam(nodeid, paramId, paramValue, paramValue.length);
+                                old_native.value = paramValue;
 
-        if (!objects[id]) {
-            adapter.log.warn('Object ' + id + ' not found');
-            return;
+                                adapter.log.debug("setObject for " + id + ", label = " + label);
+                                address = adapter.namespace + ".NODE" + nodeid;
+
+                                rootObject = objects[address];
+
+                                if (rootObject != undefined) {
+                                    root_type = rootObject.type;
+                                    root_native = rootObject.native;
+                                    root_common = rootObject.common;
+                                    objr = {type: root_type, native: root_native, common: root_common};
+                                    if (root_native.classes[comclass][index].values != undefined) {
+                                        namedValue = root_native.classes[comclass][index].values[paramValue];
+                                    } else {
+                                        namedValue = paramValue;
+                                    }
+                                    root_native.classes[comclass][index].value = namedValue;
+                                }
+                                if (changed == undefined) {
+                                    adapter.setObject(address, objr);
+                                }
+
+                            } else if (action == "changeSystem") {
+                                // Todo: Not working
+                                adapter.log.debug("setConfigParam for " + id + ", paramId = " + paramId + ", paramValue = " + paramValue);
+                                zwave.setValue(obj.native.nodeid, obj.native.comclass, obj.native.instance, obj.native.index, state.val);
+                                old_native.value = paramValue;
+
+                                adapter.log.debug("setObject for " + id + ", label = " + label);
+                                address = adapter.namespace + ".NODE" + nodeid;
+
+                                rootObject = objects[address];
+                                if (rootObject != undefined) {
+                                    root_type = rootObject.type;
+                                    root_native = rootObject.native;
+                                    root_common = rootObject.common;
+                                    objr = {type: root_type, native: root_native, common: root_common};
+                                    namedValue = root_native.classes[comclass][index].values[paramValue];
+                                    root_native.classes[comclass][index].value = namedValue;
+                                }
+
+                                if (changed == undefined) {
+                                    adapter.setObject(address, objr);
+                                }
+                            }
+                        }
+                    } else {
+                        var value;
+                        if (state.val == true) {
+                            value = 0;
+                        } else if (state.val == false) {
+                            value = 1;
+                        }
+
+                        if (state.ack == false) { // Passiert nur innerhalb von ioBroker, sonst ist ack true
+                            zwave.setValue(obj.native.nodeid, obj.native.comclass, obj.native.instance, obj.native.index, state.val);
+                        }
+                        adapter.log.debug('setState for: nodeid='+obj.native.nodeid+': comclass='+obj.native.comclass+': index='+obj.native.index+': instance='+obj.native.instance+': value='+state.val);
+                    }
+                }
+            }
+        } else {
+            adapter.log.warn("Object '"+id+"' not found for stateChange");
         }
-        /*
-         var mask = 0xff;
-
-         var nodeid   = mask & (id - settings.adapters.zwave.firstId) >>> 16;
-         var comclass = mask & (id - settings.adapters.zwave.firstId) >>> 8;
-         var idx      = mask & (id - settings.adapters.zwave.firstId);
-         */
-        if (scanComplete) {
-            zwave.setLevel(objects[id].nodeid, state.val);
-            adapter.log.debug('Event nodeid=%d: comclass=%d: index=%d: value=%d', objects[id].nodeid, objects[id].comclass, objects[id].idx, state.val);
-        }
-    });
-
-    adapter.on('unload', function (callback) {
+    },
+    unload: function (callback) {
         if (zwave) zwave.disconnect();
-        callback();
-    });
 
-    adapter.on('ready', function () {
-        main();
+        var allNodes = adapter.states.getStates(adapter.namespace + ".NODE*");
+        for (var nodeid in allNodes) {
+            var rName = adapter.namespace + ".NODE" + nodeid + ".ready";
+            adapter.setState(rName, {val: false, ack: true});
+        }
+        callback();
+    },
+});
+
+function getData(callback) {
+    var statesReady;
+    var objectsReady;
+
+    adapter.log.info('requesting all states');
+    adapter.getForeignStates('*', function (err, res) {
+        states = res;
+        statesReady = true;
+        adapter.log.info('received all states');
+        if (objectsReady && typeof callback === 'function') callback();
+    });
+    adapter.log.info('requesting all objects');
+
+    adapter.objects.getObjectList({include_docs: true}, function (err, res) {
+        res = res.rows;
+        objects = {};
+        for (var i = 0; i < res.length; i++) {
+            objects[res[i].doc._id] = res[i].doc;
+            if (res[i].doc.type === 'enum') enums.push(res[i].doc._id);
+        }
+
+        objectsReady = true;
+        adapter.log.info('received all objects');
+        if (statesReady && typeof callback === 'function') callback();
     });
 }
 
@@ -193,129 +306,146 @@ var comclasses = {
      #define COMMAND_CLASS_ZIP_SERVICES			             0x23
      */
 
-0x20:{name: 'BASIC',                                  role: 'switch', children: {
-    Basic: {role: 'level'}
-}},
-0x86:{name: 'VERSION',                                role: 'meta.version', children: {
-    'Library Version':    {type: 'text'},
-    'Protocol Version':   {type: 'text'},
-    'Application Version':{type: 'text'}
-}},
-0x80:{name: 'BATTERY',                                role: 'info', children: {
-    'Battery Level':    {role: 'value.battery'}
-}},
-0x84:{name: 'WAKE_UP',                                role: ''},
-0x21:{name: 'CONTROLLER_REPLICATION',                 role: ''},
-0x26:{name: 'SWITCH_MULTILEVEL',                      role: 'light.dimmer', children: {
-    Level: {role: 'level.dimmer'}
-}},
-0x27:{name: 'SWITCH_ALL',                             role: ''},
-0x30:{name: 'SENSOR_BINARY',                          role: 'sensor'},
-0x31:{name: 'SENSOR_MULTILEVEL',                      role: 'sensor', children: {
-    Temperature: {role: 'value.temperature'}
-}},
-0x9c:{name: 'SENSOR_ALARM',                           role: 'alarm'},
-0x71:{name: 'ALARM',                                  role: ''},
-0x8F:{name: 'MULTI_CMD',                              role: ''},
-0x46:{name: 'CLIMATE_CONTROL_SCHEDULE',               role: ''},
-0x81:{name: 'CLOCK',                                  role: ''},
-0x85:{name: 'ASSOCIATION',                            role: ''},
-0x70:{name: 'CONFIGURATION',                          role: 'meta.config', children: {
-    Level: {role: 'level.dimmer'}
-}},
-0x72:{name: 'MANUFACTURER_SPECIFIC',                  role: ''},
-0x22:{name: 'APPLICATION_STATUS',                     role: ''},
-0x9B:{name: 'ASSOCIATION_COMMAND_CONFIGURATION',      role: ''},
-0x95:{name: 'AV_CONTENT_DIRECTORY_MD',                role: ''},
-0x97:{name: 'AV_CONTENT_SEARCH_MD',                   role: ''},
-0x96:{name: 'AV_RENDERER_STATUS',                     role: ''},
-0x99:{name: 'AV_TAGGING_MD',                          role: ''},
-0x50:{name: 'BASIC_WINDOW_COVERING',                  role: ''},
-0x2A:{name: 'CHIMNEY_FAN',                            role: ''},
-0x8D:{name: 'COMPOSITE',                              role: ''},
-0x62:{name: 'DOOR_LOCK',                              role: ''},
-0x90:{name: 'ENERGY_PRODUCTION',                      role: ''},
-0x7a:{name: 'FIRMWARE_UPDATE_MD',                     role: ''},
-0x8C:{name: 'GEOGRAPHIC_LOCATION',                    role: ''},
-0x7B:{name: 'GROUPING_NAME',                          role: ''},
-0x82:{name: 'HAIL',                                   role: ''},
-0x87:{name: 'INDICATOR',                              role: ''},
-0x9A:{name: 'IP_CONFIGURATION',                       role: 'meta.config'},
-0x89:{name: 'LANGUAGE',                               role: ''},
-0x76:{name: 'LOCK',                                   role: ''},
-0x91:{name: 'MANUFACTURER_PROPRIETARY',               role: ''},
-0x35:{name: 'METER_PULSE',                            role: ''},
-0x32:{name: 'METER',                                  role: ''},
-0x51:{name: 'MTP_WINDOW_COVERING',                    role: ''},
-0x8E:{name: 'MULTI_INSTANCE_ASSOCIATION',             role: ''},
-0x60:{name: 'MULTI_INSTANCE',                         role: ''},
-0x00:{name: 'NO_OPERATION',                           role: ''},
-0x77:{name: 'NODE_NAMING',                            role: ''},
-0xf0:{name: 'NON_INTEROPERABLE',                      role: ''},
-0x73:{name: 'POWERLEVEL',                             role: ''},
-0x88:{name: 'PROPRIETARY',                            role: ''},
-0x75:{name: 'PROTECTION',                             role: ''},
-0x7c:{name: 'REMOTE_ASSOCIATION_ACTIVATE',            role: ''},
-0x7d:{name: 'REMOTE_ASSOCIATION',                     role: ''},
-0x2b:{name: 'SCENE_ACTIVATION',                       role: ''},
-0x2C:{name: 'SCENE_ACTUATOR_CONF',                    role: ''},
-0x2D:{name: 'SCENE_CONTROLLER_CONF',                  role: ''},
-0x93:{name: 'SCREEN_ATTRIBUTES',                      role: ''},
-0x92:{name: 'SCREEN_MD',                              role: ''},
-0x98:{name: 'SECURITY',                               role: ''},
-0x9E:{name: 'SENSOR_CONFIGURATION',                   role: ''},
-0x9d:{name: 'SILENCE_ALARM',                          role: ''},
-0x94:{name: 'SIMPLE_AV_CONTROL',                      role: ''},
-0x25:{name: 'SWITCH_BINARY',                          role: 'switch'},
-0x28:{name: 'SWITCH_TOGGLE_BINARY',                   role: ''},
-0x29:{name: 'SWITCH_TOGGLE_MULTILEVEL',               role: ''},
-0x44:{name: 'THERMOSTAT_FAN_MODE',                    role: ''},
-0x45:{name: 'THERMOSTAT_FAN_STATE',                   role: ''},
-0x38:{name: 'THERMOSTAT_HEATING',                     role: ''},
-0x40:{name: 'THERMOSTAT_MODE',                        role: ''},
-0x42:{name: 'THERMOSTAT_OPERATING_STATE',             role: ''},
-0x47:{name: 'THERMOSTAT_SETBACK',                     role: ''},
-0x43:{name: 'THERMOSTAT_SETPOINT',                    role: ''},
-0x8B:{name: 'TIME_PARAMETERS',                        role: ''},
-0x8a:{name: 'TIME',                                   role: ''},
-0x63:{name: 'USER_CODE',                              role: ''},
-0x34:{name: 'ZIP_ADV_CLIENT',                         role: ''},
-0x33:{name: 'ZIP_ADV_SERVER',                         role: ''},
-0x2F:{name: 'ZIP_ADV_SERVICES',                       role: ''},
-0x2e:{name: 'ZIP_CLIENT',                             role: ''},
-0x24:{name: 'ZIP_SERVER',                             role: ''},
-0x23:{name: 'ZIP_SERVICES',                           role: ''}
+    0x20:{name: 'BASIC',                                  role: 'switch', children: {
+        Basic: {role: 'level'}
+    }},
+    0x86:{name: 'VERSION',                                role: 'meta.version', children: {
+        'Library Version':    {type: 'text'},
+        'Protocol Version':   {type: 'text'},
+        'Application Version':{type: 'text'}
+    }},
+    0x80:{name: 'BATTERY',                                role: 'info', children: {
+        'Battery Level':    {role: 'value.battery'}
+    }},
+    0x84:{name: 'WAKE_UP',                                role: ''},
+    0x21:{name: 'CONTROLLER_REPLICATION',                 role: ''},
+    0x26:{name: 'SWITCH_MULTILEVEL',                      role: 'light.dimmer', children: {
+        Level: {role: 'level.dimmer'}
+    }},
+    0x27:{name: 'SWITCH_ALL',                             role: ''},
+    0x30:{name: 'SENSOR_BINARY',                          role: 'sensor'},
+    0x31:{name: 'SENSOR_MULTILEVEL',                      role: 'sensor', children: {
+        Temperature: {role: 'value.temperature'}
+    }},
+    0x9c:{name: 'SENSOR_ALARM',                           role: 'alarm'},
+    0x71:{name: 'ALARM',                                  role: ''},
+    0x8F:{name: 'MULTI_CMD',                              role: ''},
+    0x46:{name: 'CLIMATE_CONTROL_SCHEDULE',               role: ''},
+    0x81:{name: 'CLOCK',                                  role: ''},
+    0x85:{name: 'ASSOCIATION',                            role: ''},
+    0x70:{name: 'CONFIGURATION',                          role: 'meta.config', children: {
+        Level: {role: 'level.dimmer'}
+    }},
+    0x72:{name: 'MANUFACTURER_SPECIFIC',                  role: ''},
+    0x22:{name: 'APPLICATION_STATUS',                     role: ''},
+    0x9B:{name: 'ASSOCIATION_COMMAND_CONFIGURATION',      role: ''},
+    0x95:{name: 'AV_CONTENT_DIRECTORY_MD',                role: ''},
+    0x97:{name: 'AV_CONTENT_SEARCH_MD',                   role: ''},
+    0x96:{name: 'AV_RENDERER_STATUS',                     role: ''},
+    0x99:{name: 'AV_TAGGING_MD',                          role: ''},
+    0x50:{name: 'BASIC_WINDOW_COVERING',                  role: ''},
+    0x2A:{name: 'CHIMNEY_FAN',                            role: ''},
+    0x8D:{name: 'COMPOSITE',                              role: ''},
+    0x62:{name: 'DOOR_LOCK',                              role: ''},
+    0x90:{name: 'ENERGY_PRODUCTION',                      role: ''},
+    0x7a:{name: 'FIRMWARE_UPDATE_MD',                     role: ''},
+    0x8C:{name: 'GEOGRAPHIC_LOCATION',                    role: ''},
+    0x7B:{name: 'GROUPING_NAME',                          role: ''},
+    0x82:{name: 'HAIL',                                   role: ''},
+    0x87:{name: 'INDICATOR',                              role: ''},
+    0x9A:{name: 'IP_CONFIGURATION',                       role: 'meta.config'},
+    0x89:{name: 'LANGUAGE',                               role: ''},
+    0x76:{name: 'LOCK',                                   role: ''},
+    0x91:{name: 'MANUFACTURER_PROPRIETARY',               role: ''},
+    0x35:{name: 'METER_PULSE',                            role: ''},
+    0x32:{name: 'METER',                                  role: ''},
+    0x51:{name: 'MTP_WINDOW_COVERING',                    role: ''},
+    0x8E:{name: 'MULTI_INSTANCE_ASSOCIATION',             role: ''},
+    0x60:{name: 'MULTI_INSTANCE',                         role: ''},
+    0x00:{name: 'NO_OPERATION',                           role: ''},
+    0x77:{name: 'NODE_NAMING',                            role: ''},
+    0xf0:{name: 'NON_INTEROPERABLE',                      role: ''},
+    0x73:{name: 'POWERLEVEL',                             role: ''},
+    0x88:{name: 'PROPRIETARY',                            role: ''},
+    0x75:{name: 'PROTECTION',                             role: ''},
+    0x7c:{name: 'REMOTE_ASSOCIATION_ACTIVATE',            role: ''},
+    0x7d:{name: 'REMOTE_ASSOCIATION',                     role: ''},
+    0x2b:{name: 'SCENE_ACTIVATION',                       role: ''},
+    0x2C:{name: 'SCENE_ACTUATOR_CONF',                    role: ''},
+    0x2D:{name: 'SCENE_CONTROLLER_CONF',                  role: ''},
+    0x93:{name: 'SCREEN_ATTRIBUTES',                      role: ''},
+    0x92:{name: 'SCREEN_MD',                              role: ''},
+    0x98:{name: 'SECURITY',                               role: ''},
+    0x9E:{name: 'SENSOR_CONFIGURATION',                   role: ''},
+    0x9d:{name: 'SILENCE_ALARM',                          role: ''},
+    0x94:{name: 'SIMPLE_AV_CONTROL',                      role: ''},
+    0x25:{name: 'SWITCH_BINARY',                          role: 'switch'},
+    0x28:{name: 'SWITCH_TOGGLE_BINARY',                   role: ''},
+    0x29:{name: 'SWITCH_TOGGLE_MULTILEVEL',               role: ''},
+    0x44:{name: 'THERMOSTAT_FAN_MODE',                    role: ''},
+    0x45:{name: 'THERMOSTAT_FAN_STATE',                   role: ''},
+    0x38:{name: 'THERMOSTAT_HEATING',                     role: ''},
+    0x40:{name: 'THERMOSTAT_MODE',                        role: ''},
+    0x42:{name: 'THERMOSTAT_OPERATING_STATE',             role: ''},
+    0x47:{name: 'THERMOSTAT_SETBACK',                     role: ''},
+    0x43:{name: 'THERMOSTAT_SETPOINT',                    role: ''},
+    0x8B:{name: 'TIME_PARAMETERS',                        role: ''},
+    0x8a:{name: 'TIME',                                   role: ''},
+    0x63:{name: 'USER_CODE',                              role: ''},
+    0x34:{name: 'ZIP_ADV_CLIENT',                         role: ''},
+    0x33:{name: 'ZIP_ADV_SERVER',                         role: ''},
+    0x2F:{name: 'ZIP_ADV_SERVICES',                       role: ''},
+    0x2e:{name: 'ZIP_CLIENT',                             role: ''},
+    0x24:{name: 'ZIP_SERVER',                             role: ''},
+    0x23:{name: 'ZIP_SERVICES',                           role: ''}
 };
 
-function calcName(nodeid, comclass, idx) {
+function calcName(nodeid, comclass, idx, instance) {
     var name = adapter.namespace + ".NODE" + nodeid;
     if (comclass) {
         name += '.' + ((comclasses[comclass] ? comclasses[comclass].name : null) || ('CLASSES' + comclass));
 
         if (idx !== undefined) {
-            name = name + '.' + idx.replace(/ /g, '_');
+            //idx = idx.replace(/ /g, '_');
+            idx = idx.replace(/\./g, '_');
+            name = name + '.' + idx;
+
+            if (instance != undefined) {
+                name = name + "_" + instance;
+            }
         }
+    }
+
+    var i = name.lastIndexOf(".");
+    var len = name.length-1;
+    if (i == len) {
+        name = name.substring(0, len);
     }
     return name;
 }
 
 function main() {
-    var OZW = require('./node_modules/openzwave/lib/openzwave.js');
+    var OZW = require('./node_modules/openzwave-shared/lib/openzwave-shared.js');
 
     zwave = new OZW('/dev/' + adapter.config.usb, {
-        logging:         true,    // enable logging to OZW_Log.txt
-        consoleoutput:   true,    // copy logging to the console
-        saveconfig:      true,    // write an XML network layout
-        driverattempts:  3,       // try this many times before giving up
-        pollinterval:    500,     // interval between polls in milliseconds
-        suppressrefresh: false    // do not send updates if nothing changed
+        // TODO: Check if we really need this
+        //modpath:         adapter.config.path,             // __dirname + /../deps/open-zwave/config   // set's config path, should be
+        logging:         adapter.config.logging,            // true                                     // enable logging to OZW_Log.txt
+        consoleoutput:   adapter.config.consoleoutput,      // true                                     // copy logging to the console
+        saveconfig:      adapter.config.saveconfig,         // true                                     // write an XML network layout
+        driverattempts:  adapter.config.driverattempts,     // 3                                        // try this many times before giving up
+        pollinterval:    adapter.config.pollintervall,      // 500                                      // interval between polls in milliseconds
+        suppressrefresh: adapter.config.suppressrefresh     // false                                    // do not send updates if nothing changed
     });
 
     var nodes = [];
 
+    zwave.on('connected', function(homeid) {
+        adapter.states.setState('system.adapter.' + adapter.namespace + '.connected', {val: true, ack: true});
+    });
+
     zwave.on('driver ready', function (homeid) {
-        adapter.log.info('scanning homeid=0x%s...', homeid.toString(16));
-        //adapter.states.setState('system.adapter.' + adapter.namespace + '.connected', {val: true, ack: true});
+        adapter.log.info('scanning homeid=0x'+homeid.toString(16)+'...');
     });
 
     zwave.on('driver failed', function () {
@@ -337,42 +467,144 @@ function main() {
             classes:        {},
             ready:          false
         };
+        var rName = adapter.namespace + ".NODE" + nodeid + ".ready";
+        adapter.setState(rName, {val: false, ack: true});
     });
 
     zwave.on('value added', function (nodeid, comclass, value) {
-        var name = calcName(nodeid, comclass, value.label);
+        adapter.log.debug("-----------> NODE: " + nodeid + "-----" + comclass + "-----" + JSON.stringify(value));
+        var name = calcName(nodeid, comclass, value.label, value.genre=="user" ? value.instance : undefined);
 
-
-        // Should the object be added too??
-        adapter.log.debug('Value    added: ' + name + ' = ' + value.value);
+        adapter.log.debug('##### Value added: ' + name + ' = ' + value.value + " index = " + value.index + " comclass = " + comclass + " instance = " + value.instance);
 
         nodes[nodeid].classes[comclass] = nodes[nodeid].classes[comclass] || {};
         nodes[nodeid].classes[comclass][value.index] = value;
+
         adapter.setState(name, {val: value.value, ack: true});
-        //socket.emit("setState", [settings.adapters.zwave.firstId+((idx) | (comclass << 8) | (nodeid << 16)), value.value]);
     });
 
     zwave.on('value changed', function (nodeid, comclass, value) {
         if (nodes[nodeid].ready) {
-            var name = calcName(nodeid, comclass, value.label);
+            var name = calcName(nodeid, comclass, value.label, value.genre=="user" ? value.instance : undefined);
             adapter.log.debug('Value changed: ' + name + ' from ' + nodes[nodeid].classes[comclass][value.index].value + ' to ' + value.value);
             adapter.setState(name, {val: value.value, ack: true});
-            //socket.emit("setState", [settings.adapters.zwave.firstId+((idx) | (comclass << 8) | (nodeid << 16)), value.value]);
-
         }
         nodes[nodeid].classes[comclass][value.index] = value;
     });
 
     zwave.on('value removed', function (nodeid, comclass, index) {
-        var name = calcName(nodeid, comclass, nodes[nodeid].classes[comclass][index].label);
+        var name = calcName(nodeid, comclass, nodes[nodeid].classes[comclass][index].label, nodes[nodeid].classes[comclass][index].genre=="user" ? nodes[nodeid].classes[comclass][index].instance : undefined);
         if (nodes[nodeid].classes[comclass] && nodes[nodeid].classes[comclass][index]) {
             adapter.delObject(name);
             delete nodes[nodeid].classes[comclass][index];
         }
-        adapter.log.info('Value removed: ' + name);
+        adapter.log.debug('Value removed: ' + name);
 
-        if (objects[name]) delete objects[name];
+        if (zobjects[name]) delete zobjects[name];
     });
+
+    /**************************************************************/
+    zwave.on('polling enabled', function(nodeid) {
+        adapter.log.debug('node'+nodeid+': polling ENABLED, currently not implemented');
+    });
+    zwave.on('polling disabled', function(nodeid) {
+        adapter.log.debug('node'+nodeid+': polling DISABLED, currently not implemented');
+    });
+
+    var notificationCodes = {
+        0: 'message complete',
+        1: 'timeout',
+        2: 'nop',
+        3: 'node awake',
+        4: 'node sleep',
+        5: 'node dead (Undead Undead Undead)',
+        6: 'node alive'
+    };
+    zwave.on('notification', function(nodeid, notif) {
+        adapter.log.debug('node'+nodeid+': '+notificationCodes[notif]+', currently not implemented');
+        switch (notif) {
+            case 0:
+                adapter.log.debug('node'+nodeid+': message complete');
+                break;
+            case 1:
+                adapter.log.warn('node'+nodeid+': timeout');
+                break;
+            case 2:
+                adapter.log.info('node'+nodeid+': nop');
+                break;
+            case 3:
+                adapter.log.info('node'+nodeid+': node awake');
+                break;
+            case 4:
+                adapter.log.info('node'+nodeid+': node sleep');
+                break;
+            case 5:
+                adapter.log.warn('node'+nodeid+': node dead');
+                break;
+            case 6:
+                adapter.log.info('node'+nodeid+': node alive');
+                break;
+        }
+    });
+
+    var ctrlState = {
+        0: 'No command in progress',
+        1: 'The command is starting',
+        2: 'The command was cancelled',
+        3: 'Command invocation had error(s) and was aborted',
+        4: 'Controller is waiting for a user action',
+        5: 'Controller command is on a sleep queue wait for device',
+        6: 'The controller is communicating with the other device to carry out the command',
+        7: 'The command has completed successfully',
+        8: 'The command has failed',
+        9: 'The controller thinks the node is OK',
+        10: 'The controller thinks the node has failed'
+    };
+    var ctrlError = {
+        0: 'No error',
+        1: 'ButtonNotFound',
+        2: 'NodeNotFound',
+        3: 'NotBridge',
+        4: 'NotSUC',
+        5: 'NotSecondary',
+        6: 'NotPrimary',
+        7: 'IsPrimary',
+        8: 'NotFound',
+        9: 'Busy',
+        10: 'Failed',
+        11: 'Disabled',
+        12: 'Overflow'
+    }
+    zwave.on('controller command', function (state, error) {
+        adapter.log.debug('controller command feedback: state:'+ctrlState[state]+' error:'+ctrlError[error]+', currently not implemented');
+    });
+
+    zwave.on('node naming', function (nodeid, nodeinfo) {
+        adapter.log.debug('node naming nodeid:'+nodeid+' nodeinfo:'+JSON.stringify(nodeinfo));
+
+        var address = adapter.namespace + ".NODE" + nodeid;
+        var obj = objects[address];
+
+        if (obj != undefined) {
+            if (obj.type != undefined && obj.native != undefined && obj.common != undefined) {
+                var old_type = obj.type;
+                var old_native = obj.native;
+                var old_common = obj.common;
+
+                old_native.name = nodeinfo.name;
+                old_native.location = nodeinfo.loc;
+
+                var objx = {type: old_type, native: old_native, common: old_common};
+                adapter.setObject(address, objx);
+            }
+        }
+    });
+
+    zwave.on('value refreshed', function(nodeid, commandclass, value) {
+        adapter.log.debug('value refreshed nodeid:'+nodeid+' commandclass:'+commandclass+' value:'+value+', currently not implemented');
+    });
+
+    /**************************************************************/
 
     zwave.on('node ready', function (nodeid, nodeinfo) {
         nodes[nodeid].manufacturer   = nodeinfo.manufacturer;
@@ -385,156 +617,120 @@ function main() {
         nodes[nodeid].loc            = nodeinfo.loc;
         nodes[nodeid].ready          = true;
         nodes[nodeid].nodeid         = nodeid;
-        //console.log(JSON.stringify(nodes[nodeid]));
+        if (adapter.config.forceinit) {
+            adapter.log.debug('node'+nodeid+': '+nodeinfo.manufacturer ? nodeinfo.manufacturer : 'id=' + nodeinfo.manufacturerid+', '+(nodeinfo.product ? nodeinfo.product :
+            'product=' + nodeinfo.productid + ', type=' + nodeinfo.producttype));
+            adapter.log.debug('node'+nodeid+': name="'+nodeinfo.name+'", type="'+nodeinfo.type+'", location="'+nodeinfo.loc+'"');
 
-        adapter.log.debug('node%d: %s, %s', nodeid,
-            nodeinfo.manufacturer ? nodeinfo.manufacturer : 'id=' + nodeinfo.manufacturerid,
-            (nodeinfo.product ? nodeinfo.product :
-                'product=' + nodeinfo.productid + ', type=' + nodeinfo.producttype));
+            // Create channel
+            var devName = calcName(nodeid);
+            var channels = [];
+            for (var comclass in nodes[nodeid].classes) {
+                var chName = calcName(nodeid, comclass);
+                var DPs = [];
+                channels.push(chName);
 
-        adapter.log.debug('node%d: name="%s", type="%s", location="%s"',
-            nodeid,
-            nodeinfo.name,
-            nodeinfo.type,
-            nodeinfo.loc);
-
-        var combined = (nodeid << 16);
-        /*
-         socket.emit("setObject", settings.adapters.zwave.firstId + combined, {
-         Name: adapterSettings.deviceName+".NODE"+nodeid,
-         TypeName: "CHANNEL",
-         Address: adapterSettings.deviceName+".NODE"+nodeid,
-         HssType: "ZWAVE-NODE",
-         Parent: settings.adapters.zwave.firstId,
-         _persistent: true
-         });
-         */
-        // Create channel
-        var devName = calcName(nodeid);
-        var channels = [];
-        for (var comclass in nodes[nodeid].classes) {
-            var chName = calcName(nodeid, comclass);
-            var DPs = [];
-            channels.push(chName);
-
-            switch (comclass) {
-                case 0x25: // COMMAND_CLASS_SWITCH_BINARY
-                case 0x26: // COMMAND_CLASS_SWITCH_MULTILEVEL
-                    zwave.enablePoll(nodeid, comclass);
-                    break;
-            }
-
-            var values = nodes[nodeid].classes[comclass];
-
-            for (var idx in values) {
-                var name = calcName(nodeid, comclass, values[idx].label);
-                objects[name] = {
-                    nodeid:   idx,
-                    comclass: comclass,
-                    idx:      idx,
-                    label:    values[idx].label
-                };
-                DPs.push(name);
-                values[idx].comclass = comclass;
-                values[idx].nodeid   = nodeid;
-                values[idx].index    = idx;
-
-                var stateObj = {
-                    common: {
-                        name:  name, // You can add here some description
-                        read:  true,
-                        write: true
-                    },
-                    native: values[idx],
-                    parent: chName,
-                    type:   'state'
-                };
-
-                if (comclasses[comclass] && comclasses[comclass].role) {
-                    if (comclasses[comclass].children && comclasses[comclass].children[values[idx].label]) {
-                        if (comclasses[comclass].children[values[idx].label].role) {
-                            stateObj.common.role = comclasses[comclass].children[values[idx].label].role;
-                        } else {
-                            stateObj.common.role = comclasses[comclass].role;
-                        }
-                        if (comclasses[comclass].children[values[idx].label].type) {
-                            stateObj.common.type = comclasses[comclass].children[values[idx].label].type;
-                        }
-                    } else {
-                        stateObj.common.role = comclasses[comclass].role;
-                    }
-                    //chObj.common.type = number, string, bool, array, object, mixed;
+                switch (comclass) {
+                    case 0x25: // COMMAND_CLASS_SWITCH_BINARY
+                    case 0x26: // COMMAND_CLASS_SWITCH_MULTILEVEL
+                        zwave.enablePoll(nodeid, comclass);
+                        break;
                 }
 
-                adapter.setObject(name, stateObj);
+                var values = nodes[nodeid].classes[comclass];
+
+                for (var idx in values) {
+                    var instances = values[idx].instance;
+                    for (var inst=1; inst<=instances; inst++) {
+                        var name = calcName(nodeid, comclass, values[idx].label, values[idx].genre=="user" ? inst : undefined);
+                        zobjects[name] = {
+                            nodeid:   idx,
+                            comclass: comclass,
+                            idx:      idx,
+                            label:    values[idx].label
+                        };
+                        DPs.push(name);
+                        values[idx].comclass = comclass;
+                        values[idx].nodeid   = nodeid;
+                        values[idx].index    = idx;
+                        values[idx].instance = inst;
+
+                        var stateObj = {
+                            common: {
+                                name:  name, // You can add here some description
+                                read:  true,
+                                write: true
+                            },
+                            native: values[idx],
+                            // parent: chName, // Do not use parent or children for
+                            type:   'state'
+                        };
+
+                        if (comclasses[comclass] && comclasses[comclass].role) {
+                            if (comclasses[comclass].children && comclasses[comclass].children[values[idx].label]) {
+                                if (comclasses[comclass].children[values[idx].label].role) {
+                                    stateObj.common.role = comclasses[comclass].children[values[idx].label].role;
+                                } else {
+                                    stateObj.common.role = comclasses[comclass].role;
+                                }
+                                if (comclasses[comclass].children[values[idx].label].type) {
+                                    stateObj.common.type = comclasses[comclass].children[values[idx].label].type;
+                                }
+                            } else {
+                                stateObj.common.role = comclasses[comclass].role;
+                            }
+                            //chObj.common.type = number, string, bool, array, object, mixed;
+                        }
+                        adapter.setObject(name, stateObj);
+                    }
+                }
+
+                var chObj = {
+                    common: {
+                        name:  chName // You can add here some description
+                    },
+                    native: {
+                        comclass: comclass,
+                        nodeid:   nodeid
+                    },
+                    // children: DPs, // Do not use parent or children for
+                    type: 'channel'
+                };
+                if (comclasses[comclass] && comclasses[comclass].role) {
+                    chObj.common.role = comclasses[comclass].role;
+                }
+
+                adapter.setObject(chName, chObj);
             }
 
-            var chObj = {
+            nodes[nodeid].nodeid = nodeid;
+            adapter.setObject(devName, {
                 common: {
-                    name:  chName // You can add here some description
+                    name:  devName, // You can add here some description
+                    type:  '??',
+                    role:  'state',
+                    read:  true,
+                    write: true
                 },
-                native: {
-                    comclass: comclass,
-                    nodeid:   nodeid
-                },
-                children: DPs,
-                type: 'channel'
-            };
-            if (comclasses[comclass] && comclasses[comclass].role) {
-                chObj.common.role = comclasses[comclass].role;
-            }
+                native:   nodes[nodeid],
+                // children: channels,  // Do not use parent or children for
+                type:     'device'
+            });
 
-            adapter.setObject(chName, chObj);
-        }
-
-        nodes[nodeid].nodeid = nodeid;
-        adapter.setObject(devName, {
-            common: {
-                name:  devName, // You can add here some description
-                type:  '??',
-                role:  'state',
-                read:  true,
-                write: true
-            },
-            native:   nodes[nodeid],
-            children: channels,
-            type:     'device'
-        });
-    });
-
-    zwave.on('notification', function (nodeid, notif) {
-        switch (notif) {
-            case 0:
-                adapter.log.debug('node%d: message complete', nodeid);
-                break;
-            case 1:
-                adapter.log.warn('node%d: timeout', nodeid);
-                break;
-            case 2:
-                adapter.log.info('node%d: nop', nodeid);
-                break;
-            case 3:
-                adapter.log.info('node%d: node awake', nodeid);
-                break;
-            case 4:
-                adapter.log.info('node%d: node sleep', nodeid);
-                break;
-            case 5:
-                adapter.log.warn('node%d: node dead', nodeid);
-                break;
-            case 6:
-                adapter.log.info('node%d: node alive', nodeid);
-                break;
+            var rName = adapter.namespace + ".NODE" + nodeid + ".ready";
+            adapter.setState(rName, {val: true, ack: true});
         }
     });
 
     zwave.on('scan complete', function () {
         scanComplete = 1;
+
+        if (adapter.config.forceinit) {
+            adapter.extendForeignObject('system.adapter.' + adapter.namespace, {native: {forceinit: false}});
+        }
+
         adapter.log.info('Scan completed');
     });
 
     zwave.connect();
 }
-
-
-
