@@ -19,52 +19,52 @@
 </style>
 
 <script type="text/javascript">
-    changed = false;
+    var onChange;
     systemDictionary = {
         "OpenZWave adapter settings": {
             "en": "OpenZWave adapter settings",
             "de": "OpenZWave Adapter-Einstellungen",
             "ru": "Настройки драйвера OpenZWave"
         },
-        "Force objects re-init": {
-            "en": "Synchronize objects (once)",
-            "de": "Synchronisiere Geräte neu (einmalig)",
-            "ru": "Синхронизировать объекты (один раз)"
+        "Force objects re-init:": {
+            "en": "Synchronize objects (once):",
+            "de": "Synchronisiere Geräte neu (einmalig):",
+            "ru": "Синхронизировать объекты (один раз):"
         },
-        "USB name": {
-            "en": "USB name",
-            "de": "USB Device Name",
-            "ru": "Название USB-"
+        "USB name:": {
+            "en": "USB name:",
+            "de": "USB Device Name:",
+            "ru": "Название USB устройства:"
         },
-        "Logging": {
-            "en": "Logging",
-            "de": "Logdatei schreiben",
-            "ru": "Протоколировать"
+        "Logging:": {
+            "en": "Logging:",
+            "de": "Logdatei schreiben:",
+            "ru": "Протоколировать:"
         },
-        "Console Output": {
-            "en": "Console Output",
-            "de": "Ausgabe in iobroker.log",
-            "ru": "Консоль вывода"
+        "Console Output:": {
+            "en": "Console Output:",
+            "de": "Ausgabe in iobroker.log:",
+            "ru": "Вывод в iobroker.log:"
         },
-        "Save Config": {
-            "en": "Save Config",
-            "de": "Konfiguration speichern",
-            "ru": "Сохранить конфигурацию"
+        "Save Config:": {
+            "en": "Save Config:",
+            "de": "Konfiguration speichern:",
+            "ru": "Сохранить конфигурацию:"
         },
-        "Driver Attempts": {
-            "en": "Driver Attempts",
-            "de": "Anzahl Versuche",
-            "ru": "Количество попыток"
+        "Driver Attempts:": {
+            "en": "Driver Attempts:",
+            "de": "Anzahl Versuche:",
+            "ru": "Количество попыток:"
         },
-        "Poll Interval": {
-            "en": "Poll Interval",
-            "de": "Intervall der Abfragen",
-            "ru": "Интервал опроса"
+        "Poll Interval:": {
+            "en": "Poll Interval:",
+            "de": "Intervall der Abfragen:",
+            "ru": "Интервал опроса:"
         },
-        "Suppress Refresh": {
-            "en": "Suppress Refresh",
-            "de": "Neuladen verhindern",
-            "ru": "Не обновлять"
+        "Suppress Refresh:": {
+            "en": "Suppress Refresh:",
+            "de": "Neuladen verhindern:",
+            "ru": "Не обновлять:"
         }
     };
 
@@ -72,16 +72,13 @@
         // example: select elements with id=key and class=value and insert value
         if ($('#' + id + '.value').attr('type') == 'checkbox') {
             $('#' + id + '.value').prop('checked', value).change(function() {
-                changed = true;
-                $('#save').button("enable");
+                onChange();
             });
         } else {
             $('#' + id + '.value').val(value).change(function() {
-                changed = true;
-                $('#save').button("enable");
+                onChange();
             }).keyup(function() {
-                changed = true;
-                $('#save').button("enable");
+                $(this).trigger('change');
             });
         }
     }
@@ -117,7 +114,8 @@
     }
 
     // the function loadSettings has to exist ...
-    function load(settings) {
+    function load(settings, onchange) {
+        onChange = onchange;
         loadHelper(settings);
         $('#pass_confirm').val($('#pass').val());
         $('#save').button("disable");
@@ -135,6 +133,7 @@
                 source: availableTags
             });
         });
+        onchange(false);
     }
 
     function saveHelper(obj, id, value) {
@@ -171,9 +170,7 @@
     // ... and the function save has to exist.
     // you have to make sure the callback is called with the settings object as first param!
     function save(callback) {
-        changed = false;
         callback(getSettings());
-        $('#save').button("disable");
     }
 
 </script>
