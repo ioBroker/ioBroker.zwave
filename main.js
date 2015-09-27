@@ -144,7 +144,7 @@ var adapter = utils.adapter({
         }
     },
     unload: function (callback) {
-        if (zwave) zwave.disconnect();
+        if (zwave) zwave.disconnect('/dev/' + adapter.config.usb);
 
         var allNodes = adapter.states.getStates(adapter.namespace + ".NODE*");
         for (var nodeid in allNodes) {
@@ -427,15 +427,14 @@ function calcName(nodeid, comclass, idx, instance) {
 function main() {
     var OZW = require('./node_modules/openzwave-shared/lib/openzwave-shared.js');
 
-    zwave = new OZW('/dev/' + adapter.config.usb, {
+    zwave = new OZW({
         // TODO: Check if we really need this
-        //modpath:         adapter.config.path,             // __dirname + /../deps/open-zwave/config   // set's config path, should be
-        logging:         adapter.config.logging,            // true                                     // enable logging to OZW_Log.txt
-        consoleoutput:   adapter.config.consoleoutput,      // true                                     // copy logging to the console
-        saveconfig:      adapter.config.saveconfig,         // true                                     // write an XML network layout
-        driverattempts:  adapter.config.driverattempts,     // 3                                        // try this many times before giving up
-        pollinterval:    adapter.config.pollintervall,      // 500                                      // interval between polls in milliseconds
-        suppressrefresh: adapter.config.suppressrefresh     // false                                    // do not send updates if nothing changed
+        Logging:         adapter.config.logging,            // true                                     // enable logging to OZW_Log.txt
+        ConsoleOutput:   adapter.config.consoleoutput,      // true                                     // copy logging to the console
+        SaveConfig:      adapter.config.saveconfig,         // true                                     // write an XML network layout
+        DriverMaxAttempts:  adapter.config.driverattempts,     // 3                                        // try this many times before giving up
+        PollInterval:    adapter.config.pollintervall,      // 500                                      // interval between polls in milliseconds
+        SuppressValueRefresh: adapter.config.suppressrefresh     // false                                    // do not send updates if nothing changed
     });
 
     var nodes = [];
@@ -450,7 +449,7 @@ function main() {
 
     zwave.on('driver failed', function () {
         adapter.log.error('failed to start driver');
-        zwave.disconnect();
+        zwave.disconnect('/dev/' + adapter.config.usb);
         process.exit();
     });
 
@@ -732,5 +731,6 @@ function main() {
         adapter.log.info('Scan completed');
     });
 
-    zwave.connect();
+    zwave.connect('/dev/' + adapter.config.usb);
 }
+
