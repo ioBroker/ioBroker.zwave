@@ -2,8 +2,12 @@
     "common": {
         "name":                     "zwave",
         "title":                    "ZWave",
-        "desc":                     "ZWave support based on openzwave packet",
-        "version":                  "0.2.0",
+        "desc":                     {
+			"en": "ZWave support based on openzwave packet",
+			"de": "ZWave Unterstützung dürch Openzwave Paket",
+			"ru": "Поддержка ZWave основанная на Openzwave пакете"
+		}
+        "version":                  "0.2.2",
         "mode":                     "daemon",
         "platform":                 "javascript/Node.js",
         "os":                       ["darwin", "linux"],
