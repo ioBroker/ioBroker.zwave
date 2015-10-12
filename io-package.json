@@ -28,7 +28,8 @@
         "onlyWWW":                  false,
         "singleton":                true,
         "messagebox":               true,
-		"localLink":                "%web_protocol%://%ip%:%web_port%/zwave/index.html",
+        "type":                     "hardware",
+	"localLink":                "%web_protocol%://%ip%:%web_port%/zwave/index.html",
         "adminTab":                {
             "singleton":    true,
             "name":         "ZWave",
