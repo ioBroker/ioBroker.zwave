@@ -7,7 +7,7 @@
 			"de": "ZWave Unterstützung dürch Openzwave Paket",
 			"ru": "Поддержка ZWave основанная на Openzwave пакете"
 		},
-        "version":                  "0.2.2",
+        "version":                  "0.2.3",
         "mode":                     "daemon",
         "platform":                 "javascript/Node.js",
         "os":                       ["darwin", "linux"],

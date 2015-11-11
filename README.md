@@ -33,10 +33,13 @@ Following Nodes are tested:
 Objects can changed after "zwave.0 Scan completed" is found in iobroker.log.
 
 ## Changelog
+### 0.2.3 (2015-11-11)
+ - (bluefox) try to fix io-package.json
+
 ### 0.2.2 (2015-09-28)
  - (ekarak) API changes for openzwave-shared 1.0.8+
 
- ### 0.2.1 (2015-08-24)
+### 0.2.1 (2015-08-24)
  - (husky-koglhof) Fixed Errors with Config save at OpenZwave Configurator
 
 ### 0.2.0 (2015-08-05)
