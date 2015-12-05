@@ -29,10 +29,23 @@ Following Nodes are tested:
 - FGBS001 Universal Binary Sensor
 - FGS222 Double Relay Switch 2x1.5kW
 - FGWPE Wall Plug
+- FGMS001 Motion Sensor
+- Danfoss Living Connect Eco Room Thermostat
+- Danfoss Living Connect Eco Room Radiator
 
 Objects can changed after "zwave.0 Scan completed" is found in iobroker.log.
 
 ## Changelog
+### 0.2.4 (2015-12-05)
+ - (husky-koglhof) fixed hardcoded values
+   Admin Page can Add / Remove ZWave Devices
+   
+### 0.2.3 (2015-11-11)
+ - (bluefox) try to fix io-package.json
+
+### 0.2.2 (2015-09-28)
+ - (ekarak) API changes for openzwave-shared 1.0.8+
+
 ### 0.2.1 (2015-08-24)
  - (husky-koglhof) Fixed Errors with Config save at OpenZwave Configurator
 

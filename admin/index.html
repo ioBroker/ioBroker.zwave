@@ -1,182 +1,182 @@
 <html>
 <head>
-<link rel="stylesheet" type="text/css" href="../../lib/css/themes/jquery-ui/redmond/jquery-ui.min.css"/>
-<script type="text/javascript" src="../../lib/js/jquery-1.11.1.min.js"></script>
-<script type="text/javascript" src="../../socket.io/socket.io.js"></script>
-<script type="text/javascript" src="../../lib/js/jquery-ui-1.10.3.full.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="../../lib/css/themes/jquery-ui/redmond/jquery-ui.min.css"/>
+    <script type="text/javascript" src="../../lib/js/jquery-1.11.1.min.js"></script>
+    <script type="text/javascript" src="../../socket.io/socket.io.js"></script>
+    <script type="text/javascript" src="../../lib/js/jquery-ui-1.10.3.full.min.js"></script>
 
-<link rel="stylesheet" type="text/css" href="../../css/adapter.css"/>
-<script type="text/javascript" src="../../js/translate.js"></script>
-<script type="text/javascript" src="../../js/adapter-settings.js"></script>
+    <link rel="stylesheet" type="text/css" href="../../css/adapter.css"/>
+    <script type="text/javascript" src="../../js/translate.js"></script>
+    <script type="text/javascript" src="../../js/adapter-settings.js"></script>
 
-<style>
-    table {
-        border-collapse: collapse;
-    }
-    td.line{
-        border-top:1px solid black;
-    }
-</style>
-
-<script type="text/javascript">
-    changed = false;
-    systemDictionary = {
-        "OpenZWave adapter settings": {
-            "en": "OpenZWave adapter settings",
-            "de": "OpenZWave Adapter-Einstellungen",
-            "ru": "Настройки драйвера OpenZWave"
-        },
-        "Force objects re-init": {
-            "en": "Synchronize objects (once)",
-            "de": "Synchronisiere Geräte neu (einmalig)",
-            "ru": "Синхронизировать объекты (один раз)"
-        },
-        "USB name": {
-            "en": "USB name",
-            "de": "USB Device Name",
-            "ru": "название USB-"
-        },
-        "Logging": {
-            "en": "Logging",
-            "de": "Logdatei schreiben",
-            "ru": "лесозаготовки"
-        },
-        "Console Output": {
-            "en": "Console Output",
-            "de": "Ausgabe in iobroker.log",
-            "ru": "Консоль вывода"
-        },
-        "Save Config": {
-            "en": "Save Config",
-            "de": "Konfiguration speichern",
-            "ru": "сохранить конфигурацию"
-        },
-        "Driver Attempts": {
-            "en": "Driver Attempts",
-            "de": "Anzahl Versuche",
-            "ru": "Водитель Попытки"
-        },
-        "Poll Interval": {
-            "en": "Poll Interval",
-            "de": "Intervall der Abfragen",
-            "ru": "интервал опроса"
-        },
-        "Suppress Refresh": {
-            "en": "Suppress Refresh",
-            "de": "Neuladen verhindern",
-            "ru": "подавить обновление"
+    <style>
+        table {
+            border-collapse: collapse;
         }
-    };
-
-    function setValue(id, value) {
-        // example: select elements with id=key and class=value and insert value
-        if ($('#' + id + '.value').attr('type') == 'checkbox') {
-            $('#' + id + '.value').prop('checked', value).change(function() {
-                changed = true;
-                $('#save').button("enable");
-            });
-        } else {
-            $('#' + id + '.value').val(value).change(function() {
-                changed = true;
-                $('#save').button("enable");
-            }).keyup(function() {
-                changed = true;
-                $('#save').button("enable");
-            });
+        td.line{
+            border-top:1px solid black;
         }
-    }
+    </style>
 
-    function loadHelper(settings, param, subparam) {
-        if (!settings) return;
+    <script type="text/javascript">
+        changed = false;
+        systemDictionary = {
+            "OpenZWave adapter settings": {
+                "en": "OpenZWave adapter settings",
+                "de": "OpenZWave Adapter-Einstellungen",
+                "ru": "Настройки драйвера OpenZWave"
+            },
+            "Force objects re-init": {
+                "en": "Synchronize objects (once)",
+                "de": "Synchronisiere Geräte neu (einmalig)",
+                "ru": "Синхронизировать объекты (один раз)"
+            },
+            "USB name": {
+                "en": "USB name",
+                "de": "USB Device Name",
+                "ru": "название USB-"
+            },
+            "Logging": {
+                "en": "Logging",
+                "de": "Logdatei schreiben",
+                "ru": "лесозаготовки"
+            },
+            "Console Output": {
+                "en": "Console Output",
+                "de": "Ausgabe in iobroker.log",
+                "ru": "Консоль вывода"
+            },
+            "Save Config": {
+                "en": "Save Config",
+                "de": "Konfiguration speichern",
+                "ru": "сохранить конфигурацию"
+            },
+            "Driver Attempts": {
+                "en": "Driver Attempts",
+                "de": "Anzahl Versuche",
+                "ru": "Водитель Попытки"
+            },
+            "Poll Interval": {
+                "en": "Poll Interval",
+                "de": "Intervall der Abfragen",
+                "ru": "интервал опроса"
+            },
+            "Suppress Refresh": {
+                "en": "Suppress Refresh",
+                "de": "Neuladen verhindern",
+                "ru": "подавить обновление"
+            }
+        };
 
-        if (subparam && param) {
-            for (var key in settings[param][subparam]) {
-                if (typeof settings[param][subparam][key] != 'object') {
-                    setValue(param + '_' + subparam + '_' + key, settings[param][subparam][key]);
-                } else {
-                    alert("4th level is not supported");
-                }
-            }
-        } else if (param) {
-            for (var key in settings[param]) {
-                if (typeof settings[param][key] != 'object') {
-                    setValue(param + '_' + key, settings[param][key]);
-                } else {
-                    loadHelper(settings, param, key);
-                }
-            }
-        } else {
-            for (var key in settings) {
-                if (typeof settings[key] != 'object') {
-                    setValue(key, settings[key]);
-                } else {
-                    loadHelper(settings, key);
-                }
+        function setValue(id, value) {
+            // example: select elements with id=key and class=value and insert value
+            if ($('#' + id + '.value').attr('type') == 'checkbox') {
+                $('#' + id + '.value').prop('checked', value).change(function() {
+                    changed = true;
+                    $('#save').button("enable");
+                });
+            } else {
+                $('#' + id + '.value').val(value).change(function() {
+                    changed = true;
+                    $('#save').button("enable");
+                }).keyup(function() {
+                    changed = true;
+                    $('#save').button("enable");
+                });
             }
         }
-    }
 
-    // the function loadSettings has to exist ...
-    function load(settings) {
-        loadHelper(settings);
-        $('#pass_confirm').val($('#pass').val());
-        $('#save').button("disable");
+        function loadHelper(settings, param, subparam) {
+            if (!settings) return;
 
-        sendToHost(null, 'getDevList', null, function (res) {
-            var availableTags = [' '];
-            if (res) {
-                for (var t = 0; t < res.length; t++) {
-                    if (res[t].substring(0, 'tty'.length) == 'tty') {
-                        availableTags.push(res[t]);
+            if (subparam && param) {
+                for (var key in settings[param][subparam]) {
+                    if (typeof settings[param][subparam][key] != 'object') {
+                        setValue(param + '_' + subparam + '_' + key, settings[param][subparam][key]);
+                    } else {
+                        alert("4th level is not supported");
+                    }
+                }
+            } else if (param) {
+                for (var key in settings[param]) {
+                    if (typeof settings[param][key] != 'object') {
+                        setValue(param + '_' + key, settings[param][key]);
+                    } else {
+                        loadHelper(settings, param, key);
+                    }
+                }
+            } else {
+                for (var key in settings) {
+                    if (typeof settings[key] != 'object') {
+                        setValue(key, settings[key]);
+                    } else {
+                        loadHelper(settings, key);
                     }
                 }
             }
-            $("#usb").autocomplete({
-                source: availableTags
-            });
-        });
-    }
-
-    function saveHelper(obj, id, value) {
-        var ids = id.split('_');
-
-        if (ids.length === 1) {
-            obj[id] = value;
-        } else if (ids.length === 2) {
-            if (!obj[ids[0]]) obj[ids[0]] = {};
-            obj[ids[0]][ids[1]] = value;
-        } else if (ids.length === 3) {
-            if (!obj[ids[0]]) obj[ids[0]] = {};
-            if (!obj[ids[0]][ids[1]]) obj[ids[0]][ids[1]] = {};
-            obj[ids[0]][ids[1]][ids[2]] = value;
         }
-        return obj;
-    }
 
-    function getSettings() {
-        var obj = {};
-        $('.value').each(function () {
-            var $this = $(this);
-            var id = $this.attr('id');
+        // the function loadSettings has to exist ...
+        function load(settings) {
+            loadHelper(settings);
+            $('#pass_confirm').val($('#pass').val());
+            $('#save').button("disable");
 
-            if ($this.attr('type') == 'checkbox') {
-                obj = saveHelper(obj, id, $this.prop('checked'))
-            } else {
-                obj = saveHelper(obj, id, $this.val())
+            sendToHost(null, 'getDevList', null, function (res) {
+                var availableTags = [' '];
+                if (res) {
+                    for (var t = 0; t < res.length; t++) {
+                        if (res[t].substring(0, 'tty'.length) == 'tty') {
+                            availableTags.push(res[t]);
+                        }
+                    }
+                }
+                $("#usb").autocomplete({
+                    source: availableTags
+                });
+            });
+        }
+
+        function saveHelper(obj, id, value) {
+            var ids = id.split('_');
+
+            if (ids.length === 1) {
+                obj[id] = value;
+            } else if (ids.length === 2) {
+                if (!obj[ids[0]]) obj[ids[0]] = {};
+                obj[ids[0]][ids[1]] = value;
+            } else if (ids.length === 3) {
+                if (!obj[ids[0]]) obj[ids[0]] = {};
+                if (!obj[ids[0]][ids[1]]) obj[ids[0]][ids[1]] = {};
+                obj[ids[0]][ids[1]][ids[2]] = value;
             }
-        });
-        return obj;
-    }
+            return obj;
+        }
 
-    // ... and the function save has to exist.
-    // you have to make sure the callback is called with the settings object as first param!
-    function save(callback) {
-        changed = false;
-        callback(getSettings());
-        $('#save').button("disable");
-    }
+        function getSettings() {
+            var obj = {};
+            $('.value').each(function () {
+                var $this = $(this);
+                var id = $this.attr('id');
 
-</script>
+                if ($this.attr('type') == 'checkbox') {
+                    obj = saveHelper(obj, id, $this.prop('checked'))
+                } else {
+                    obj = saveHelper(obj, id, $this.val())
+                }
+            });
+            return obj;
+        }
+
+        // ... and the function save has to exist.
+        // you have to make sure the callback is called with the settings object as first param!
+        function save(callback) {
+            changed = false;
+            callback(getSettings());
+            $('#save').button("disable");
+        }
+
+    </script>
 </head>
 <body>
 <div id="adapter-container">

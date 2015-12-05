@@ -9,178 +9,212 @@
 var zwave;
 var utils =             require(__dirname + '/lib/utils'); // Get common adapter utils
 var fs =                require('fs');
-var objects =           {};
-var zobjects =          {};
-var states =            {};
-var enums =             [];
 var scanComplete = 0;
+var diff = require('deep-diff').diff;
 
 var adapter = utils.adapter({
     name: 'zwave',
 
     ready: function () {
-        getData(function () {
-            adapter.subscribeObjects('*');
-            adapter.subscribeStates('*');
+        if (adapter.config.forceinit) {
+            adapter.objects.getObjectList({startkey: 'zwave.' + adapter.instance, endkey: 'zwave.' + adapter.instance + '\u9999'}, function (err, res) {
+                res = res.rows;
+                for (var i = 0; i < res.length; i++) {
+                    var id = res[i].doc.common.name;
 
-            main();
-        });
+                    adapter.log.debug('Remove ' + id + ': ' + id);
+
+                    adapter.delObject(id, function (res, err) {
+                        if (res != undefined && res != "Not exists") adapter.log.error("res from delObject: " + res);
+                        if (err != undefined) adapter.log.error("err from delObject: " + err);
+                    });
+                    adapter.deleteState(id, function (res, err) {
+                        if (res != undefined && res != "Not exists") adapter.log.error("res from deleteState: " + res);
+                        if (err != undefined) adapter.log.error("err from deleteState: " + err);
+                    });
+                }
+            });
+        }
+        adapter.subscribeObjects('*');
+        adapter.subscribeStates('*');
+
+        main();
     },
     objectChange: function (id, obj) {
-        adapter.log.debug("objectChange for " + id + " found");
+        adapter.log.debug("objectChange for " + id + " found, obj = " + JSON.stringify(obj));
     },
     stateChange: function (id, state) {
-        adapter.log.debug("ID: " + id + ", state: " + JSON.stringify(state));
+        adapter.log.debug("stateChange for " + id + " found state = " + JSON.stringify(state));
 
-        var obj = objects[id];
-        if (obj != undefined) {
-            if (obj.native != undefined) {
-                // Todo: Use NodeReady instead of scanComplete
-                if (scanComplete) {
-                    if (state.val.action != undefined && state.val.nodeid != undefined) {
-                        if (state.val.name != undefined) {
-                            var action = state.val.action;
-                            if (action == "setName") {
-                                var nodeid = state.val.nodeid;
-                                var name = state.val.name;
-                                zwave.setName(nodeid, name);
-                            }
-                            if (action == "setLocation") {
-                                var nodeid = state.val.nodeid;
-                                var location = state.val.name;
-                                zwave.setLocation(nodeid, location);
-                            }
-                        } else if (state.val.paramId != undefined &&
-                            state.val.paramValue != undefined &&
-                            state.val.label != undefined &&
-                            state.val.comclass != undefined &&
-                            state.val.index != undefined) {
-                            var action = state.val.action;
-
-                            var nodeid = state.val.nodeid;
-                            var paramId = state.val.paramId;
-                            var paramValue = state.val.paramValue;
-                            var label = state.val.label.replace(/\./g, '_'); //.replace(/ /g, '_')
-                            var comclass = state.val.comclass;
-                            var index = state.val.index;
-                            var changed = state.val.changed;
-                            var old_native = obj.native;
-
-                            var root_type;
-                            var root_native;
-                            var root_common;
-                            var objr;
-                            var namedValue;
-                            var address;
-                            var rootObject;
-
-                            if (action == "changeConfig") {
-                                adapter.log.debug("setConfigParam for " + id + ", paramId = " + paramId + ", paramValue = " + paramValue);
-                                zwave.setConfigParam(nodeid, paramId, paramValue, paramValue.length);
-                                old_native.value = paramValue;
-
-                                adapter.log.debug("setObject for " + id + ", label = " + label);
-                                address = adapter.namespace + ".NODE" + nodeid;
-
-                                rootObject = objects[address];
-
-                                if (rootObject != undefined) {
-                                    root_type = rootObject.type;
-                                    root_native = rootObject.native;
-                                    root_common = rootObject.common;
-                                    objr = {type: root_type, native: root_native, common: root_common};
-                                    if (root_native.classes[comclass][index].values != undefined) {
-                                        namedValue = root_native.classes[comclass][index].values[paramValue];
-                                    } else {
-                                        namedValue = paramValue;
+        adapter.objects.getObject(id, function (err, res) {
+            var obj = res;
+            if (obj != undefined) { // TODO: CHECK RESULT
+                if (res.native != undefined) {
+                    // Todo: Use NodeReady instead of scanComplete
+                    if (scanComplete) {
+                        if (state != undefined && state.val != undefined) {
+                            if (state.val.action != undefined && state.val.nodeid != undefined) {
+                                if (state.val.name != undefined) {
+                                    var action = state.val.action;
+                                    if (action == "setName") {
+                                        var nodeid = state.val.nodeid;
+                                        var name = state.val.name;
+                                        zwave.setNodeName(nodeid, name);
                                     }
-                                    root_native.classes[comclass][index].value = namedValue;
+                                    if (action == "setLocation") {
+                                        var nodeid = state.val.nodeid;
+                                        var location = state.val.name;
+                                        zwave.setNodeLocation(nodeid, location);
+                                    }
+                                    if (action == "addNode") {
+                                        zwave.addNode();
+                                        /*
+                                         var time = 60;
+                                         var addInterval = setInterval(function () {
+                                         time = time - 1;
+                                         if (time < 1 || time == NaN) {
+                                         clearInterval(addInterval);
+                                         zwave.cancelControllerCommand();
+                                         addInterval = null;
+                                         }
+                                         }, 1000);
+                                         */
+                                    }
+                                    if (action == "removeNode") {
+                                        zwave.removeNode();
+                                        /*
+                                         var time = 60;
+                                         var addInterval = setInterval(function () {
+                                         time = time - 1;
+                                         if (time < 1 || time == NaN) {
+                                         clearInterval(addInterval);
+                                         zwave.cancelControllerCommand();
+                                         addInterval = null;
+                                         }
+                                         }, 1000);
+                                         */
+                                    }
+                                    if (action == "refreshNode") {
+                                        zwave.refreshNodeInfo(nodeid);
+                                        /*
+                                         var time = 60;
+                                         var addInterval = setInterval(function () {
+                                         time = time - 1;
+                                         if (time < 1 || time == NaN) {
+                                         clearInterval(addInterval);
+                                         zwave.cancelControllerCommand();
+                                         addInterval = null;
+                                         }
+                                         }, 1000);
+                                         */
+                                    }
+                                } else if (state.val.paramId != undefined &&
+                                    state.val.paramValue != undefined &&
+                                    state.val.label != undefined &&
+                                    state.val.comclass != undefined &&
+                                    state.val.index != undefined) {
+                                    var action = state.val.action;
+
+                                    var nodeid = state.val.nodeid;
+                                    var paramId = state.val.paramId;
+                                    var paramValue = state.val.paramValue;
+                                    var label = state.val.label.replace(/\./g, '_'); //.replace(/ /g, '_')
+                                    var comclass = state.val.comclass;
+                                    var index = state.val.index;
+                                    var changed = state.val.changed;
+                                    var old_native = obj.native;
+
+                                    var root_type;
+                                    var root_native;
+                                    var root_common;
+                                    var objr;
+                                    var namedValue;
+                                    var address;
+                                    var rootObject;
+
+                                    if (action == "changeConfig") {
+                                        adapter.log.debug("setConfigParam for " + id + ", paramId = " + paramId + ", paramValue = " + paramValue);
+                                        zwave.setConfigParam(nodeid, paramId, paramValue, paramValue.length);
+                                        old_native.value = paramValue;
+
+                                        adapter.log.debug("setObject for " + id + ", label = " + label);
+                                        address = adapter.namespace + ".NODE" + nodeid;
+
+                                        adapter.objects.getObject(address, function (err, res) {
+                                            rootObject = res; // TODO: CHECK RESULT
+
+                                            if (rootObject != undefined) {
+                                                root_type = rootObject.type;
+                                                root_native = rootObject.native;
+                                                root_common = rootObject.common;
+                                                objr = {type: root_type, native: root_native, common: root_common};
+                                                if (root_native.classes[comclass][index].values != undefined) {
+                                                    namedValue = root_native.classes[comclass][index].values[paramValue];
+                                                } else {
+                                                    namedValue = paramValue;
+                                                }
+                                                root_native.classes[comclass][index].value = namedValue;
+                                            }
+                                            if (changed == undefined) {
+                                                adapter.setObject(address, objr);
+                                            }
+                                        });
+
+                                    } else if (action == "changeSystem") {
+                                        // Todo: Not working
+                                        adapter.log.debug("setConfigParam for " + id + ", paramId = " + paramId + ", paramValue = " + paramValue);
+                                        //zwave.setValue(obj.native.nodeid, obj.native.comclass, obj.native.instance, obj.native.index, state.val);
+                                        zwave.setValue(obj.native.nodeid, obj.native.comclass, obj.native.instance, obj.native.index, paramValue);
+                                        old_native.value = paramValue;
+
+                                        adapter.log.debug("setObject for " + id + ", label = " + label);
+                                        address = adapter.namespace + ".NODE" + nodeid;
+
+                                        adapter.objects.getObject(address, function (err, res) {
+                                            rootObject = res; // TODO: CHECK RESULT
+                                            if (rootObject != undefined) {
+                                                root_type = rootObject.type;
+                                                root_native = rootObject.native;
+                                                root_common = rootObject.common;
+                                                objr = {type: root_type, native: root_native, common: root_common};
+                                                //namedValue = root_native.classes[comclass][index].values[paramValue];
+                                                namedValue = paramValue;
+                                                root_native.classes[comclass][index].value = namedValue;
+
+                                                if (changed == undefined) {
+                                                    adapter.setObject(address, objr);
+                                                }
+                                            }
+                                        });
+                                    }
                                 }
-                                if (changed == undefined) {
-                                    adapter.setObject(address, objr);
+                            } else {
+                                var value;
+                                if (state.val == true) {
+                                    value = 0;
+                                } else if (state.val == false) {
+                                    value = 1;
                                 }
 
-                            } else if (action == "changeSystem") {
-                                // Todo: Not working
-                                adapter.log.debug("setConfigParam for " + id + ", paramId = " + paramId + ", paramValue = " + paramValue);
-                                zwave.setValue(obj.native.nodeid, obj.native.comclass, obj.native.instance, obj.native.index, state.val);
-                                old_native.value = paramValue;
-
-                                adapter.log.debug("setObject for " + id + ", label = " + label);
-                                address = adapter.namespace + ".NODE" + nodeid;
-
-                                rootObject = objects[address];
-                                if (rootObject != undefined) {
-                                    root_type = rootObject.type;
-                                    root_native = rootObject.native;
-                                    root_common = rootObject.common;
-                                    objr = {type: root_type, native: root_native, common: root_common};
-                                    namedValue = root_native.classes[comclass][index].values[paramValue];
-                                    root_native.classes[comclass][index].value = namedValue;
+                                if (state.ack == false) { // Passiert nur innerhalb von ioBroker, sonst ist ack true
+                                    zwave.setValue(obj.native.nodeid, obj.native.comclass, obj.native.instance, obj.native.index, state.val);
                                 }
-
-                                if (changed == undefined) {
-                                    adapter.setObject(address, objr);
-                                }
+                                adapter.log.debug('setState for: nodeid='+obj.native.nodeid+': comclass='+obj.native.comclass+': index='+obj.native.index+': instance='+obj.native.instance+': value='+state.val);
                             }
                         }
-                    } else {
-                        var value;
-                        if (state.val == true) {
-                            value = 0;
-                        } else if (state.val == false) {
-                            value = 1;
-                        }
-
-                        if (state.ack == false) { // Passiert nur innerhalb von ioBroker, sonst ist ack true
-                            zwave.setValue(obj.native.nodeid, obj.native.comclass, obj.native.instance, obj.native.index, state.val);
-                        }
-                        adapter.log.debug('setState for: nodeid='+obj.native.nodeid+': comclass='+obj.native.comclass+': index='+obj.native.index+': instance='+obj.native.instance+': value='+state.val);
                     }
                 }
+            } else {
+                adapter.log.warn("Object '"+id+"' not found for stateChange");
             }
-        } else {
-            adapter.log.warn("Object '"+id+"' not found for stateChange");
-        }
+        });
     },
     unload: function (callback) {
-        if (zwave) zwave.disconnect();
+        if (zwave) zwave.disconnect('/dev/' + adapter.config.usb);
 
-        var allNodes = adapter.states.getStates(adapter.namespace + ".NODE*");
-        for (var nodeid in allNodes) {
-            var rName = adapter.namespace + ".NODE" + nodeid + ".ready";
-            adapter.setState(rName, {val: false, ack: true});
-        }
         callback();
     },
 });
-
-function getData(callback) {
-    var statesReady;
-    var objectsReady;
-
-    adapter.log.info('requesting all states');
-    adapter.getForeignStates('*', function (err, res) {
-        states = res;
-        statesReady = true;
-        adapter.log.info('received all states');
-        if (objectsReady && typeof callback === 'function') callback();
-    });
-    adapter.log.info('requesting all objects');
-
-    adapter.objects.getObjectList({include_docs: true}, function (err, res) {
-        res = res.rows;
-        objects = {};
-        for (var i = 0; i < res.length; i++) {
-            objects[res[i].doc._id] = res[i].doc;
-            if (res[i].doc.type === 'enum') enums.push(res[i].doc._id);
-        }
-
-        objectsReady = true;
-        adapter.log.info('received all objects');
-        if (statesReady && typeof callback === 'function') callback();
-    });
-}
 
 var comclasses = {
     /*
@@ -427,34 +461,53 @@ function calcName(nodeid, comclass, idx, instance) {
 function main() {
     var OZW = require('./node_modules/openzwave-shared/lib/openzwave-shared.js');
 
-    zwave = new OZW('/dev/' + adapter.config.usb, {
+    // Reihenfolge:
+    /*
+     scanning
+     node added
+     node available
+     value added
+     node naming
+
+     node ready
+     value changed
+     Scan completed
+     */
+
+    zwave = new OZW({
         // TODO: Check if we really need this
-        //modpath:         adapter.config.path,             // __dirname + /../deps/open-zwave/config   // set's config path, should be
-        logging:         adapter.config.logging,            // true                                     // enable logging to OZW_Log.txt
-        consoleoutput:   adapter.config.consoleoutput,      // true                                     // copy logging to the console
-        saveconfig:      adapter.config.saveconfig,         // true                                     // write an XML network layout
-        driverattempts:  adapter.config.driverattempts,     // 3                                        // try this many times before giving up
-        pollinterval:    adapter.config.pollintervall,      // 500                                      // interval between polls in milliseconds
-        suppressrefresh: adapter.config.suppressrefresh     // false                                    // do not send updates if nothing changed
+        Logging:         adapter.config.logging,            // true                                     // enable logging to OZW_Log.txt
+        ConsoleOutput:   adapter.config.consoleoutput,      // true                                     // copy logging to the console
+        SaveConfiguration:      adapter.config.saveconfig,         // true                                     // write an XML network layout
+        DriverMaxAttempts:  adapter.config.driverattempts,     // 3                                        // try this many times before giving up
+        PollInterval:    adapter.config.pollintervall,      // 500                                      // interval between polls in milliseconds
+        SuppressValueRefresh: adapter.config.suppressrefresh     // false                                    // do not send updates if nothing changed
     });
 
     var nodes = [];
 
     zwave.on('connected', function(homeid) {
         adapter.states.setState('system.adapter.' + adapter.namespace + '.connected', {val: true, ack: true});
+
+        adapter.log.info("connected: homeid = " + homeid);
     });
 
     zwave.on('driver ready', function (homeid) {
         adapter.log.info('scanning homeid=0x'+homeid.toString(16)+'...');
+
+        adapter.log.info("driver ready: homeid = " + homeid);
     });
 
     zwave.on('driver failed', function () {
         adapter.log.error('failed to start driver');
-        zwave.disconnect();
+        zwave.disconnect('/dev/' + adapter.config.usb);
         process.exit();
     });
 
     zwave.on('node added', function (nodeid) {
+        adapter.log.info("node added for " + nodeid + " found");
+
+        // Just create a Default Objecttree with no entries
         nodes[nodeid] = {
             manufacturer:   '',
             manufacturerid: '',
@@ -467,11 +520,11 @@ function main() {
             classes:        {},
             ready:          false
         };
-        var rName = adapter.namespace + ".NODE" + nodeid + ".ready";
-        adapter.setState(rName, {val: false, ack: true});
     });
 
     zwave.on('value added', function (nodeid, comclass, value) {
+        adapter.log.debug("value added: nodeid: " + nodeid + " comclass: " + JSON.stringify(comclass) + " value: "  + JSON.stringify(value));
+
         adapter.log.debug("-----------> NODE: " + nodeid + "-----" + comclass + "-----" + JSON.stringify(value));
         var name = calcName(nodeid, comclass, value.label, value.genre=="user" ? value.instance : undefined);
 
@@ -480,35 +533,183 @@ function main() {
         nodes[nodeid].classes[comclass] = nodes[nodeid].classes[comclass] || {};
         nodes[nodeid].classes[comclass][value.index] = value;
 
-        adapter.setState(name, {val: value.value, ack: true});
+        /** *********************************************** **/
+        // Create channel
+        var devName = calcName(nodeid);
+        var channels = [];
+        for (var comclass in nodes[nodeid].classes) {
+            var chName = calcName(nodeid, comclass);
+            var DPs = [];
+            channels.push(chName);
+
+            switch (comclass) {
+                case 0x25: // COMMAND_CLASS_SWITCH_BINARY
+                case 0x26: // COMMAND_CLASS_SWITCH_MULTILEVEL
+                    zwave.enablePoll(nodeid, comclass);
+                    break;
+            }
+
+            var values = nodes[nodeid].classes[comclass];
+
+            for (var idx in values) {
+                var instances = values[idx].instance;
+                for (var inst=1; inst<=instances; inst++) {
+                    var name = calcName(nodeid, comclass, values[idx].label, values[idx].genre=="user" ? inst : undefined);
+
+                    DPs.push(name);
+                    values[idx].comclass = comclass;
+                    values[idx].nodeid   = nodeid;
+                    values[idx].index    = idx;
+                    values[idx].instance = inst;
+
+                    var stateObj = {
+                        common: {
+                            name:  name, // You can add here some description
+                            read:  true,
+                            write: true,
+                            state: "mixed",
+                            role: 'value',
+                            type: "State"
+                        },
+                        native: values[idx],
+                        // parent: chName, // Do not use parent or children for
+                        type:   'state',
+                        _id: name
+                    };
+
+                    if (comclasses[comclass] && comclasses[comclass].role) {
+                        if (comclasses[comclass].children && comclasses[comclass].children[values[idx].label]) {
+                            if (comclasses[comclass].children[values[idx].label].role) {
+                                stateObj.common.role = comclasses[comclass].children[values[idx].label].role;
+                            } else {
+                                stateObj.common.role = comclasses[comclass].role;
+                            }
+                            if (comclasses[comclass].children[values[idx].label].type) {
+                                stateObj.common.type = comclasses[comclass].children[values[idx].label].type;
+                            }
+                        } else {
+                            stateObj.common.role = comclasses[comclass].role;
+                        }
+                    }
+
+                    adapter.objects.getObject(name, function (err, res) {
+                        var c = diff(stateObj,res);
+                        if (c != undefined && c.length == 1 && c[0].kind == "N" && c[0].path[1] == "history") {
+                            adapter.log.debug("Nothing todo for stateObj(" + res.common.name + ")");
+                        } else {
+                            adapter.extendObject(name, stateObj);
+                        }
+                    });
+                }
+            }
+
+            var chObj = {
+                common: {
+                    name:  chName,
+                },
+                native: {
+                    comclass: comclass,
+                    nodeid:   nodeid
+                },
+                type: 'channel',
+                _id: chName
+            };
+            if (comclasses[comclass] && comclasses[comclass].role) {
+                chObj.common.role = comclasses[comclass].role;
+            }
+
+            adapter.objects.getObject(chName, function (err, res) {
+                var c = diff(chObj, res);
+                if (c != undefined) {
+                    adapter.extendObject(chName, chObj);
+                } else {
+                    adapter.log.debug("Nothing todo for chObj(" + res.common.name + ")");
+                }
+            });
+        }
+
+        nodes[nodeid].nodeid = nodeid;
+        adapter.objects.getObject(devName, function (err, res) {
+            var devObj = {
+                common: {
+                    name: devName,
+                    type: 'state',
+                    role: 'state',
+                    read: true,
+                    write: true
+                },
+                native: nodes[nodeid],
+                type: 'device',
+                _id: devName
+            };
+
+            var c = diff(devObj, res);
+            if (c != undefined) {
+                adapter.extendObject(devName, devObj);
+            } else {
+                adapter.log.debug("Nothing todo for devObj(" + res.common.name + ")");
+            }
+        });
+
+        if (chName.search(".CONFIGURATION") == -1) {
+            adapter.setState(chName, {val: value.value, ack: true});
+        }
     });
 
     zwave.on('value changed', function (nodeid, comclass, value) {
+        adapter.log.info("value changed: " + nodeid + " comclass: " + JSON.stringify(comclass) + " value: "  + JSON.stringify(value));
+
         if (nodes[nodeid].ready) {
-            var name = calcName(nodeid, comclass, value.label, value.genre=="user" ? value.instance : undefined);
-            adapter.log.debug('Value changed: ' + name + ' from ' + nodes[nodeid].classes[comclass][value.index].value + ' to ' + value.value);
-            adapter.setState(name, {val: value.value, ack: true});
+            if (value !== undefined) {
+                var name = calcName(nodeid, comclass, value.label, value.genre=="user" ? value.instance : undefined);
+                if (nodes[nodeid].classes[comclass] !== undefined) {
+                    adapter.log.info('Value changed: ' + name + ' from ' + nodes[nodeid].classes[comclass][value.index].value + ' to ' + value.value);
+                    nodes[nodeid].classes[comclass][value.index] = value;
+                } else {
+                    adapter.log.info('Value changed: ' + name + ' for ' + name + ' to ' + value.value);
+                }
+                adapter.setState(name, {val: value.value, ack: true});
+            } else {
+                adapter.log.error("VALUE NOT DEFINED");
+            }
         }
-        nodes[nodeid].classes[comclass][value.index] = value;
     });
 
     zwave.on('value removed', function (nodeid, comclass, index) {
-        var name = calcName(nodeid, comclass, nodes[nodeid].classes[comclass][index].label, nodes[nodeid].classes[comclass][index].genre=="user" ? nodes[nodeid].classes[comclass][index].instance : undefined);
-        if (nodes[nodeid].classes[comclass] && nodes[nodeid].classes[comclass][index]) {
-            adapter.delObject(name);
-            delete nodes[nodeid].classes[comclass][index];
-        }
-        adapter.log.debug('Value removed: ' + name);
+        adapter.log.debug("value removed: " + nodeid + " comclass: " + JSON.stringify(comclass) + " value: "  + JSON.stringify(index));
 
-        if (zobjects[name]) delete zobjects[name];
+        var name = calcName(nodeid);
+
+        // TODO: Must delete full Tree of Object
+        adapter.objects.getObjectList({startkey: name, endkey: 'zwave.' + adapter.instance + '\u9999'}, function (err, res) {
+            res = res.rows;
+            for (var i = 0; i < res.length; i++) {
+                var id = res[i].doc.common.name;
+
+                if (id.search(name) == 0) {
+                    adapter.log.debug('Remove ' + id + ': ' + id);
+
+                    adapter.delObject(id, function (res, err) {
+                        if (res != undefined && res != "Not exists") adapter.log.error("res from delObject: " + res);
+                        if (err != undefined) adapter.log.error("err from delObject: " + err);
+                    });
+                    adapter.deleteState(id, function (res, err) {
+                        if (res != undefined && res != "Not exists") adapter.log.error("res from deleteState: " + res);
+                        if (err != undefined) adapter.log.error("err from deleteState: " + err);
+                    });
+                }
+            }
+        });
+
+        delete nodes[nodeid];
     });
 
-    /**************************************************************/
     zwave.on('polling enabled', function(nodeid) {
-        adapter.log.debug('node'+nodeid+': polling ENABLED, currently not implemented');
+        adapter.log.info('node'+nodeid+': polling ENABLED, currently not implemented');
     });
+
     zwave.on('polling disabled', function(nodeid) {
-        adapter.log.debug('node'+nodeid+': polling DISABLED, currently not implemented');
+        adapter.log.info('node'+nodeid+': polling DISABLED, currently not implemented');
     });
 
     var notificationCodes = {
@@ -520,29 +721,30 @@ function main() {
         5: 'node dead (Undead Undead Undead)',
         6: 'node alive'
     };
+
     zwave.on('notification', function(nodeid, notif) {
-        adapter.log.debug('node'+nodeid+': '+notificationCodes[notif]+', currently not implemented');
+        adapter.log.info('node'+nodeid+': '+notificationCodes[notif]+', currently not implemented');
         switch (notif) {
             case 0:
                 adapter.log.debug('node'+nodeid+': message complete');
                 break;
             case 1:
-                adapter.log.warn('node'+nodeid+': timeout');
+                adapter.log.debug('node'+nodeid+': timeout');
                 break;
             case 2:
-                adapter.log.info('node'+nodeid+': nop');
+                adapter.log.debug('node'+nodeid+': nop');
                 break;
             case 3:
-                adapter.log.info('node'+nodeid+': node awake');
+                adapter.log.debug('node'+nodeid+': node awake');
                 break;
             case 4:
-                adapter.log.info('node'+nodeid+': node sleep');
+                adapter .log.debug('node'+nodeid+': node sleep');
                 break;
             case 5:
-                adapter.log.warn('node'+nodeid+': node dead');
+                adapter.log.debug('node'+nodeid+': node dead');
                 break;
             case 6:
-                adapter.log.info('node'+nodeid+': node alive');
+                adapter.log.debug('node'+nodeid+': node alive');
                 break;
         }
     });
@@ -560,6 +762,7 @@ function main() {
         9: 'The controller thinks the node is OK',
         10: 'The controller thinks the node has failed'
     };
+
     var ctrlError = {
         0: 'No error',
         1: 'ButtonNotFound',
@@ -574,152 +777,182 @@ function main() {
         10: 'Failed',
         11: 'Disabled',
         12: 'Overflow'
-    }
+    };
+
     zwave.on('controller command', function (state, error) {
-        adapter.log.debug('controller command feedback: state:'+ctrlState[state]+' error:'+ctrlError[error]+', currently not implemented');
+        adapter.log.info('controller command feedback: state:'+ctrlState[state]+' error:'+ctrlError[error]+', currently not implemented');
     });
 
     zwave.on('node naming', function (nodeid, nodeinfo) {
-        adapter.log.debug('node naming nodeid:'+nodeid+' nodeinfo:'+JSON.stringify(nodeinfo));
+        adapter.log.info('node naming nodeid:'+nodeid+' nodeinfo:'+JSON.stringify(nodeinfo));
 
         var address = adapter.namespace + ".NODE" + nodeid;
-        var obj = objects[address];
+        adapter.objects.getObject(address, function (err, res) {
+            var obj = res; // TODO: CHECK RESULT
 
-        if (obj != undefined) {
-            if (obj.type != undefined && obj.native != undefined && obj.common != undefined) {
-                var old_type = obj.type;
-                var old_native = obj.native;
-                var old_common = obj.common;
+            if (obj != undefined) {
+                if (obj.type != undefined && obj.native != undefined && obj.common != undefined) {
+                    var old_type = obj.type;
+                    var old_native = obj.native;
+                    var old_common = obj.common;
 
-                old_native.name = nodeinfo.name;
-                old_native.location = nodeinfo.loc;
+                    old_native.name = nodeinfo.name;
+                    old_native.loc = nodeinfo.loc;
 
-                var objx = {type: old_type, native: old_native, common: old_common};
-                adapter.setObject(address, objx);
+                    var objx = {type: old_type, native: old_native, common: old_common};
+                    adapter.setObject(address, objx);
+                }
             }
-        }
+        });
     });
 
     zwave.on('value refreshed', function(nodeid, commandclass, value) {
-        adapter.log.debug('value refreshed nodeid:'+nodeid+' commandclass:'+commandclass+' value:'+value+', currently not implemented');
+        adapter.log.debug('value refreshed nodeid:'+nodeid+' commandclass:'+JSON.stringify(commandclass)+' value:'+JSON.stringify(value)+', currently not implemented');
     });
 
     /**************************************************************/
+    zwave.on('node available', function (nodeid, nodeinfo) {
+        adapter.log.debug('node available nodeid:'+nodeid+' nodeinfo:'+JSON.stringify(nodeinfo));
+
+        // TODO: Get Objecttree and check if it's already loaded
+        var objectname = calcName(nodeid);
+        nodes[nodeid].manufacturer = nodeinfo.manufacturer;
+        nodes[nodeid].manufacturerid = nodeinfo.manufacturerid;
+        nodes[nodeid].product = nodeinfo.product;
+        nodes[nodeid].producttype = nodeinfo.producttype;
+        nodes[nodeid].productid = nodeinfo.productid;
+        nodes[nodeid].type = nodeinfo.type;
+        nodes[nodeid].name = nodeinfo.name;
+        nodes[nodeid].loc = nodeinfo.loc;
+        nodes[nodeid].ready = true;
+        nodes[nodeid].nodeid = nodeid;
+        adapter.log.debug('node' + nodeid + ': ' + nodeinfo.manufacturer ? nodeinfo.manufacturer : 'id=' + nodeinfo.manufacturerid + ', ' + (nodeinfo.product ? nodeinfo.product :
+        'product=' + nodeinfo.productid + ', type=' + nodeinfo.producttype));
+        adapter.log.debug('node' + nodeid + ': name="' + nodeinfo.name + '", type="' + nodeinfo.type + '", location="' + nodeinfo.loc + '"');
+
+        adapter.log.info("nodeid " + nodeid + " is now available");
+    });
 
     zwave.on('node ready', function (nodeid, nodeinfo) {
-        nodes[nodeid].manufacturer   = nodeinfo.manufacturer;
-        nodes[nodeid].manufacturerid = nodeinfo.manufacturerid;
-        nodes[nodeid].product        = nodeinfo.product;
-        nodes[nodeid].producttype    = nodeinfo.producttype;
-        nodes[nodeid].productid      = nodeinfo.productid;
-        nodes[nodeid].type           = nodeinfo.type;
-        nodes[nodeid].name           = nodeinfo.name;
-        nodes[nodeid].loc            = nodeinfo.loc;
-        nodes[nodeid].ready          = true;
-        nodes[nodeid].nodeid         = nodeid;
-        if (adapter.config.forceinit) {
-            adapter.log.debug('node'+nodeid+': '+nodeinfo.manufacturer ? nodeinfo.manufacturer : 'id=' + nodeinfo.manufacturerid+', '+(nodeinfo.product ? nodeinfo.product :
-            'product=' + nodeinfo.productid + ', type=' + nodeinfo.producttype));
-            adapter.log.debug('node'+nodeid+': name="'+nodeinfo.name+'", type="'+nodeinfo.type+'", location="'+nodeinfo.loc+'"');
+        adapter.log.debug('node ready nodeid:'+nodeid+' nodeinfo:'+JSON.stringify(nodeinfo));
 
-            // Create channel
-            var devName = calcName(nodeid);
-            var channels = [];
-            for (var comclass in nodes[nodeid].classes) {
-                var chName = calcName(nodeid, comclass);
-                var DPs = [];
-                channels.push(chName);
+        /** *********************************************** **/
+        // Create channel
+        var devName = calcName(nodeid);
+        var channels = [];
+        for (var comclass in nodes[nodeid].classes) {
+            var chName = calcName(nodeid, comclass);
+            var DPs = [];
+            channels.push(chName);
 
-                switch (comclass) {
-                    case 0x25: // COMMAND_CLASS_SWITCH_BINARY
-                    case 0x26: // COMMAND_CLASS_SWITCH_MULTILEVEL
-                        zwave.enablePoll(nodeid, comclass);
-                        break;
-                }
+            switch (comclass) {
+                case 0x25: // COMMAND_CLASS_SWITCH_BINARY
+                case 0x26: // COMMAND_CLASS_SWITCH_MULTILEVEL
+                    zwave.enablePoll(nodeid, comclass);
+                    break;
+            }
 
-                var values = nodes[nodeid].classes[comclass];
+            var values = nodes[nodeid].classes[comclass];
 
-                for (var idx in values) {
-                    var instances = values[idx].instance;
-                    for (var inst=1; inst<=instances; inst++) {
-                        var name = calcName(nodeid, comclass, values[idx].label, values[idx].genre=="user" ? inst : undefined);
-                        zobjects[name] = {
-                            nodeid:   idx,
-                            comclass: comclass,
-                            idx:      idx,
-                            label:    values[idx].label
-                        };
-                        DPs.push(name);
-                        values[idx].comclass = comclass;
-                        values[idx].nodeid   = nodeid;
-                        values[idx].index    = idx;
-                        values[idx].instance = inst;
+            for (var idx in values) {
+                var instances = values[idx].instance;
+                for (var inst=1; inst<=instances; inst++) {
+                    var name = calcName(nodeid, comclass, values[idx].label, values[idx].genre=="user" ? inst : undefined);
 
-                        var stateObj = {
-                            common: {
-                                name:  name, // You can add here some description
-                                read:  true,
-                                write: true
-                            },
-                            native: values[idx],
-                            // parent: chName, // Do not use parent or children for
-                            type:   'state'
-                        };
+                    DPs.push(name);
+                    values[idx].comclass = comclass;
+                    values[idx].nodeid   = nodeid;
+                    values[idx].index    = idx;
+                    values[idx].instance = inst;
 
-                        if (comclasses[comclass] && comclasses[comclass].role) {
-                            if (comclasses[comclass].children && comclasses[comclass].children[values[idx].label]) {
-                                if (comclasses[comclass].children[values[idx].label].role) {
-                                    stateObj.common.role = comclasses[comclass].children[values[idx].label].role;
-                                } else {
-                                    stateObj.common.role = comclasses[comclass].role;
-                                }
-                                if (comclasses[comclass].children[values[idx].label].type) {
-                                    stateObj.common.type = comclasses[comclass].children[values[idx].label].type;
-                                }
+                    var stateObj = {
+                        common: {
+                            name:  name, // You can add here some description
+                            read:  true,
+                            write: true,
+                            state: "mixed",
+                            role: 'value',
+                            type: "State"
+                        },
+                        native: values[idx],
+                        // parent: chName, // Do not use parent or children for
+                        type:   'state',
+                        _id: name
+                    };
+
+                    if (comclasses[comclass] && comclasses[comclass].role) {
+                        if (comclasses[comclass].children && comclasses[comclass].children[values[idx].label]) {
+                            if (comclasses[comclass].children[values[idx].label].role) {
+                                stateObj.common.role = comclasses[comclass].children[values[idx].label].role;
                             } else {
                                 stateObj.common.role = comclasses[comclass].role;
                             }
-                            //chObj.common.type = number, string, bool, array, object, mixed;
+                            if (comclasses[comclass].children[values[idx].label].type) {
+                                stateObj.common.type = comclasses[comclass].children[values[idx].label].type;
+                            }
+                        } else {
+                            stateObj.common.role = comclasses[comclass].role;
                         }
-                        adapter.setObject(name, stateObj);
                     }
-                }
 
-                var chObj = {
-                    common: {
-                        name:  chName // You can add here some description
-                    },
-                    native: {
-                        comclass: comclass,
-                        nodeid:   nodeid
-                    },
-                    // children: DPs, // Do not use parent or children for
-                    type: 'channel'
-                };
-                if (comclasses[comclass] && comclasses[comclass].role) {
-                    chObj.common.role = comclasses[comclass].role;
+                    adapter.objects.getObject(name, function (err, res) {
+                        var c = diff(stateObj,res);
+                        if (c != undefined && c.length == 1 && c[0].kind == "N" && c[0].path[1] == "history") {
+                            adapter.log.debug("Nothing todo for stateObj(" + res.common.name + ")");
+                        } else {
+                            adapter.extendObject(name, stateObj);
+                        }
+                    });
                 }
-
-                adapter.setObject(chName, chObj);
             }
 
-            nodes[nodeid].nodeid = nodeid;
-            adapter.setObject(devName, {
+            var chObj = {
                 common: {
-                    name:  devName, // You can add here some description
-                    type:  '??',
-                    role:  'state',
-                    read:  true,
+                    name:  chName,
+                },
+                native: {
+                    comclass: comclass,
+                    nodeid:   nodeid
+                },
+                type: 'channel',
+                _id: chName
+            };
+            if (comclasses[comclass] && comclasses[comclass].role) {
+                chObj.common.role = comclasses[comclass].role;
+            }
+
+            adapter.objects.getObject(chName, function (err, res) {
+                var c = diff(chObj, res);
+                if (c != undefined) {
+                    adapter.extendObject(chName, chObj);
+                } else {
+                    adapter.log.debug("Nothing todo for chObj(" + res.common.name + ")");
+                }
+            });
+        }
+
+        nodes[nodeid].nodeid = nodeid;
+        adapter.objects.getObject(devName, function (err, res) {
+            var devObj = {
+                common: {
+                    name: devName,
+                    type: 'state',
+                    role: 'state',
+                    read: true,
                     write: true
                 },
-                native:   nodes[nodeid],
-                // children: channels,  // Do not use parent or children for
-                type:     'device'
-            });
+                native: nodes[nodeid],
+                type: 'device',
+                _id: devName
+            };
 
-            var rName = adapter.namespace + ".NODE" + nodeid + ".ready";
-            adapter.setState(rName, {val: true, ack: true});
-        }
+            var c = diff(devObj, res);
+            if (c != undefined) {
+                adapter.extendObject(devName, devObj);
+            } else {
+                adapter.log.debug("Nothing todo for devObj(" + res.common.name + ")");
+            }
+        });
     });
 
     zwave.on('scan complete', function () {
@@ -732,5 +965,5 @@ function main() {
         adapter.log.info('Scan completed');
     });
 
-    zwave.connect();
+    zwave.connect('/dev/' + adapter.config.usb);
 }
