@@ -1,14 +1,17 @@
 {
   "name": "iobroker.zwave",
   "description": "ZWave support for ioBroker based on openzwave packet",
-  "version": "0.2.3",
+  "version": "0.2.5",
   "author": {
     "name": "bluefox",
     "email": "bluefox@ccu.io"
   },
+  "scripts": {
+    "preinstall": "node preinstall.js"
+  },
   "contributors": [
     "bluefox <bluefox@ccu.io>",
-    "husky-koglhof"
+    "husky-koglhof <husky.koglhof@icloud.com>"
   ],
   "homepage": "https://github.com/ioBroker/ioBroker.zwave",
   "license": "LGPLv3",
@@ -23,7 +26,8 @@
     "url": "https://github.com/ioBroker/ioBroker.zwave"
   },
   "dependencies": {
-    "openzwave-shared": "^1.0.8"
+    "openzwave-shared": "~1.1.5",
+    "deep-diff": "0.3.3"
   },
   "devDependencies": {
     "grunt": "^0.4.5",
@@ -40,9 +44,6 @@
     "darwin",
     "linux"
   ],
-  "scripts": {
-    "install": "sudo apt-get install libudev-dev"
-  },
   "bugs": {
     "url": "https://github.com/ioBroker/ioBroker.zwave/issues"
   },

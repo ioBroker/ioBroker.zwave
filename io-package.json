@@ -4,10 +4,10 @@
         "title":                    "ZWave",
         "desc":                     {
 			"en": "ZWave support based on openzwave packet",
-			"de": "ZWave UnterstГјtzung dГјrch Openzwave Paket",
-			"ru": "РџРѕРґРґРµСЂР¶РєР° ZWave РѕСЃРЅРѕРІР°РЅРЅР°СЏ РЅР° Openzwave РїР°РєРµС‚Рµ"
+			"de": "ZWave Unterstutzung durch Openzwave Paket",
+			"ru": "Поддержка ZWave основанная на Openzwave пакете"
 		},
-        "version":                  "0.2.3",
+        "version":                  "0.2.5",
         "mode":                     "daemon",
         "platform":                 "javascript/Node.js",
         "os":                       ["darwin", "linux"],
@@ -23,7 +23,6 @@
         "readme":                   "https://github.com/ioBroker/ioBroker.zwave/blob/master/README.md",
         "icon":                     "zwave.png",
         "extIcon":                  "https://raw.githubusercontent.com/ioBroker/ioBroker.zwave/master/admin/zwave.png",
-        "install":                  true,
         "dependencies":             ["web"],
         "onlyWWW":                  false,
         "singleton":                true,

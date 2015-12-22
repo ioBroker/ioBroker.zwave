@@ -17,6 +17,7 @@
 
     <script src="js/i18n/grid.locale-de.js" type="text/javascript"></script>
     <script src="js/jquery.jqGrid.min.js" type="text/javascript"></script>
+
     <script src="js/grid.setcolumns.js" type="text/javascript"></script>
 
     <script type="text/javascript" src="js/socket.io.js"></script>
@@ -89,6 +90,7 @@
         <input type="hidden" id="index" value=""/>
         <input type="hidden" id="genre" value=""/>
         <input type="hidden" id="comclass" value=""/>
+        <input type="hidden" id="name" value=""/>
         <table>
             <!-- TODO: Implement Help Function
             <tr>
@@ -99,6 +101,11 @@
                 <td><span class=translate >Value:</span></td><td><input type="text" id="input-value" value=""/></td>
             </tr>
         </table>
+    </div>
+
+    <div id="dialog-add-countdown" title="Countdown">
+        <br/><br/>
+        <h3 style="width: 100%; text-align: center;">Zeit verbleibend: <span id="add-countdown"></span>s</h3>
     </div>
     <div id="dialog-help" class="translateT" title="About OpenZwave Configurator">
         <h3>Version <span class="version"></span></h3>

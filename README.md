@@ -4,13 +4,50 @@ ioBroker zwave Adapter
 
 Zwave support with openzwave.
 
-For this adapter is used rather good supported npm module: https://github.com/OpenZWave/node-openzwave-shared
+For this adapter is used rather good supported npm module: https://github.com/OpenZWave/node-openzwave-shared<br>
 You should find out what the name has USB port of the Z-Wave stick and setup it in the adapter settings.
 
-Within Admin Settings you can set following Attributes
+## Important Information
+- On first run, the Adapter needs some time, to calculate all Objects within iobroker.
+- If you add a Device, let the adapter do it's job and wait a little bit.
+- If a Device is not visible within the included Admistration Site, it's not fully
+imported into ioBroker.
+
+
+## Installation
+First of all, Implemenation is tested only on ARM Linux (e.g. Raspberry Pi (2)).<br>
+You need a fully Development Environment (gcc, make,...)
+
+npm install iobroker.zwave does following Steps for you:<br>
+
+- Download and install latest openzwave from github<br>
+  \# cd /opt<br>
+  \# curl -L -O https://github.com/OpenZWave/open-zwave/archive/master.zip<br>
+  \# unzip master.zip<br>
+  \# cd open-zwave-master<br>
+  \# make<br>
+  \# sudo make install<br>
+
+After that you have to do the following Steps:<br>
+
+- Put your USB Stick into your Server
+- Check whether the system has recognized the USB stick<br>
+  \# lsusb<br>
+  \# ls -al /dev/ttyA*<br>
+  
+- Go into iobroker Website and add the Zwave Adapter
+- Configure zwave Adapter as described 
+- Start the new zwave Adapter instance
+- wait<br>
+  -- until the Message "zwave.0 Scan completed" is found in iobroker.log<br>
+  -- the Object zwave.0.completed has State "true"<br>
+
+## Configuration
+Within Admin Settings you can set following Attributes<br>
+
 - Force objects re-init (ReInitialize all Objects within ioBroker)
 - USB name (the USB Port of your Z-Wave stick)
-- Logging (enable logging to OZW_Log.txt, Logs all to /OZW_Log.txt on linux)
+- Logging (enable logging to OZW_Log.txt)
 - Console Output (copy logging to the console, Logs all to ioBroker.log)
 - Save Config (write an XML network layout create a /zwcfg_<HOMEID>.xml on linux)
 - Driver Attempts (try this many times before giving up)
@@ -19,20 +56,73 @@ Within Admin Settings you can set following Attributes
 
 ![admin-settings](img/admin-settings.png)
 
-Within OpenZWave Configurator you can see all Nodes and their classes.
-Following Actions are current supported (only with Contextmenu):
-- Set Name and Set Location for Node itself
-- Change Value of a class
+## Logfiles / Configuration Settings
+If you have installed iobroker into default Folder:<br>
+ - Logfile: /opt/iobroker/node_modules/iobroker.zwave/node_modules/openzwave-shared/OZW_Log.txt on linux<br>
+ - Configuration: /opt/iobroker/node_modules/iobroker.zwave/node_modules/zwcfg_<HOMEID>.xml on linux<br>
 
-Following Nodes are tested:
+## Device add or remove
+If you add or remove a device, it takes 60 seconds. Then the page is automatically reloaded.<br>
+If you change the Name or Location, it takes 5 seconds. Then the page is automatically reloaded.
+
+## Features
+Within OpenZWave Configurator you can see all Nodes and their classes.
+
+Following Actions are current supported (only with Contextmenu):<br>
+- Set Name and Set Location for Node itself<br>
+- Change Value of a class<br>
+
+Following global Actions are current supported:<br>
+- Add Nodes<br>
+- Remove Nodes<br>
+- Refresh Nodes (Refresh Nodes from ioBroker Communication)<br>
+
+## Todo
+### ZWave Specific
+- Scenes
+- Group Management
+- Reset (Soft/Hard)
+- Network Commands (Heal, getNeighbors, refreshNode)
+- Polling
+- Controller Commands
+- Configuration Commands
+### Global
+- Test more Hardware
+- Move config and logfile into iobroker default path (/opt/iobroker/log, /opt/iobroker/data/files/zwave)
+- Language Support (English, German, Russian)
+
+## Tested Hardware
+### ZWave
 - ZME_UZB1 USB Stick
+- RazBerry GPIO Board for RaspBerry (1/2)
+### Fibaro
 - FGBS001 Universal Binary Sensor
 - FGS222 Double Relay Switch 2x1.5kW
 - FGWPE Wall Plug
-
-Objects can changed after "zwave.0 Scan completed" is found in iobroker.log.
+- FGSS001 Smoke Sensor
+- FGMS001 Motion Sensor
+### Danfoss
+- Danfoss Living Connect Room Thermostat (type 0003, id 8010)
+- Danfoss Z Thermostat 014G0013
 
 ## Changelog
+### 0.2.5 (2015-12-21)
+ - (husky-koglhof) Objecttree build now on change/added/ready from zwave
+ - Default Role/Type/State (needed for history)
+ - openzwave-shared 1.1.6
+ - last openzwave from github
+ - OpenZWave Security
+
+### 0.2.4 (2015-12-05)
+ - (husky-koglhof) fixed hardcoded values
+   Admin Page can Add / Remove ZWave Devices
+   
+### 0.2.3 (2015-11-11)
+ - (bluefox) try to fix io-package.json
+
+### 0.2.2 (2015-09-28)
+ - (ekarak) API changes for openzwave-shared 1.0.8+
+
 ### 0.2.3 (2015-11-11)
  - (bluefox) try to fix io-package.json
 
@@ -62,9 +152,6 @@ Objects can changed after "zwave.0 Scan completed" is found in iobroker.log.
 
 ### 0.0.2 (2014-10-28)
  - Initial commit. Still non-functional.
-
-## Todo
-
 
 ## License
 
