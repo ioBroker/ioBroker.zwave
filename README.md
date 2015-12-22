@@ -155,7 +155,7 @@ Following global Actions are current supported:<br>
 
 ## License
 
-Copyright (c) 2014 bluefox <bluefox@ccu.io>
+Copyright (c) 2014-2015 bluefox <dogafox@gmail.com>, husky-koglhof <husky.koglhof@icloud.com>
 
 SOFTWARE NOTICE AND LICENSE
 
