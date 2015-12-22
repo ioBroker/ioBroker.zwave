@@ -12,6 +12,50 @@ var fs =                require('fs');
 var scanComplete = 0;
 var diff = require('deep-diff').diff;
 
+var objects;
+
+var notificationCodes = {
+    0: 'message complete',
+    1: 'timeout',
+    2: 'nop',
+    3: 'node awake',
+    4: 'node sleep',
+    5: 'node dead (Undead Undead Undead)',
+    6: 'node alive'
+};
+
+var ctrlStat = {
+    0: 'No command in progress',
+    1: 'The command is starting',
+    2: 'The command was cancelled',
+    3: 'Command invocation had error(s) and was aborted',
+    4: 'Controller is waiting for a user action',
+    5: 'Controller command is on a sleep queue wait for device',
+    6: 'The controller is communicating with the other device to carry out the command',
+    7: 'The command has completed successfully',
+    8: 'The command has failed',
+    9: 'The controller thinks the node is OK',
+    10: 'The controller thinks the node has failed'
+};
+
+var ctrlErr = {
+    0: 'No error',
+    1: 'ButtonNotFound',
+    2: 'NodeNotFound',
+    3: 'NotBridge',
+    4: 'NotSUC',
+    5: 'NotSecondary',
+    6: 'NotPrimary',
+    7: 'IsPrimary',
+    8: 'NotFound',
+    9: 'Busy',
+    10: 'Failed',
+    11: 'Disabled',
+    12: 'Overflow'
+};
+
+var nodes;
+
 var adapter = utils.adapter({
     name: 'zwave',
 
@@ -38,7 +82,18 @@ var adapter = utils.adapter({
         adapter.subscribeObjects('*');
         adapter.subscribeStates('*');
 
-        main();
+
+
+        adapter.objects.getObjectList({include_docs: true}, function (err, res) {
+            res = res.rows;
+            objects = {};
+            for (var i = 0; i < res.length; i++) {
+                objects[res[i].doc._id] = res[i].doc;
+            }
+
+            adapter.log.debug('received all objects');
+            main();
+        });
     },
     objectChange: function (id, obj) {
         adapter.log.debug("objectChange for " + id + " found, obj = " + JSON.stringify(obj));
@@ -163,8 +218,12 @@ var adapter = utils.adapter({
                                     } else if (action == "changeSystem") {
                                         // Todo: Not working
                                         adapter.log.debug("setConfigParam for " + id + ", paramId = " + paramId + ", paramValue = " + paramValue);
-                                        //zwave.setValue(obj.native.nodeid, obj.native.comclass, obj.native.instance, obj.native.index, state.val);
-                                        zwave.setValue(obj.native.nodeid, obj.native.comclass, obj.native.instance, obj.native.index, paramValue);
+                                        zwave.setValue({
+                                            nodeid:   parseInt(obj.native.nodeid),
+                                            class_id: parseInt(obj.native.comclass),
+                                            instance: parseInt(obj.native.instance),
+                                            index:    parseInt(obj.native.index)
+                                        }, paramValue);
                                         old_native.value = paramValue;
 
                                         adapter.log.debug("setObject for " + id + ", label = " + label);
@@ -197,9 +256,14 @@ var adapter = utils.adapter({
                                 }
 
                                 if (state.ack == false) { // Passiert nur innerhalb von ioBroker, sonst ist ack true
-                                    zwave.setValue(obj.native.nodeid, obj.native.comclass, obj.native.instance, obj.native.index, state.val);
+                                    adapter.log.error('setState for: nodeid='+obj.native.nodeid+': comclass='+obj.native.comclass+': index='+obj.native.index+': instance='+obj.native.instance+': value='+state.val);
+                                    zwave.setValue({
+                                        nodeid:   parseInt(obj.native.nodeid),
+                                        class_id: parseInt(obj.native.comclass),
+                                        instance: parseInt(obj.native.instance),
+                                        index:    parseInt(obj.native.index)
+                                    }, state.val);
                                 }
-                                adapter.log.debug('setState for: nodeid='+obj.native.nodeid+': comclass='+obj.native.comclass+': index='+obj.native.index+': instance='+obj.native.instance+': value='+state.val);
                             }
                         }
                     }
@@ -341,34 +405,43 @@ var comclasses = {
      */
 
     0x20:{name: 'BASIC',                                  role: 'switch', children: {
-        Basic: {role: 'level'}
+        Basic: {role: 'level', type: 'number'}
     }},
     0x86:{name: 'VERSION',                                role: 'meta.version', children: {
-        'Library Version':    {type: 'text'},
-        'Protocol Version':   {type: 'text'},
-        'Application Version':{type: 'text'}
+        'Library Version':    {type: 'string'},
+        'Protocol Version':   {type: 'string'},
+        'Application Version':{type: 'string'}
     }},
     0x80:{name: 'BATTERY',                                role: 'info', children: {
-        'Battery Level':    {role: 'value.battery'}
+        'Battery Level':    {role: 'value.battery', type: 'number'}
     }},
-    0x84:{name: 'WAKE_UP',                                role: ''},
+    0x84:{name: 'WAKE_UP',                                role: 'meta.config', children: {
+        'Wake-up Interval': {role: 'meta.config', type: 'number'}
+    }},
     0x21:{name: 'CONTROLLER_REPLICATION',                 role: ''},
     0x26:{name: 'SWITCH_MULTILEVEL',                      role: 'light.dimmer', children: {
         Level: {role: 'level.dimmer'}
     }},
-    0x27:{name: 'SWITCH_ALL',                             role: ''},
-    0x30:{name: 'SENSOR_BINARY',                          role: 'sensor'},
+    0x27:{name: 'SWITCH_ALL',                             role: 'switch', children: {
+        'Switch All': {role: 'switch', type: 'boolean'}
+    }},
+    0x30:{name: 'SENSOR_BINARY',                          role: 'sensor', children: {
+        'Sensor:': {type: 'number'},
+    }},
     0x31:{name: 'SENSOR_MULTILEVEL',                      role: 'sensor', children: {
-        Temperature: {role: 'value.temperature'}
+        Temperature: {role: 'sensor.temperature'}
     }},
     0x9c:{name: 'SENSOR_ALARM',                           role: 'alarm'},
-    0x71:{name: 'ALARM',                                  role: ''},
+    0x71:{name: 'ALARM',                                  role: 'alarm', children: {
+        'Alarm Level': {role: 'alarm', type: 'mixed'},
+        'Alarm Type': {role: 'alarm', type: 'mixed'}
+    }},
     0x8F:{name: 'MULTI_CMD',                              role: ''},
     0x46:{name: 'CLIMATE_CONTROL_SCHEDULE',               role: ''},
     0x81:{name: 'CLOCK',                                  role: ''},
     0x85:{name: 'ASSOCIATION',                            role: ''},
-    0x70:{name: 'CONFIGURATION',                          role: 'meta.config', children: {
-        Level: {role: 'level.dimmer'}
+    0x70:{name: 'CONFIGURATION',                          role: 'meta.config', type: 'mixed', children: {
+        type: 'mixed'
     }},
     0x72:{name: 'MANUFACTURER_SPECIFIC',                  role: ''},
     0x22:{name: 'APPLICATION_STATUS',                     role: ''},
@@ -392,16 +465,27 @@ var comclasses = {
     0x76:{name: 'LOCK',                                   role: ''},
     0x91:{name: 'MANUFACTURER_PROPRIETARY',               role: ''},
     0x35:{name: 'METER_PULSE',                            role: ''},
-    0x32:{name: 'METER',                                  role: ''},
+    0x31:{name: 'SENSOR_MULTILEVEL',                      role: 'sensor', children: {
+        Power: {role: 'sensor.meter', type: 'number'},
+        Temperature: {role: 'sensor.temperature', type: 'number'}
+    }},
+    0x32:{name: 'METER',                                  role: 'sensor', children: {
+        Energy: {role: 'sensor.meter', type: 'number'},
+        Power: {role: 'sensor.meter', type: 'number'},
+        Exporting: {type: 'boolean'},
+        Reset: {type: 'boolean'}
+    }},
     0x51:{name: 'MTP_WINDOW_COVERING',                    role: ''},
     0x8E:{name: 'MULTI_INSTANCE_ASSOCIATION',             role: ''},
     0x60:{name: 'MULTI_INSTANCE',                         role: ''},
     0x00:{name: 'NO_OPERATION',                           role: ''},
     0x77:{name: 'NODE_NAMING',                            role: ''},
     0xf0:{name: 'NON_INTEROPERABLE',                      role: ''},
-    0x73:{name: 'POWERLEVEL',                             role: ''},
+    0x73:{name: 'POWERLEVEL',                             role: 'meta.config'},
     0x88:{name: 'PROPRIETARY',                            role: ''},
-    0x75:{name: 'PROTECTION',                             role: ''},
+    0x75:{name: 'PROTECTION',                             role: '', children: {
+        Protection: {type: 'string'}
+    }},
     0x7c:{name: 'REMOTE_ASSOCIATION_ACTIVATE',            role: ''},
     0x7d:{name: 'REMOTE_ASSOCIATION',                     role: ''},
     0x2b:{name: 'SCENE_ACTIVATION',                       role: ''},
@@ -413,7 +497,9 @@ var comclasses = {
     0x9E:{name: 'SENSOR_CONFIGURATION',                   role: ''},
     0x9d:{name: 'SILENCE_ALARM',                          role: ''},
     0x94:{name: 'SIMPLE_AV_CONTROL',                      role: ''},
-    0x25:{name: 'SWITCH_BINARY',                          role: 'switch'},
+    0x25:{name: 'SWITCH_BINARY',                          role: 'switch', children: {
+        Switch: {role: 'switch', type: 'boolean'}
+    }},
     0x28:{name: 'SWITCH_TOGGLE_BINARY',                   role: ''},
     0x29:{name: 'SWITCH_TOGGLE_MULTILEVEL',               role: ''},
     0x44:{name: 'THERMOSTAT_FAN_MODE',                    role: ''},
@@ -422,7 +508,12 @@ var comclasses = {
     0x40:{name: 'THERMOSTAT_MODE',                        role: ''},
     0x42:{name: 'THERMOSTAT_OPERATING_STATE',             role: ''},
     0x47:{name: 'THERMOSTAT_SETBACK',                     role: ''},
-    0x43:{name: 'THERMOSTAT_SETPOINT',                    role: ''},
+    0x43:{name: 'THERMOSTAT_SETPOINT',                    role: '', children: {
+        Cooling: {role: 'level.temperature', type: 'number'},
+        Furnace: {role: 'level.temperature', type: 'number'},
+        Unused: {role: 'level.temperature', type: 'number'},
+        Heating: {role: 'level.temperature', type: 'number'}
+    }},
     0x8B:{name: 'TIME_PARAMETERS',                        role: ''},
     0x8a:{name: 'TIME',                                   role: ''},
     0x63:{name: 'USER_CODE',                              role: ''},
@@ -458,21 +549,187 @@ function calcName(nodeid, comclass, idx, instance) {
     return name;
 }
 
+function extendObject(nodeid, comclass, value, action) {
+    var oname;
+
+    if (value != null) {
+        adapter.log.debug("-----------> NODE: " + nodeid + "-----" + comclass + "-----" + JSON.stringify(value));
+        oname = calcName(nodeid, comclass, value.label, value.genre=="user" ? value.instance : undefined);
+        adapter.log.error('##### Value added: ' + oname + ' = ' + value.value + " index = " + value.index + " comclass = " + comclass + " instance = " + value.instance);
+
+        // Only if "value added"
+        if (nodes[nodeid].classes[comclass] != undefined) {
+            nodes[nodeid].classes[comclass][value.index] = value;
+        } else {
+            // Create this Object
+            nodes[nodeid].classes[comclass] = nodes[nodeid].classes[comclass] || {};
+            nodes[nodeid].classes[comclass][value.index] = value;
+        }
+    } else {
+        adapter.log.debug("-----------> NODE: " + nodeid);
+        oname = calcName(nodeid);
+    }
+
+    adapter.log.debug("####################################### " + oname);
+    // TODO: Check if this Object already exists
+    // if (action == "added") {
+    if (value !== null) {
+        var channels = [];
+        var values;
+
+        if (comclass != null) {
+            var chName = calcName(nodeid, comclass);
+
+            var chObj = {
+                common: {
+                    name: chName,
+                },
+                native: {
+                    comclass: comclass,
+                    nodeid: nodeid
+                },
+                type: 'channel',
+                _id: chName
+            };
+            if (comclasses[comclass] && comclasses[comclass].role) {
+                chObj.common.role = comclasses[comclass].role;
+            }
+
+            // TODO: put "value added" objects into objects
+            var obj = objects[chName];
+            if (obj !== undefined && obj !== null) {
+                var d = diff(obj, chObj);
+                if (d !== undefined) {
+                    adapter.log.debug("---------> DIFFERENT OBJECT " + chName);
+                    adapter.extendObject(chName, chObj);
+                }
+            } else {
+                adapter.log.debug("---------> NEW CHANNEL OBJECT " + chName);
+                adapter.extendObject(chName, chObj);
+            }
+
+            var stateObj = {
+                common: {
+                    name: oname, // You can add here some description
+                    read: true,
+                    write: true,
+                    state: "mixed",
+                    role: 'value',
+                    type: 'mixed'
+                },
+                // native: values[idx],
+                native: nodes[nodeid].classes[comclass][value.index],
+                type: 'state',
+                _id: oname
+            };
+
+            if (comclasses[comclass] && comclasses[comclass].role) {
+                //if (comclasses[comclass].children && comclasses[comclass].children[values[idx].label]) {
+                if (comclasses[comclass].children && comclasses[comclass].children[value.label]) {
+                    //if (comclasses[comclass].children[values[idx].label].role) {
+                    if (comclasses[comclass].children[value.label].role) {
+                        //stateObj.common.role = comclasses[comclass].children[values[idx].label].role;
+                        stateObj.common.role = comclasses[comclass].children[value.label].role;
+                    } else {
+                        stateObj.common.role = comclasses[comclass].role;
+                    }
+                    //if (comclasses[comclass].children[values[idx].label].type) {
+                    if (comclasses[comclass].children[value.label].type) {
+                        //stateObj.common.type = comclasses[comclass].children[values[idx].label].type;
+                        stateObj.common.type = comclasses[comclass].children[value.label].type;
+                        //} else if (comclasses[comclass].children[values[idx]].type) {
+                    } else if (comclasses[comclass].children[value.label].type) {
+                        //stateObj.common.type = comclasses[comclass].children[values[idx]].type;
+                        stateObj.common.type = comclasses[comclass].children[value].type;
+                    }
+                } else {
+                    stateObj.common.role = comclasses[comclass].role;
+                }
+            }
+
+            // TODO: put "value added" objects into objects
+            var changed = false;
+            var obj = objects[oname];
+            if (obj !== undefined && obj !== null) {
+                var d = diff(obj, stateObj);
+                if (d !== undefined) {
+                    adapter.log.debug("----------> DIFF (" + d.length + ") " + d[0].kind + ", " + d[0].lhs + "|" + d[0]. rhs + ", " + JSON.stringify(d[0].path));
+                    // Check each Object in Array
+                    for (var index = d.length - 1; index >= 0; --index) {
+                        var o = d[index];
+                        if (o.kind === "E" && o.path[0] === 'native' && o.path[1] === 'value') {
+                            adapter.log.debug("############ setState for " + oname + " (" + index + ")");
+                            adapter.states.setState(oname, {val: obj.native.value, ack: true});
+                        } else if (o.kind === "D" && o.path[0] === 'common' && o.path[1] === 'history') {
+                            adapter.log.debug("Nothing todo for " + oname);
+                        } else {
+                            changed = true;
+                        }
+                    }
+                }
+            } else {
+                // NEW OBJECT
+                adapter.log.debug("---------> CREATE NEW OBJECT " + oname);
+                adapter.extendObject(oname, stateObj);
+            }
+
+            if (changed === true) {
+                adapter.log.debug("---------> CHANGED OBJECT " + oname);
+                adapter.extendObject(oname, stateObj);
+            }
+        }
+    }
+
+    // Only if 'node ready'
+    if (value == null) {
+        var devName = calcName(nodeid);
+        var devObj = {
+            common: {
+                name: devName,
+                type: 'state',
+                role: 'state',
+                read: true,
+                write: true
+            },
+            native: nodes[nodeid],
+            type: 'device',
+            _id: devName
+        };
+
+
+        var obj = objects[devName];
+        if (obj !== undefined && obj !== null) {
+            var d = diff(obj, devObj);
+            if (d !== undefined) {
+                var c = false;
+                adapter.log.debug("----------> DIFF (" + d.length + ") " + d[0].kind + ", " + d[0].lhs + "|" + d[0]. rhs + ", " + JSON.stringify(d[0].path));
+                // Check each Object in Array
+                for (var index = d.length - 1; index >= 0; --index) {
+                    var o = d[index];
+                    if (o.kind === "E" && o.path[0] === 'native' && o.path[1] === 'value') {
+                        adapter.states.setState(devName, {val: obj.native.value, ack: true});
+                    } else if (o.kind === "D" && o.path[0] === 'common' && o.path[1] === 'history') {
+                        adapter.log.debug("Nothing todo for " + devName);
+                    } else {
+                        c = true;
+                    }
+                }
+                if (c === true) {
+                    adapter.log.debug("---------> DIFFERENT OBJECT " + devName);
+                    adapter.extendObject(devName, devObj);
+                }
+
+            }
+        } else {
+            adapter.log.debug("---------> NEW CHANNEL OBJECT " + devName);
+            adapter.extendObject(devName, devObj);
+        }
+    }
+}
+
 function main() {
     var OZW = require('./node_modules/openzwave-shared/lib/openzwave-shared.js');
-
-    // Reihenfolge:
-    /*
-     scanning
-     node added
-     node available
-     value added
-     node naming
-
-     node ready
-     value changed
-     Scan completed
-     */
+    nodes = [];
 
     zwave = new OZW({
         // TODO: Check if we really need this
@@ -483,8 +740,6 @@ function main() {
         PollInterval:    adapter.config.pollintervall,      // 500                                      // interval between polls in milliseconds
         SuppressValueRefresh: adapter.config.suppressrefresh     // false                                    // do not send updates if nothing changed
     });
-
-    var nodes = [];
 
     zwave.on('connected', function(homeid) {
         adapter.states.setState('system.adapter.' + adapter.namespace + '.connected', {val: true, ack: true});
@@ -505,8 +760,9 @@ function main() {
     });
 
     zwave.on('node added', function (nodeid) {
-        adapter.log.info("node added for " + nodeid + " found");
+        adapter.log.debug("node added for " + nodeid + " found");
 
+        // Create Initial Object if new one found
         // Just create a Default Objecttree with no entries
         nodes[nodeid] = {
             manufacturer:   '',
@@ -522,161 +778,36 @@ function main() {
         };
     });
 
-    zwave.on('value added', function (nodeid, comclass, value) {
-        adapter.log.debug("value added: nodeid: " + nodeid + " comclass: " + JSON.stringify(comclass) + " value: "  + JSON.stringify(value));
+    zwave.on('value added', function (nodeid, comclass, valueId) {
+        adapter.log.debug("value added: nodeid: " + nodeid + " comclass: " + JSON.stringify(comclass) + " value: "  + JSON.stringify(valueId));
 
-        adapter.log.debug("-----------> NODE: " + nodeid + "-----" + comclass + "-----" + JSON.stringify(value));
-        var name = calcName(nodeid, comclass, value.label, value.genre=="user" ? value.instance : undefined);
+        //TODO: We have to check, if this Object exists already within ioBroker
+        extendObject(nodeid, comclass, valueId, 'added');
+    });
 
-        adapter.log.debug('##### Value added: ' + name + ' = ' + value.value + " index = " + value.index + " comclass = " + comclass + " instance = " + value.instance);
+    zwave.on('value changed', function (nodeid, comclass, valueId) {
+        //TODO: We have to check, if this Object exists already within ioBroker
+        adapter.log.debug("value changed: " + nodeid + " comclass: " + JSON.stringify(comclass) + " value: "  + JSON.stringify(valueId));
 
-        nodes[nodeid].classes[comclass] = nodes[nodeid].classes[comclass] || {};
-        nodes[nodeid].classes[comclass][value.index] = value;
+        //TODO: We have to check, if this Object exists already within ioBroker
+        extendObject(nodeid, comclass, valueId, 'changed');
 
-        /** *********************************************** **/
-        // Create channel
-        var devName = calcName(nodeid);
-        var channels = [];
-        for (var comclass in nodes[nodeid].classes) {
-            var chName = calcName(nodeid, comclass);
-            var DPs = [];
-            channels.push(chName);
-
-            switch (comclass) {
-                case 0x25: // COMMAND_CLASS_SWITCH_BINARY
-                case 0x26: // COMMAND_CLASS_SWITCH_MULTILEVEL
-                    zwave.enablePoll(nodeid, comclass);
-                    break;
-            }
-
-            var values = nodes[nodeid].classes[comclass];
-
-            for (var idx in values) {
-                var instances = values[idx].instance;
-                for (var inst=1; inst<=instances; inst++) {
-                    var name = calcName(nodeid, comclass, values[idx].label, values[idx].genre=="user" ? inst : undefined);
-
-                    DPs.push(name);
-                    values[idx].comclass = comclass;
-                    values[idx].nodeid   = nodeid;
-                    values[idx].index    = idx;
-                    values[idx].instance = inst;
-
-                    var stateObj = {
-                        common: {
-                            name:  name, // You can add here some description
-                            read:  true,
-                            write: true,
-                            state: "mixed",
-                            role: 'value',
-                            type: "State"
-                        },
-                        native: values[idx],
-                        // parent: chName, // Do not use parent or children for
-                        type:   'state',
-                        _id: name
-                    };
-
-                    if (comclasses[comclass] && comclasses[comclass].role) {
-                        if (comclasses[comclass].children && comclasses[comclass].children[values[idx].label]) {
-                            if (comclasses[comclass].children[values[idx].label].role) {
-                                stateObj.common.role = comclasses[comclass].children[values[idx].label].role;
-                            } else {
-                                stateObj.common.role = comclasses[comclass].role;
-                            }
-                            if (comclasses[comclass].children[values[idx].label].type) {
-                                stateObj.common.type = comclasses[comclass].children[values[idx].label].type;
-                            }
-                        } else {
-                            stateObj.common.role = comclasses[comclass].role;
-                        }
-                    }
-
-                    adapter.objects.getObject(name, function (err, res) {
-                        var c = diff(stateObj,res);
-                        if (c != undefined && c.length == 1 && c[0].kind == "N" && c[0].path[1] == "history") {
-                            adapter.log.debug("Nothing todo for stateObj(" + res.common.name + ")");
-                        } else {
-                            adapter.extendObject(name, stateObj);
-                        }
-                    });
-                }
-            }
-
-            var chObj = {
-                common: {
-                    name:  chName,
-                },
-                native: {
-                    comclass: comclass,
-                    nodeid:   nodeid
-                },
-                type: 'channel',
-                _id: chName
-            };
-            if (comclasses[comclass] && comclasses[comclass].role) {
-                chObj.common.role = comclasses[comclass].role;
-            }
-
-            adapter.objects.getObject(chName, function (err, res) {
-                var c = diff(chObj, res);
-                if (c != undefined) {
-                    adapter.extendObject(chName, chObj);
-                } else {
-                    adapter.log.debug("Nothing todo for chObj(" + res.common.name + ")");
-                }
-            });
-        }
-
-        nodes[nodeid].nodeid = nodeid;
-        adapter.objects.getObject(devName, function (err, res) {
-            var devObj = {
-                common: {
-                    name: devName,
-                    type: 'state',
-                    role: 'state',
-                    read: true,
-                    write: true
-                },
-                native: nodes[nodeid],
-                type: 'device',
-                _id: devName
-            };
-
-            var c = diff(devObj, res);
-            if (c != undefined) {
-                adapter.extendObject(devName, devObj);
+        if (valueId !== undefined) {
+            var name = calcName(nodeid, comclass, valueId.label, valueId.genre=="user" ? valueId.instance : undefined);
+            if (nodes[nodeid].classes[comclass] !== undefined) {
+                adapter.log.debug('Value changed: ' + name + ' from ' + nodes[nodeid].classes[comclass][valueId.index].value + ' to ' + valueId.value);
+                nodes[nodeid].classes[comclass][valueId.index] = valueId;
             } else {
-                adapter.log.debug("Nothing todo for devObj(" + res.common.name + ")");
+                adapter.log.debug('Value changed: ' + name + ' for ' + name + ' to ' + valueId.value);
             }
-        });
-
-        if (chName.search(".CONFIGURATION") == -1) {
-            adapter.setState(chName, {val: value.value, ack: true});
+            adapter.setState(name, {val: valueId.value, ack: true});
+        } else {
+            adapter.log.error("VALUE NOT DEFINED");
         }
     });
 
-    zwave.on('value changed', function (nodeid, comclass, value) {
-        adapter.log.info("value changed: " + nodeid + " comclass: " + JSON.stringify(comclass) + " value: "  + JSON.stringify(value));
-
-        if (nodes[nodeid].ready) {
-            if (value !== undefined) {
-                var name = calcName(nodeid, comclass, value.label, value.genre=="user" ? value.instance : undefined);
-                if (nodes[nodeid].classes[comclass] !== undefined) {
-                    adapter.log.info('Value changed: ' + name + ' from ' + nodes[nodeid].classes[comclass][value.index].value + ' to ' + value.value);
-                    nodes[nodeid].classes[comclass][value.index] = value;
-                } else {
-                    adapter.log.info('Value changed: ' + name + ' for ' + name + ' to ' + value.value);
-                }
-                adapter.setState(name, {val: value.value, ack: true});
-            } else {
-                adapter.log.error("VALUE NOT DEFINED");
-            }
-        }
-    });
-
-    zwave.on('value removed', function (nodeid, comclass, index) {
-        adapter.log.debug("value removed: " + nodeid + " comclass: " + JSON.stringify(comclass) + " value: "  + JSON.stringify(index));
+    zwave.on('value removed', function (nodeid, comclass, instance, index) {
+        adapter.log.debug("value removed: " + nodeid + " comclass: " + JSON.stringify(comclass) + " instance " + instance + " value: "  + JSON.stringify(index));
 
         var name = calcName(nodeid);
 
@@ -704,6 +835,30 @@ function main() {
         delete nodes[nodeid];
     });
 
+    zwave.on('node event', function(nodeid, event, valueId) {
+        adapter.log.info('node'+nodeid+': node event for ' + JSON.stringify(event) + ', valueId = ' + JSON.stringify(valueId) + ' currently not implemented');
+    });
+
+    zwave.on('scene event', function(nodeid, sceneid) {
+        adapter.log.info('node'+nodeid+': scene event for ' + sceneid + ', currently not implemented');
+        /*
+         For example when you have your Aeon Labs Minimote setup with the following configuration:
+
+         - zwave.setConfigParam(nodeid, 241, 1, 1);
+         - zwave.setConfigParam(nodeid, 242, 1, 1);
+         - zwave.setConfigParam(nodeid, 243, 1, 1);
+         - zwave.setConfigParam(nodeid, 244, 1, 1);
+         - zwave.setConfigParam(nodeid, 250, 1, 1);
+
+         It would send:
+
+         - sceneid of 1 when (1) is Pressed
+         - sceneid of 2 when (1) is Held
+         - sceneid of 3 when (2) is Pressed
+         - etc.
+         */
+    });
+
     zwave.on('polling enabled', function(nodeid) {
         adapter.log.info('node'+nodeid+': polling ENABLED, currently not implemented');
     });
@@ -711,16 +866,6 @@ function main() {
     zwave.on('polling disabled', function(nodeid) {
         adapter.log.info('node'+nodeid+': polling DISABLED, currently not implemented');
     });
-
-    var notificationCodes = {
-        0: 'message complete',
-        1: 'timeout',
-        2: 'nop',
-        3: 'node awake',
-        4: 'node sleep',
-        5: 'node dead (Undead Undead Undead)',
-        6: 'node alive'
-    };
 
     zwave.on('notification', function(nodeid, notif) {
         adapter.log.info('node'+nodeid+': '+notificationCodes[notif]+', currently not implemented');
@@ -749,42 +894,12 @@ function main() {
         }
     });
 
-    var ctrlState = {
-        0: 'No command in progress',
-        1: 'The command is starting',
-        2: 'The command was cancelled',
-        3: 'Command invocation had error(s) and was aborted',
-        4: 'Controller is waiting for a user action',
-        5: 'Controller command is on a sleep queue wait for device',
-        6: 'The controller is communicating with the other device to carry out the command',
-        7: 'The command has completed successfully',
-        8: 'The command has failed',
-        9: 'The controller thinks the node is OK',
-        10: 'The controller thinks the node has failed'
-    };
-
-    var ctrlError = {
-        0: 'No error',
-        1: 'ButtonNotFound',
-        2: 'NodeNotFound',
-        3: 'NotBridge',
-        4: 'NotSUC',
-        5: 'NotSecondary',
-        6: 'NotPrimary',
-        7: 'IsPrimary',
-        8: 'NotFound',
-        9: 'Busy',
-        10: 'Failed',
-        11: 'Disabled',
-        12: 'Overflow'
-    };
-
-    zwave.on('controller command', function (state, error) {
-        adapter.log.info('controller command feedback: state:'+ctrlState[state]+' error:'+ctrlError[error]+', currently not implemented');
+    zwave.on('controller command', function(nodeId, ctrlState, ctrlError, helpmsg) {
+        adapter.log.info('controller command feedback: state:'+ctrlStat[ctrlState]+' #### error:'+ctrlErr[ctrlError]+' #### helpmsg:' + helpmsg + ' #### currently not implemented');
     });
 
     zwave.on('node naming', function (nodeid, nodeinfo) {
-        adapter.log.info('node naming nodeid:'+nodeid+' nodeinfo:'+JSON.stringify(nodeinfo));
+        adapter.log.debug('node naming nodeid:'+nodeid+' nodeinfo:'+JSON.stringify(nodeinfo));
 
         var address = adapter.namespace + ".NODE" + nodeid;
         adapter.objects.getObject(address, function (err, res) {
@@ -806,8 +921,8 @@ function main() {
         });
     });
 
-    zwave.on('value refreshed', function(nodeid, commandclass, value) {
-        adapter.log.debug('value refreshed nodeid:'+nodeid+' commandclass:'+JSON.stringify(commandclass)+' value:'+JSON.stringify(value)+', currently not implemented');
+    zwave.on('value refreshed', function(nodeid, commandclass, valueId) {
+        adapter.log.info('value refreshed nodeid:'+nodeid+' commandclass:'+JSON.stringify(commandclass)+' value:'+JSON.stringify(valueId)+', currently not implemented');
     });
 
     /**************************************************************/
@@ -830,129 +945,14 @@ function main() {
         'product=' + nodeinfo.productid + ', type=' + nodeinfo.producttype));
         adapter.log.debug('node' + nodeid + ': name="' + nodeinfo.name + '", type="' + nodeinfo.type + '", location="' + nodeinfo.loc + '"');
 
-        adapter.log.info("nodeid " + nodeid + " is now available");
+        adapter.log.info("nodeid " + nodeid + " is now available, but maybe not ready");
     });
 
     zwave.on('node ready', function (nodeid, nodeinfo) {
-        adapter.log.debug('node ready nodeid:'+nodeid+' nodeinfo:'+JSON.stringify(nodeinfo));
+        adapter.log.info('node ready nodeid:'+nodeid+' nodeinfo:'+JSON.stringify(nodeinfo));
 
-        /** *********************************************** **/
-        // Create channel
-        var devName = calcName(nodeid);
-        var channels = [];
-        for (var comclass in nodes[nodeid].classes) {
-            var chName = calcName(nodeid, comclass);
-            var DPs = [];
-            channels.push(chName);
-
-            switch (comclass) {
-                case 0x25: // COMMAND_CLASS_SWITCH_BINARY
-                case 0x26: // COMMAND_CLASS_SWITCH_MULTILEVEL
-                    zwave.enablePoll(nodeid, comclass);
-                    break;
-            }
-
-            var values = nodes[nodeid].classes[comclass];
-
-            for (var idx in values) {
-                var instances = values[idx].instance;
-                for (var inst=1; inst<=instances; inst++) {
-                    var name = calcName(nodeid, comclass, values[idx].label, values[idx].genre=="user" ? inst : undefined);
-
-                    DPs.push(name);
-                    values[idx].comclass = comclass;
-                    values[idx].nodeid   = nodeid;
-                    values[idx].index    = idx;
-                    values[idx].instance = inst;
-
-                    var stateObj = {
-                        common: {
-                            name:  name, // You can add here some description
-                            read:  true,
-                            write: true,
-                            state: "mixed",
-                            role: 'value',
-                            type: "State"
-                        },
-                        native: values[idx],
-                        // parent: chName, // Do not use parent or children for
-                        type:   'state',
-                        _id: name
-                    };
-
-                    if (comclasses[comclass] && comclasses[comclass].role) {
-                        if (comclasses[comclass].children && comclasses[comclass].children[values[idx].label]) {
-                            if (comclasses[comclass].children[values[idx].label].role) {
-                                stateObj.common.role = comclasses[comclass].children[values[idx].label].role;
-                            } else {
-                                stateObj.common.role = comclasses[comclass].role;
-                            }
-                            if (comclasses[comclass].children[values[idx].label].type) {
-                                stateObj.common.type = comclasses[comclass].children[values[idx].label].type;
-                            }
-                        } else {
-                            stateObj.common.role = comclasses[comclass].role;
-                        }
-                    }
-
-                    adapter.objects.getObject(name, function (err, res) {
-                        var c = diff(stateObj,res);
-                        if (c != undefined && c.length == 1 && c[0].kind == "N" && c[0].path[1] == "history") {
-                            adapter.log.debug("Nothing todo for stateObj(" + res.common.name + ")");
-                        } else {
-                            adapter.extendObject(name, stateObj);
-                        }
-                    });
-                }
-            }
-
-            var chObj = {
-                common: {
-                    name:  chName,
-                },
-                native: {
-                    comclass: comclass,
-                    nodeid:   nodeid
-                },
-                type: 'channel',
-                _id: chName
-            };
-            if (comclasses[comclass] && comclasses[comclass].role) {
-                chObj.common.role = comclasses[comclass].role;
-            }
-
-            adapter.objects.getObject(chName, function (err, res) {
-                var c = diff(chObj, res);
-                if (c != undefined) {
-                    adapter.extendObject(chName, chObj);
-                } else {
-                    adapter.log.debug("Nothing todo for chObj(" + res.common.name + ")");
-                }
-            });
-        }
-
-        nodes[nodeid].nodeid = nodeid;
-        adapter.objects.getObject(devName, function (err, res) {
-            var devObj = {
-                common: {
-                    name: devName,
-                    type: 'state',
-                    role: 'state',
-                    read: true,
-                    write: true
-                },
-                native: nodes[nodeid],
-                type: 'device',
-                _id: devName
-            };
-
-            var c = diff(devObj, res);
-            if (c != undefined) {
-                adapter.extendObject(devName, devObj);
-            } else {
-                adapter.log.debug("Nothing todo for devObj(" + res.common.name + ")");
-            }
-        });
+        //TODO: We have to check, if this Object exists already within ioBroker
+        extendObject(nodeid, null, null, 'ready');
     });
 
     zwave.on('scan complete', function () {

@@ -858,7 +858,7 @@ var comclasses = {
                 }, function (res, err) {
                     $('#add-countdown').html(time);
                     $dialogAddCountdown.dialog('open');
-                    var time = 60;
+                    var time = 30;
                     var addInterval = setInterval(function () {
                         time = time - 1;
                         $('#add-countdown').html(time);

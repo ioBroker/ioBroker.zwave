@@ -1,10 +1,13 @@
 {
   "name": "iobroker.zwave",
   "description": "ZWave support for ioBroker based on openzwave packet",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "author": {
     "name": "bluefox",
     "email": "bluefox@ccu.io"
+  },
+  "scripts": {
+    "preinstall": "node preinstall.js"
   },
   "contributors": [
     "bluefox <bluefox@ccu.io>"
