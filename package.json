@@ -10,7 +10,8 @@
     "preinstall": "node preinstall.js"
   },
   "contributors": [
-    "bluefox <bluefox@ccu.io>"
+    "bluefox <bluefox@ccu.io>",
+    "husky-koglhof <husky.koglhof@icloud.com>"
   ],
   "homepage": "https://github.com/ioBroker/ioBroker.zwave",
   "license": "LGPLv3",
