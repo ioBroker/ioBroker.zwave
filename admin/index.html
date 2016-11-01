@@ -1,11 +1,11 @@
 <html>
 <head>
 <link rel="stylesheet" type="text/css" href="../../lib/css/themes/jquery-ui/redmond/jquery-ui.min.css"/>
+<link rel="stylesheet" type="text/css" href="../../css/adapter.css"/>
 <script type="text/javascript" src="../../lib/js/jquery-1.11.1.min.js"></script>
 <script type="text/javascript" src="../../socket.io/socket.io.js"></script>
 <script type="text/javascript" src="../../lib/js/jquery-ui-1.10.3.full.min.js"></script>
 
-<link rel="stylesheet" type="text/css" href="../../css/adapter.css"/>
 <script type="text/javascript" src="../../js/translate.js"></script>
 <script type="text/javascript" src="../../js/adapter-settings.js"></script>
 
@@ -19,6 +19,7 @@
 </style>
 
 <script type="text/javascript">
+    'use strict';
     var onChange;
     systemDictionary = {
         "OpenZWave adapter settings": {
@@ -68,9 +69,42 @@
         }
     };
 
+    var timeout;
+
+    function getComPorts(actualValue) {
+        timeout = setTimeout(function () {
+            getComPorts(actualValue);
+        }, 2000);
+
+        sendTo(null, 'listUart', null, function (list) {
+            if (timeout) {
+                clearTimeout(timeout);
+                timeout = null;
+            }
+            if (!list || !list.length) {
+                setTimeout(function () {
+                    getComPorts(actualValue);
+                }, 1000);
+                return;
+            }
+            var text = '<option value="">' + _('Select port') + '</option>';
+            for (var j = 0; j < list.length; j++) {
+                if (list[j].comName === 'Not available') {
+                    text += '<option value="" selected>' + _('Not available') + '</option>';
+                    $('#usb').prop('disabled', true);
+                    break;
+                } else {
+                    text += '<option value="' + list[j].comName + '" ' + ((actualValue === list[j].comName) ? 'selected' : '') + '>' + list[j].comName + '</option>';
+                }
+            }
+            $('#usb').html(text);
+        });
+    }
+
+
     function setValue(id, value) {
         // example: select elements with id=key and class=value and insert value
-        if ($('#' + id + '.value').attr('type') == 'checkbox') {
+        if ($('#' + id + '.value').attr('type') === 'checkbox') {
             $('#' + id + '.value').prop('checked', value).change(function() {
                 onChange();
             });
@@ -88,7 +122,7 @@
 
         if (subparam && param) {
             for (var key in settings[param][subparam]) {
-                if (typeof settings[param][subparam][key] != 'object') {
+                if (typeof settings[param][subparam][key] !== 'object') {
                     setValue(param + '_' + subparam + '_' + key, settings[param][subparam][key]);
                 } else {
                     alert("4th level is not supported");
@@ -96,7 +130,7 @@
             }
         } else if (param) {
             for (var key in settings[param]) {
-                if (typeof settings[param][key] != 'object') {
+                if (typeof settings[param][key] !== 'object') {
                     setValue(param + '_' + key, settings[param][key]);
                 } else {
                     loadHelper(settings, param, key);
@@ -104,7 +138,7 @@
             }
         } else {
             for (var key in settings) {
-                if (typeof settings[key] != 'object') {
+                if (typeof settings[key] !== 'object') {
                     setValue(key, settings[key]);
                 } else {
                     loadHelper(settings, key);
@@ -118,20 +152,14 @@
         onChange = onchange;
         loadHelper(settings);
         $('#pass_confirm').val($('#pass').val());
-        $('#save').button("disable");
 
-        sendToHost(null, 'getDevList', null, function (res) {
-            var availableTags = [' '];
-            if (res) {
-                for (var t = 0; t < res.length; t++) {
-                    if (res[t].substring(0, 'tty'.length) == 'tty') {
-                        availableTags.push(res[t]);
-                    }
-                }
+        getIsAdapterAlive(function (isAlive) {
+            if (isAlive || common.enabled) {
+                getComPorts(settings.usb);
+            } else {
+                $('#_usb').html('<input id="usb" class="value" value="' + settings.usb + '"/>');
+                $('#usb').change(onChange).keyup(onChange);
             }
-            $("#usb").autocomplete({
-                source: availableTags
-            });
         });
         onchange(false);
     }
@@ -158,7 +186,7 @@
             var $this = $(this);
             var id = $this.attr('id');
 
-            if ($this.attr('type') == 'checkbox') {
+            if ($this.attr('type') === 'checkbox') {
                 obj = saveHelper(obj, id, $this.prop('checked'))
             } else {
                 obj = saveHelper(obj, id, $this.val())
@@ -167,8 +195,6 @@
         return obj;
     }
 
-    // ... and the function save has to exist.
-    // you have to make sure the callback is called with the settings object as first param!
     function save(callback) {
         callback(getSettings());
     }
@@ -190,8 +216,8 @@
         </tr>
         <tr><td class="line" colspan="2"> </td></tr>
         <tr>
-            <td class="translate">USB name:</td>
-            <td><input class="value" id="usb"/></td>
+            <td><label  class="translate" for="usb">USB name:</label></td>
+            <td id="_usb"><select class="value" id="usb"></select></td>
         </tr>
         <tr><td class="line" colspan="2"> </td></tr>
         <tr>

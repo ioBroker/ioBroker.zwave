@@ -1,16 +1,16 @@
 {
   "name": "iobroker.zwave",
   "description": "ZWave support for ioBroker based on openzwave packet",
-  "version": "0.2.5",
+  "version": "0.4.0",
   "author": {
     "name": "bluefox",
-    "email": "bluefox@ccu.io"
+    "email": "dogafox@gmail.com"
   },
   "scripts": {
     "preinstall": "node preinstall.js"
   },
   "contributors": [
-    "bluefox <bluefox@ccu.io>",
+    "bluefox <dogafox@gmail.com>",
     "husky-koglhof <husky.koglhof@icloud.com>"
   ],
   "homepage": "https://github.com/ioBroker/ioBroker.zwave",
@@ -26,24 +26,16 @@
     "url": "https://github.com/ioBroker/ioBroker.zwave"
   },
   "dependencies": {
-    "openzwave-shared": "~1.1.5",
-    "deep-diff": "0.3.3"
+    "openzwave-shared": "^1.2.0",
+    "serialport": "^4.0.1"
   },
   "devDependencies": {
     "grunt": "^0.4.5",
     "grunt-replace": "^0.9.3",
     "grunt-contrib-jshint": "^0.11.2",
     "grunt-jscs": "^2.0.0",
-    "grunt-http": "^1.6.0",
-    "grunt-contrib-clean": "^0.6.0",
-    "grunt-contrib-compress": "^0.13.0",
-    "grunt-contrib-copy": "^0.8.0",
-    "grunt-exec": "^0.4.6"
+    "grunt-http": "^1.6.0"
   },
-  "os": [
-    "darwin",
-    "linux"
-  ],
   "bugs": {
     "url": "https://github.com/ioBroker/ioBroker.zwave/issues"
   },

@@ -7,46 +7,91 @@
 			"de": "ZWave Unterstutzung durch Openzwave Paket",
 			"ru": "Поддержка ZWave основанная на Openzwave пакете"
 		},
-        "version":                  "0.2.5",
+        "version":                  "0.4.0",
+        "news": {
+            "0.4.0": {
+                "en": "Rewrite adapter",
+                "de": "Komplett neuer Adapter",
+                "ru": "Полностью переписанный драйвер"
+            }
+        },
         "mode":                     "daemon",
         "platform":                 "javascript/Node.js",
-        "os":                       ["darwin", "linux"],
         "loglevel":                 "info",
         "keywords":                 ["zwave", "control", "openzwave"],
         "main":                     "main.js",
         "authors": [
-            "Boris Kondratenko", "bluefox <bluefox@ccu.io>",
+            "bluefox <dogafox@gmail.com>",
             "Christian Baumgartner", "husky-koglhof <husky.koglhof@icloud.com>"
         ],
         "license":                  "LGPL",
-        "singletonHost":             true,
         "readme":                   "https://github.com/ioBroker/ioBroker.zwave/blob/master/README.md",
         "icon":                     "zwave.png",
         "extIcon":                  "https://raw.githubusercontent.com/ioBroker/ioBroker.zwave/master/admin/zwave.png",
-        "dependencies":             ["web"],
         "onlyWWW":                  false,
         "singleton":                true,
         "messagebox":               true,
-        "type":                     "hardware",
-	"localLink":                "%web_protocol%://%ip%:%web_port%/zwave/index.html",
-        "adminTab":                {
-            "singleton":    true,
-            "name":         "ZWave",
-            "link":         "%web_protocol%://%ip%:%web_port%/zwave/index.html"
-        }
+        "type":                     "hardware"
     },
     "native": {
-        "usb": "ttyACM0",
-        "logging": false,
-        "consoleoutput": false,
-        "saveconfig": true,
-        "driverattempts": "3",
-        "pollinterval": "500",
-        "suppressrefresh": false,
-        "forceinit": false
+        "usb":              "",
+        "logging":          false,
+        "consoleoutput":    false,
+        "saveconfig":       true,
+        "driverattempts":   3,
+        "pollinterval":     500,
+        "suppressrefresh":  false,
+        "forceinit":        false
     },
     "objects": [
     ],
     "instanceObjects": [
+        {
+            "_id":  "info",
+            "type": "channel",
+            "common": {
+                "name": "Information"
+            },
+            "native": {}
+        },
+        {
+            "_id":  "info.connection",
+            "type": "state",
+            "common": {
+                "role":  "indicator.connected",
+                "name":  "If connected to ZWave stick",
+                "type":  "boolean",
+                "read":  true,
+                "write": false,
+                "def":   false
+            },
+            "native": {}
+        },
+        {
+            "_id":  "inclusionOn",
+            "type": "state",
+            "common": {
+                "role":  "state",
+                "name":  "Inclusion mode activated",
+                "desc":  "If inclusion mode on or off",
+                "type":  "boolean",
+                "read":  true,
+                "write": true
+            },
+            "native": {}
+        },
+        {
+            "_id":  "forceInit",
+            "type": "state",
+            "common": {
+                "role":  "state",
+                "name":  "Force initialisation",
+                "desc":  "Force initialisation of zwave devices",
+                "type":  "boolean",
+                "read":  true,
+                "write": true
+            },
+            "native": {}
+        }
     ]
 }
