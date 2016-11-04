@@ -4,7 +4,7 @@
 <link rel="stylesheet" type="text/css" href="../../css/adapter.css"/>
 <script type="text/javascript" src="../../lib/js/jquery-1.11.1.min.js"></script>
 <script type="text/javascript" src="../../socket.io/socket.io.js"></script>
-<script type="text/javascript" src="../../lib/js/jquery-ui-1.10.3.full.min.js"></script>
+<script type="text/javascript" src="../../lib/js/jquery-ui.min.js"></script>
 
 <script type="text/javascript" src="../../js/translate.js"></script>
 <script type="text/javascript" src="../../js/adapter-settings.js"></script>
@@ -15,6 +15,66 @@
     }
     td.line{
         border-top:1px solid black;
+    }
+    .node-img {
+        width: 22px;
+    }
+    .ui-icon-custom-add {
+        background-image: url(img/add.png) !important;
+        background-size: 16px 16px !important;
+    }
+    .ui-icon-custom-hard-reset {
+        background-image: url(img/hard-reset.png) !important;
+        background-size: 16px 16px !important;
+    }
+    .ui-icon-custom-soft-reset {
+        background-image: url(img/soft-reset.png) !important;
+        background-size: 16px 16px !important;
+    }
+    .ui-icon-custom-heal {
+        background-image: url(img/heal.png) !important;
+        background-size: 16px 16px !important;
+    }
+    .ui-icon-custom-neighbors {
+        background-image: url(img/neighbors.png) !important;
+        background-size: 16px 16px !important;
+    }
+    .ui-icon-custom-delete {
+        background-image: url(img/delete.png) !important;
+        background-size: 16px 16px !important;
+    }
+
+    #devices tr:nth-child(even) {
+        background: lightgray;
+    }
+    @keyframes highlight {
+        0% {
+            color: #00f900
+        }
+        80% {
+            color: green
+        }
+        100% {
+            color: black;
+        }
+    }
+    .highlight {
+        animation: highlight 2s;
+    }
+    @keyframes show-pair-off {
+        0% {
+            color: #F90000
+        }
+        80% {
+            color: red
+        }
+        100% {
+            color: black;
+        }
+    }
+
+    .message-error {
+        color: red;
     }
 </style>
 
@@ -66,10 +126,83 @@
             "en": "Suppress Refresh:",
             "de": "Neuladen verhindern:",
             "ru": "Не обновлять:"
-        }
+        },
+        "Options":          {"en": "Options",       "de": "Einstellungen",      "ru": "Настройки"},
+        "Devices":          {"en": "Devices",       "de": "Geräte",             "ru": "Устройства"},
+        "Add node":         {"en": "Add node",      "de": "Gerät hinzufügen",   "ru": "Добавить устройство"},
+        "Remove node":      {"en": "Remove node",   "de": "Gerät löschen",      "ru": "Удалить устройство"},
+        "Heal network":     {"en": "Heal network",  "de": "Netzwerk heilen",    "ru": "Вылечить сеть"},
+        "Get neighbors":    {"en": "Get neighbors", "de": "Finde Nachbarn",     "ru": "Найти соседние"},
+        "Soft reset":       {"en": "Soft reset",    "de": "Soft-Reset",         "ru": "Soft reset"},
+        "Hard reset":       {"en": "Hard reset",    "de": "Hard-Reset",         "ru": "Hard reset"},
+        "ID":               {"en": "ID",            "de": "ID",                 "ru": "ID"},
+        "Manufacturer":     {"en": "Manufacturer",  "de": "Manufacturer",       "ru": "Производитель"},
+        "Product":          {"en": "Product",       "de": "Produkt",            "ru": "Продукт"},
+        "Type":             {"en": "Type",          "de": "Typ",                "ru": "Тип"},
+        "Last":             {"en": "Last",          "de": "Letzte",             "ru": "Last"},
+        "Status":           {"en": "Status",        "de": "Zustand",            "ru": "Состояние"},
+        "ready":            {"en": "ready",         "de": "Bereit",             "ru": "готов к использованию"},
+        "alive":            {"en": "alive",         "de": "Aktiv/Alive",        "ru": "живой"},
+        "sleep":            {"en": "sleep",         "de": "Schläft",            "ru": "спит"},
+        "Select port":      {"en": "Select port",   "de": "Auswählen",          "ru": "выбрать порт"}
     };
 
+    var ctrlState = [
+        /*0: */ {'en': 'No command in progress',    'de': 'No command in progress',     'ru': 'No command in progress'},
+        /*1: */ {'en': 'The command is starting',   'de': 'The command is starting',    'ru': 'The command is starting'},
+        /*2: */ {'en': 'The command was cancelled', 'de': 'The command was cancelled',  'ru': 'The command was cancelled'},
+        /*3: */ {'en': 'Command invocation had error(s) and was aborted',
+                 'de': 'Command invocation had error(s) and was aborted',
+                 'ru': 'Command invocation had error(s) and was aborted'
+                },
+        /*4: */ {'en': 'Controller is waiting for a user action',
+                 'de': 'Controller is waiting for a user action',
+                 'ru': 'Controller is waiting for a user action'
+        },
+        /*5: */ {'en': 'Controller command is on a sleep queue wait for device',
+                 'de': 'Controller command is on a sleep queue wait for device',
+                 'ru': 'Controller command is on a sleep queue wait for device'
+        },
+        /*6: */ {'en': 'The controller is communicating with the other device to carry out the command',
+                 'de': 'The controller is communicating with the other device to carry out the command',
+                 'ru': 'The controller is communicating with the other device to carry out the command'
+        },
+        /*7: */ {'en': 'The command has completed successfully',
+                 'de': 'The command has completed successfully',
+                 'ru': 'The command has completed successfully'
+        },
+        /*8: */ {'en': 'The command has failed',    'de': 'The command has failed', 'ru': 'The command has failed'},
+        /*9: */ {'en': 'The controller thinks the node is OK',
+                 ' de': 'The controller thinks the node is OK',
+                 'ru': 'The controller thinks the node is OK'
+        },
+        /*10:*/ {'en': 'The controller thinks the node has failed',
+                'de': 'The controller thinks the node has failed',
+                'ru': 'The controller thinks the node has failed'
+        }
+    ];
+
+    var ctrlError = [
+        /*0:*/  {'en': 'No error',         'de': 'No error',         'ru': 'No error'},
+        /*1*/   {'en': 'ButtonNotFound',   'de': 'ButtonNotFound',   'ru': 'ButtonNotFound'},
+        /*2:*/  {'en': 'NodeNotFound',     'de': 'NodeNotFound',     'ru': 'NodeNotFound'},
+        /*3:*/  {'en': 'NotBridge',        'de': 'NotBridge',        'ru': 'NotBridge'},
+        /*4:*/  {'en': 'NotSUC',           'de': 'NotSUC',           'ru': 'NotSUC'},
+        /*5:*/  {'en': 'NotSecondary',     'de': 'NotSecondary',     'ru': 'NotSecondary'},
+        /*6:*/  {'en': 'NotPrimary',       'de': 'NotPrimary',       'ru': 'NotPrimary'},
+        /*7:*/  {'en': 'IsPrimary',        'de': 'IsPrimary',        'ru': 'IsPrimary'},
+        /*8:*/  {'en': 'NotFound',         'de': 'NotFound',         'ru': 'NotFound'},
+        /*9:*/  {'en': 'Busy',             'de': 'Busy',             'ru': 'Busy'},
+        /*10:*/ {'en': 'Failed',           'de': 'Failed',           'ru': 'Failed'},
+        /*11:*/ {'en': 'Disabled',         'de': 'Disabled',         'ru': 'Disabled'},
+        /*12:*/ {'en': 'Overflow',         'de': 'Overflow',         'ru': 'Overflow'}
+    ];
+
     var timeout;
+    var devices = {};
+    var values  = {};
+    var isAlive;
+    var initialCom;
 
     function getComPorts(actualValue) {
         timeout = setTimeout(function () {
@@ -101,7 +234,76 @@
         });
     }
 
+    function updateStates(id) {
+        if (values[id + '.ready']) {
+            $('.node-ready[data-id="' + devices[id].native.nodeID + '"]').attr('src', 'img/ready' + (values[id + '.ready'].val ? 'On' : '') + '.png');
+        }
+        if (values[id + '.sleep']) {
+            $('.node-sleep[data-id="' + devices[id].native.nodeID + '"]').attr('src', 'img/sleep' + (values[id + '.sleep'].val ? 'On' : '') + '.png');
+        }
+        if (values[id + '.alive']) {
+            $('.node-alive[data-id="' + devices[id].native.nodeID + '"]').attr('src', 'img/alive' + (values[id + '.alive'].val ? 'On' : '') + '.png');
+        }
+    }
 
+    function updateInclusion() {
+        if (values['zwave.' + instance + '.inclusionOn'] && values['zwave.' + instance + '.inclusionOn'].val && (isAlive || common.enabled)) {
+            $('.zwave-operations[data-operation="addNode"]').css('background', '#bfe6c7');
+        } else {
+            $('.zwave-operations[data-operation="addNode"]').css('background', '');
+        }
+
+        if (values['zwave.' + instance + '.exclusionOn'] && values['zwave.' + instance + '.exclusionOn'].val && (isAlive || common.enabled)) {
+            $('.zwave-operations[data-operation="removeNode"]').css('background', 'rgba(254,108,104,0.5)');
+        } else {
+            $('.zwave-operations[data-operation="removeNode"]').css('background', '');
+        }
+    }
+
+    function showDevice(obj) {
+        var text   = '';
+        text += '<td style="text-align: right; white-space: nowrap;">' + obj.native.nodeID  + '</td>';
+        text += '<td style="text-align: right; white-space: nowrap;">' + obj.native.manufacturer  + '</td>';
+        text += '<td style="text-align: right; white-space: nowrap;">' + obj.native.product  + '</td>';
+        text += '<td style="text-align: right; white-space: nowrap;">' + obj.native.type  + '</td>';
+        text += '<td style="text-align: right; white-space: nowrap;">' +
+                '<img src="img/ready.png" class="node-img node-ready" data-id="' + obj.native.nodeID + '" title="' + _('ready') + '"/>' +
+                '<img src="img/alive.png" class="node-img node-alive" data-id="' + obj.native.nodeID + '" title="' + _('alive') + '"/>' +
+                '<img src="img/sleep.png" class="node-img node-sleep" data-id="' + obj.native.nodeID + '" title="' + _('sleep') + '"/>' +
+                '</td>';
+
+        text += '<td style="text-align: center;"><select data-id="' + obj.native.nodeID + '" class="node-operations">' +
+                    '<option class="translate" value="">Select operation</option>' +
+                    '<option class="translate" value="refreshNodeInfo">Refresh info</option>' +
+                    '<option class="translate" value="healNetworkNode">Heal network</option>' +
+                    //'<option class="translate" value="setName">Set name</option>' +
+                    //'<option class="translate" value="setLocation">Set location</option>' +
+                '</select></td>';
+
+        if (devices[obj._id]) {
+            $('tr[data-id="' + obj.native.nodeID + '"]').html(text);
+        } else {
+            text = '<tr class="device" data-id="' + obj.native.nodeID + '">' + text + '</tr>';
+            $('#devices').append(text);
+        }
+
+        devices[obj._id] = obj;
+
+        $('.node-operations[data-id="' + obj.native.nodeID + '"]').unbind('change').change(function () {
+            var $this = $(this);
+            if (!$this.val()) return;
+            sendTo(null, $this.val(), {nodeID: $this.data('id')}, function (result) {
+                $this.val('');
+            });
+        });
+
+        if (!isAlive && !common.enabled) {
+            $('.node-operations[data-id="' + obj.native.nodeID + '"]').prop('disabled', true);
+        }
+
+        updateStates(obj._id);
+    }
+    
     function setValue(id, value) {
         // example: select elements with id=key and class=value and insert value
         if ($('#' + id + '.value').attr('type') === 'checkbox') {
@@ -153,14 +355,112 @@
         loadHelper(settings);
         $('#pass_confirm').val($('#pass').val());
 
-        getIsAdapterAlive(function (isAlive) {
+        initialCom = settings.usb;
+
+        getIsAdapterAlive(function (_isAlive) {
+            isAlive = _isAlive;
             if (isAlive || common.enabled) {
                 getComPorts(settings.usb);
+                $('.zwave-operations').button().button('enable');
             } else {
                 $('#_usb').html('<input id="usb" class="value" value="' + settings.usb + '"/>');
                 $('#usb').change(onChange).keyup(onChange);
             }
         });
+        
+        socket.emit('getObjectView', 'system', 'device', {startkey: 'zwave.' + instance + '.', endkey: 'zwave.' + instance + '.\u9999', include_docs: true}, function (err, _devices) {
+            socket.emit('getStates', function (err, _values) {
+                var namespace = 'zwave.' + instance + '.';
+                var len = namespace.length;
+
+                for (var id in _values) {
+                    if (!_values.hasOwnProperty(id)) continue;
+                    if (id.substring(0, len) === namespace) {
+                        if (id.match(/\.alive$/) || id.match(/\.sleep/) || id.match(/\.ready/) || id.match(/\.inclusionOn/) || id.match(/\.exclusionOn/)) {
+                            values[id] = _values[id];
+                        }
+                    }
+                }
+
+                if (_devices && _devices.rows && _devices.rows.length) {
+                    for (var j = 0; j < _devices.rows.length; j++) {
+                        showDevice(_devices.rows[j].value);
+                    }
+                }
+
+                updateInclusion();
+
+                socket.emit('subscribeObjects', 'zwave.' + instance + '.*');
+                socket.emit('subscribeStates',  'zwave.' + instance + '.*');
+            });
+        });
+
+        var _namespace = 'zwave.' + instance + '.';
+        var _nlen = _namespace.length;
+
+        socket.on('objectChange', function (id, obj) {
+            if (id.substring(0, _nlen) !== _namespace) return;
+            if (!obj) {
+                if (devices[id]) {
+                    $('tr[data-id="' + devices[id].native.nodeID + '"]').remove();
+                    console.log('Device deleted: ' + id);
+                    delete devices[id];
+                }
+            } else {
+                if (obj.type === 'device' && obj.native) {
+                    if (devices[id]) {
+                        console.log('Device changed: ' + id + ': ' + JSON.stringify(obj.native));
+                    } else {
+                        console.log('New device: ' + id + ': ' + JSON.stringify(obj.native));
+                    }
+                    showDevice(obj);
+                }
+            }
+        });
+
+        socket.on('stateChange', function (id, state) {
+            if (id.substring(0, _nlen) !== _namespace) return;
+            if (id.match(/\.alive$/) || id.match(/\.sleep$/) || id.match(/\.ready$/)) {
+                values[id] = state;
+                id = id.substring(0, id.length - 6);
+                if (devices[id]) updateStates(id);
+            } else
+            if (id.match(/\.exclusionOn$/) || id.match(/\.inclusionOn$/)) {
+                values[id] = state;
+                updateInclusion();
+            } else
+            if (id.match(/\.info.controllerMessage$/)) {
+                var data = JSON.parse(state.val);
+
+                $('#message').html('<span class="highlight ' + (data.error ? 'message-error' : '')+ '">' + ctrlState[data.state][ctrlState] + (data.error ? ' - ' + ctrlError[data.error][ctrlState] : '') + '</span>');
+            }
+        });
+
+        $('#tabs').show().tabs({
+            activate:  function (event, ui) {
+                if (ui.newPanel.attr('id') === 'tabs-2') {
+                    if (initialCom !== $('#usb').val()) {
+                        showMessage(_('First save settings'));
+                        $('#tabs').tabs({active: 0});
+                    }
+                }
+            }
+        });
+
+        $('.zwave-operations').each(function () {
+            $(this).button({
+                icons: {primary: 'ui-icon-custom-' + $(this).data('icon'), secondary: null}
+            }).button('disable').click(function () {
+                sendTo(null, $(this).data('operation'), null, function (result) {
+                    if (result && result.error) {
+                        showMessage(result.error, _('Error'), 'alert');
+                    } else if (result && result.result) {
+                        showMessage(_(result.result), _('Success'), 'check');
+                    }
+                });
+            });
+        });
+
         onchange(false);
     }
 
@@ -196,6 +496,7 @@
     }
 
     function save(callback) {
+        initialCom = settings.usb;
         callback(getSettings());
     }
 
@@ -208,44 +509,74 @@
         <td style="padding-top: 20px;padding-left: 10px"><h3 class="translate">OpenZWave adapter settings</h3></td>
     </tr></table>
 
-    <table>
-        <tbody>
-        <tr>
-            <td class="translate">Force objects re-init:</td>
-            <td><input class="value" id="forceinit" type="checkbox"/></td>
-        </tr>
-        <tr><td class="line" colspan="2"> </td></tr>
-        <tr>
-            <td><label  class="translate" for="usb">USB name:</label></td>
-            <td id="_usb"><select class="value" id="usb"></select></td>
-        </tr>
-        <tr><td class="line" colspan="2"> </td></tr>
-        <tr>
-            <td class="translate">Logging:</td>
-            <td><input class="value" id="logging" type="checkbox"/></td>
-        </tr>
-        <tr>
-            <td class="translate">Console Output:</td>
-            <td><input class="value" id="consoleoutput" type="checkbox"/></td>
-        </tr>
-        <tr>
-            <td class="translate">Save Config:</td>
-            <td><input class="value" id="saveconfig" type="checkbox"/></td>
-        </tr>
-        <tr><td class="line" colspan="2"> </td></tr>
-        <tr>
-            <td class="translate">Driver Attempts:</td>
-            <td><input class="value" id="driverattempts"/></td>
-        </tr>
-        <tr>
-            <td class="translate">Poll Interval:</td>
-            <td><input class="value" id="pollinterval"/></td>
-        </tr>
-        <tr>
-            <td class="translate">Suppress Refresh:</td>
-            <td><input class="value" id="suppressrefresh" type="checkbox"/></td>
-        </tr>
-        </tbody>
-    </table>
+    <div id="tabs" style="width: 100%; height: calc(100% - 70px); overflow: hidden; display: none;">
+        <ul>
+            <li><a href="#tabs-1" class="translate">Options</a></li>
+            <li><a href="#tabs-2" class="translate">Devices</a></li>
+        </ul>
+        <div id="tabs-1">
+            <table>
+                <tbody>
+                <tr><td class="line" colspan="2"> </td></tr>
+                <tr>
+                    <td><label  class="translate" for="usb">USB name:</label></td>
+                    <td id="_usb"><select class="value" id="usb"></select></td>
+                </tr>
+                <tr><td class="line" colspan="2"> </td></tr>
+                <tr>
+                    <td class="translate">Logging:</td>
+                    <td><input class="value" id="logging" type="checkbox"/></td>
+                </tr>
+                <tr>
+                    <td class="translate">Console Output:</td>
+                    <td><input class="value" id="consoleoutput" type="checkbox"/></td>
+                </tr>
+                <tr>
+                    <td class="translate">Save Config:</td>
+                    <td><input class="value" id="saveconfig" type="checkbox"/></td>
+                </tr>
+                <tr><td class="line" colspan="2"> </td></tr>
+                <tr>
+                    <td class="translate">Driver Attempts:</td>
+                    <td><input class="value" id="driverattempts"/></td>
+                </tr>
+                <tr>
+                    <td class="translate">Poll Interval:</td>
+                    <td><input class="value" id="pollinterval"/></td>
+                </tr>
+                <tr>
+                    <td class="translate">Suppress Refresh:</td>
+                    <td><input class="value" id="suppressrefresh" type="checkbox"/></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div id="tabs-2" style="width: 100%; height: calc(100% - 40px); overflow-x: hidden; overflow-y: auto; padding: 0; margin: 10px">
+            <p>
+                <button data-operation="addNode"      data-icon="add"        class="translate zwave-operations">Add node</button>
+                <button data-operation="removeNode"   data-icon="delete"     class="translate zwave-operations">Remove node</button>
+                <button data-operation="healNetwork"  data-icon="heal"       class="translate zwave-operations">Heal network</button>
+                <button data-operation="getNeighbors" data-icon="neighbors"  class="translate zwave-operations">Get neighbors</button>
+                <button data-operation="softReset"    data-icon="soft-reset" class="translate zwave-operations">Soft reset</button>
+                <button data-operation="hardReset"    data-icon="hard-reset" class="translate zwave-operations">Hard reset</button>
+            </p>
+            <div id="message"></div>
+            <table style="width: calc(100% - 20px); padding-left: 10px">
+                <thead>
+                <tr class="ui-widget-header">
+                    <td style="width: 30px;  text-align: center; white-space: nowrap" class="translate">ID</td>
+                    <td style="width: 100px; text-align: center; white-space: nowrap" class="translate">Manufacturer</td>
+                    <td style="width: 70px;  text-align: center; white-space: nowrap" class="translate">Product</td>
+                    <td style="width: 150px; text-align: center; white-space: nowrap" class="translate">Type</td>
+                    <td style="width: 30px;  text-align: center; white-space: nowrap" class="translate">Status</td>
+                    <td style="width: 30px;  text-align: center; white-space: nowrap" class="translate"></td>
+                </tr>
+                </thead>
+                <tbody id="devices">
+
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
 </body></html>

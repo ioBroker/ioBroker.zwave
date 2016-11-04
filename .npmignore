@@ -1,4 +1,5 @@
 Gruntfile.js
 tasks
-tmp
-test
+.git
+.idea
+node_modules

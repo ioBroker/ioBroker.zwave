@@ -31,7 +31,12 @@
         "onlyWWW":                  false,
         "singleton":                true,
         "messagebox":               true,
-        "type":                     "hardware"
+        "type":                     "hardware",
+        "config":{
+            "minWidth":   800,
+            "width":      1224,
+            "height":     600
+        }
     },
     "native": {
         "usb":              "",
@@ -68,6 +73,18 @@
             "native": {}
         },
         {
+            "_id":  "info.controllerMessage",
+            "type": "state",
+            "common": {
+                "role":  "state",
+                "name":  "Last controller message",
+                "type":  "string",
+                "read":  true,
+                "write": false
+            },
+            "native": {}
+        },
+        {
             "_id":  "inclusionOn",
             "type": "state",
             "common": {
@@ -81,12 +98,12 @@
             "native": {}
         },
         {
-            "_id":  "forceInit",
+            "_id":  "exclusionOn",
             "type": "state",
             "common": {
                 "role":  "state",
-                "name":  "Force initialisation",
-                "desc":  "Force initialisation of zwave devices",
+                "name":  "Exclusion mode activated",
+                "desc":  "If exclusion mode on or off",
                 "type":  "boolean",
                 "read":  true,
                 "write": true
