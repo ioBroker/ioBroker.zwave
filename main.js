@@ -62,27 +62,44 @@ var adapter = utils.adapter({
     name: 'zwave',
 
     ready: function () {
-        adapter.subscribeObjects('*');
-        adapter.subscribeStates('*');
-
         adapter.objects.getObjectList({
             startkey: adapter.namespace + '.',
             endkey:   adapter.namespace + '.\u9999',
             include_docs: true
         }, function (err, res) {
-            res = res.rows;
-            objects = {};
-            var devices = [];
-            if (res) {
-                for (var i = 0; i < res.length; i++) {
-                    objects[res[i].value._id] = res[i].value;
-                    if (res[i].value.type === 'device') devices.push(res[i].value._id);
+            adapter.objects.getObjectList({
+                startkey: 'enum.rooms.',
+                endkey:   'enum.rooms.\u9999',
+                include_docs: true
+            }, function (err, rooms) {
+                objects = {};
+                var devices = [];
+                if (res) {
+                    res = res.rows;
+                    if (res) {
+                        for (var i = 0; i < res.length; i++) {
+                            objects[res[i].value._id] = res[i].value;
+                            if (res[i].value.type === 'device') devices.push(res[i].value._id);
+                        }
+                    }
                 }
-            }
 
-            adapter.log.debug('received all objects');
+                if (rooms) {
+                    res = rooms.rows;
+                    if (res) {
+                        for (var r = 0; r < res.length; r++) {
+                            objects[res[r].value._id] = res[r].value;
+                        }
+                    }
+                }
 
-            setAllNotReady(devices, main);
+                adapter.log.debug('received all objects');
+
+                adapter.subscribeObjects('*');
+                adapter.subscribeStates('*');
+                adapter.subscribeForeignObjects('enum.rooms.*');
+                setAllNotReady(devices, main);
+            });
         });
     },
     message: function (obj) {
@@ -103,83 +120,77 @@ var adapter = utils.adapter({
                     }
                     break;
 
+                case 'softReset':
                 case 'hardReset':
+                case 'healNetwork':
+                case 'getNeighbors':
                     if (zwave) {
                         // destructive! will wipe out all known configuration
                         adapter.log.info('Execute ' + obj.command);
-                        zwave.hardReset();
-                        if (obj.callback) adapter.sendTo(obj.from, obj.command, {error: null, result: 'ok'}, obj.callback);
+                        if (zwave[obj.command]) {
+                            zwave[obj.command]();
+                            if (obj.callback) adapter.sendTo(obj.from, obj.command, {error: null, result: 'ok'}, obj.callback);
+                        } else {
+                            adapter.log.error('Unknown command!');
+                            if (obj.callback) adapter.sendTo(obj.from, obj.command, {error: 'Unknown command!'}, obj.callback);
+                        }
                     } else {
                         if (obj.callback) adapter.sendTo(obj.from, obj.command, {error: 'not runnung'}, obj.callback);
                     }
                     break;
 
-                case 'softReset':
-                    if (zwave) {
-                        // non-destructive, just resets the chip
-                        adapter.log.info('Execute ' + obj.command);
-                        zwave.softReset();
-                        if (obj.callback) adapter.sendTo(obj.from, obj.command, {error: null, result: 'ok'}, obj.callback);
-                    } else {
-                        if (obj.callback) adapter.sendTo(obj.from, obj.command, {error: 'not runnung'}, obj.callback);
-                    }
-                    break;
-
-                case 'healNetwork':
-                    if (zwave) {
-                        adapter.log.info('Execute ' + obj.command);
-                        zwave.healNetwork();
-                        if (obj.callback) adapter.sendTo(obj.from, obj.command, {error: null, result: 'ok'}, obj.callback);
-                    } else {
-                        if (obj.callback) adapter.sendTo(obj.from, obj.command, {error: 'not runnung'}, obj.callback);
-                    }
-                    break;
-
-                case 'getNeighbors':
-                    if (zwave) {
-                        adapter.log.info('Execute ' + obj.command);
-                        zwave.getNeighbors();
-                        if (obj.callback) adapter.sendTo(obj.from, obj.command, {error: null, result: 'ok'}, obj.callback);
-                    } else {
-                        if (obj.callback) adapter.sendTo(obj.from, obj.command, {error: 'not runnung'}, obj.callback);
-                    }
-                    break;
-
+                case 'removeFailedNode':
+                case 'requestNodeNeighborUpdate':
+                case 'assignReturnRoute':
+                case 'deleteAllReturnRoutes':
+                case 'replaceFailedNode':
+                case 'requestNetworkUpdate':
+                case 'replicationSend':
                 case 'refreshNodeInfo':
-                    if (zwave && obj.message) {
-                        adapter.log.info('Execute ' + obj.command + ' for ' + obj.message.nodeID);
-                        zwave.refreshNodeInfo(obj.message.nodeID);
-                        if (obj.callback) adapter.sendTo(obj.from, obj.command, {error: null, result: 'ok'}, obj.callback);
-                    } else {
-                        if (obj.callback) adapter.sendTo(obj.from, obj.command, {error: 'not runnung'}, obj.callback);
-                    }
-                    break;
-
                 case 'healNetworkNode':
                     if (zwave && obj.message) {
                         adapter.log.info('Execute ' + obj.command + ' for ' + obj.message.nodeID);
-                        zwave.healNetworkNode(obj.message.nodeID);
-                        if (obj.callback) adapter.sendTo(obj.from, obj.command, {error: null, result: 'ok'}, obj.callback);
+                        if (zwave[obj.command]) {
+                            zwave[obj.command](obj.message.nodeID);
+                            if (obj.callback) adapter.sendTo(obj.from, obj.command, {error: null, result: 'ok'}, obj.callback);
+                        } else {
+                            adapter.log.error('Unknown command!');
+                            if (obj.callback) adapter.sendTo(obj.from, obj.command, {error: 'Unknown command!'}, obj.callback);
+                        }
                     } else {
                         if (obj.callback) adapter.sendTo(obj.from, obj.command, {error: 'not runnung'}, obj.callback);
                     }
                     break;
 
                 case 'setName':
+                case 'setLocation':
                     if (zwave && obj.message) {
-                        adapter.log.info('Execute ' + obj.command + ' for ' + obj.message.nodeID + ' with ' + obj.message.name);
-                        zwave.setNodeName(obj.message.nodeID, obj.message.name);
-                        if (obj.callback) adapter.sendTo(obj.from, obj.command, {error: null, result: 'ok'}, obj.callback);
+                        adapter.log.info('Execute ' + obj.command + ' for ' + obj.message.nodeID + ' with "' + obj.message.param + '"');
+                        if (zwave[obj.command]) {
+                            zwave[obj.command](obj.message.nodeID, obj.message.param);
+                            if (obj.callback) adapter.sendTo(obj.from, obj.command, {error: null, result: 'ok'}, obj.callback);
+                        } else {
+                            adapter.log.error('Unknown command!');
+                            if (obj.callback) adapter.sendTo(obj.from, obj.command, {error: 'Unknown command!'}, obj.callback);
+                        }
                     } else {
                         if (obj.callback) adapter.sendTo(obj.from, obj.command, {error: 'not runnung'}, obj.callback);
                     }
                     break;
 
-                case 'setLocation':
+                // createButton(nodeid, buttonid)
+                // deleteButton(nodeid, buttonid)
+                case 'createButton':
+                case 'deleteButton':
                     if (zwave && obj.message) {
-                        adapter.log.info('Execute ' + obj.command + ' for ' + obj.message.nodeID + ' with ' + (obj.message.location || obj.message.name));
-                        zwave.setNodeLocation(obj.message.nodeID, obj.message.location || obj.message.name);
-                        if (obj.callback) adapter.sendTo(obj.from, obj.command, {error: null, result: 'ok'}, obj.callback);
+                        adapter.log.info('Execute ' + obj.command + ' for ' + obj.message.nodeID + ' with "' + obj.message.param + '"');
+                        if (zwave[obj.command]) {
+                            zwave[obj.command](obj.message.nodeID, obj.message.param);
+                            if (obj.callback) adapter.sendTo(obj.from, obj.command, {error: null, result: 'ok'}, obj.callback);
+                        } else {
+                            adapter.log.error('Unknown command!');
+                            if (obj.callback) adapter.sendTo(obj.from, obj.command, {error: 'Unknown command!'}, obj.callback);
+                        }
                     } else {
                         if (obj.callback) adapter.sendTo(obj.from, obj.command, {error: 'not runnung'}, obj.callback);
                     }
@@ -187,6 +198,7 @@ var adapter = utils.adapter({
 
                 case 'addNode':
                     if (inclusion) {
+                        if (zwave) zwave.cancelControllerCommand();
                         adapter.log.info('Disable inclusion mode');
                         clearTimeout(inclusion);
                         inclusion = null;
@@ -205,6 +217,7 @@ var adapter = utils.adapter({
 
                         inclusion = setTimeout(function () {
                             inclusion = null;
+                            adapter.setState('inclusionOn', false, true);
                         }, 60000);
 
                         if (exclusion) {
@@ -221,6 +234,7 @@ var adapter = utils.adapter({
 
                 case 'removeNode':
                     if (exclusion) {
+                        if (zwave) zwave.cancelControllerCommand();
                         adapter.log.info('Disable exclusion mode');
                         clearTimeout(exclusion);
                         exclusion = null;
@@ -244,6 +258,7 @@ var adapter = utils.adapter({
 
                         exclusion = setTimeout(function () {
                             exclusion = null;
+                            adapter.setState('exclusionOn', false, true);
                         }, 60000);
                         zwave.removeNode();
                         if (obj.callback) adapter.sendTo(obj.from, obj.command, {error: null}, obj.callback);
@@ -473,7 +488,7 @@ function extendNode(nodeID, nodeInfo, callback) {
     } else {
         var devObj = {
             common: {
-                name: nodeInfo.manufacturer + ' ' + nodeInfo.product,
+                name: nodeInfo.name || (nodeInfo.manufacturer + ' ' + nodeInfo.product),
                 role: 'state'
             },
             native: nodeInfo,
@@ -535,6 +550,31 @@ function extendNode(nodeID, nodeInfo, callback) {
             if (!--count && callback) callback();
         });
     }
+
+    if (nodeInfo.loc) {
+        var roomId = 'enum.rooms.' + nodeInfo.loc.replace(/\s/g, '_');
+        if (!objects[roomId]) {
+            count++;
+            objects[roomId] = {
+                type: 'enum',
+                common: {
+                    name:    nodeInfo.loc,
+                    desc:    '',
+                    members: [roomId]
+                }
+            };
+            adapter.setForeignObject(roomId, objects[roomId], function () {
+                if (!--count && callback) callback();
+            });
+        } else if (objects[roomId].common.members && objects[roomId].common.members.indexOf(id) === -1) {
+            objects[roomId].common.members.push(roomId);
+            count++;
+            adapter.setForeignObject(roomId, objects[roomId], function () {
+                if (!--count && callback) callback();
+            });
+        }
+    }
+
     if (!count && callback) callback();
 }
 
