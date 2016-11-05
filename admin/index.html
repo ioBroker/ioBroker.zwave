@@ -216,7 +216,18 @@
         /*10:*/ {'en': 'The controller thinks the node has failed',
                  'de': 'The controller thinks the node has failed',
                  'ru': 'The controller thinks the node has failed'
-        }
+        },
+        {}, // 11
+        {}, // 12
+        {}, // 13
+        {}, // 14
+        {   'en': 'Continue to remove devices',
+            'de': 'Lösche die Geräte weiter',
+            'ru': 'Удаление можно продолжить'}
+        , // 15
+        {   'en': 'Continue to add devices',
+            'de': 'Füge die Geräte weiter hinzu',
+            'ru': 'Добавление можно продолжить'}
     ];
 
     var ctrlError = [
@@ -693,8 +704,9 @@
     }
 
     function save(callback) {
+        var settings = getSettings();
         initialCom = settings.usb;
-        callback(getSettings());
+        callback(settings);
     }
 
 </script>

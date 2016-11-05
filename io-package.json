@@ -32,6 +32,7 @@
         "singleton":                true,
         "messagebox":               true,
         "type":                     "hardware",
+        "enabled":                  true,
         "config":{
             "minWidth":   800,
             "width":      1224,

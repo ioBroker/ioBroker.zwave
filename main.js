@@ -17,6 +17,8 @@ var objects      = {};
 var nodes        = {};
 var inclusion    = null;
 var exclusion    = null;
+var inclusionRepeat = null;
+var exclusionRepeat = null;
 
 var notificationCodes = [
     /*0:*/ 'message complete',
@@ -125,6 +127,9 @@ var adapter = utils.adapter({
                 case 'healNetwork':
                 case 'getNeighbors':
                     if (zwave) {
+                        disableInclusion();
+                        disableExclusion();
+
                         // destructive! will wipe out all known configuration
                         adapter.log.info('Execute ' + obj.command);
                         if (zwave[obj.command]) {
@@ -149,6 +154,9 @@ var adapter = utils.adapter({
                 case 'refreshNodeInfo':
                 case 'healNetworkNode':
                     if (zwave && obj.message) {
+                        disableInclusion();
+                        disableExclusion();
+
                         adapter.log.info('Execute ' + obj.command + ' for ' + obj.message.nodeID);
                         if (zwave[obj.command]) {
                             zwave[obj.command](obj.message.nodeID);
@@ -165,6 +173,8 @@ var adapter = utils.adapter({
                 case 'setName':
                 case 'setLocation':
                     if (zwave && obj.message) {
+                        disableInclusion();
+                        disableExclusion();
                         adapter.log.info('Execute ' + obj.command + ' for ' + obj.message.nodeID + ' with "' + obj.message.param + '"');
                         if (zwave[obj.command]) {
                             zwave[obj.command](obj.message.nodeID, obj.message.param);
@@ -183,6 +193,8 @@ var adapter = utils.adapter({
                 case 'createButton':
                 case 'deleteButton':
                     if (zwave && obj.message) {
+                        disableInclusion();
+                        disableExclusion();
                         adapter.log.info('Execute ' + obj.command + ' for ' + obj.message.nodeID + ' with "' + obj.message.param + '"');
                         if (zwave[obj.command]) {
                             zwave[obj.command](obj.message.nodeID, obj.message.param);
@@ -198,14 +210,11 @@ var adapter = utils.adapter({
 
                 case 'addNode':
                     if (inclusion) {
-                        if (zwave) zwave.cancelControllerCommand();
-                        adapter.log.info('Disable inclusion mode');
-                        clearTimeout(inclusion);
-                        inclusion = null;
-                        adapter.setState('inclusionOn', false, true);
+                        disableInclusion();
                         if (obj.callback) adapter.sendTo(obj.from, obj.command, {error: null}, obj.callback);
                         return;
                     }
+                    disableExclusion();
 
                     if (zwave) {
                         adapter.log.info('Execute ' + obj.command);
@@ -220,11 +229,6 @@ var adapter = utils.adapter({
                             adapter.setState('inclusionOn', false, true);
                         }, 60000);
 
-                        if (exclusion) {
-                            clearTimeout(exclusion);
-                            exclusion = false;
-                            adapter.setState('exclusionOn', false, true);
-                        }
                         zwave.addNode();
                         if (obj.callback) adapter.sendTo(obj.from, obj.command, {error: null}, obj.callback);
                     } else {
@@ -234,22 +238,14 @@ var adapter = utils.adapter({
 
                 case 'removeNode':
                     if (exclusion) {
-                        if (zwave) zwave.cancelControllerCommand();
-                        adapter.log.info('Disable exclusion mode');
-                        clearTimeout(exclusion);
-                        exclusion = null;
-                        adapter.setState('exclusionOn', false, true);
+                        disableExclusion();
                         if (obj.callback) adapter.sendTo(obj.from, obj.command, {error: null}, obj.callback);
                         return;
                     }
+                    disableInclusion();
 
                     if (zwave) {
                         adapter.log.info('Execute ' + obj.command);
-                        if (inclusion) {
-                            clearTimeout(inclusion);
-                            inclusion = false;
-                            adapter.setState('inclusionOn', false, true);
-                        }
                         if (!exclusion) {
                             adapter.setState('exclusionOn', true, true);
                         } else {
@@ -411,6 +407,30 @@ var adapter = utils.adapter({
     }
 });
 
+function disableInclusion() {
+    if (inclusion) {
+        if (zwave) zwave.cancelControllerCommand();
+        adapter.log.info('Disable inclusion mode');
+        clearTimeout(inclusion);
+        inclusion = null;
+        adapter.setState('inclusionOn', false, true);
+        return true;
+    }
+    return false;
+}
+
+function disableExclusion() {
+    if (exclusion) {
+        if (zwave) zwave.cancelControllerCommand();
+        adapter.log.info('Disable exclusion mode');
+        clearTimeout(exclusion);
+        exclusion = null;
+        adapter.setState('exclusionOn', false, true);
+        return true;
+    }
+    return false;
+}
+
 function setAllNotReady(list, callback) {
     if (!list || !list.length) {
         callback();
@@ -477,9 +497,10 @@ function extendNode(nodeID, nodeInfo, callback) {
 
     var count = 0;
     if (objects[id]) {
-        if (JSON.stringify(objects[id].native) !== JSON.stringify(nodeInfo)) {
+        if (JSON.stringify(objects[id].native) !== JSON.stringify(nodeInfo) || !(objects[id].common.name && nodeInfo.manufacturer)) {
             adapter.log.info('Update ' + id);
             objects[id].native = nodeInfo;
+            if (!objects[id].common.name) objects[id].common.name = nodeInfo.manufacturer ? nodeInfo.name || (nodeInfo.manufacturer + ' ' + nodeInfo.product) : '';
             count++;
             adapter.extendForeignObject(id, objects[id], function () {
                 if (!--count && callback) callback();
@@ -488,7 +509,7 @@ function extendNode(nodeID, nodeInfo, callback) {
     } else {
         var devObj = {
             common: {
-                name: nodeInfo.name || (nodeInfo.manufacturer + ' ' + nodeInfo.product),
+                name: nodeInfo.manufacturer ? nodeInfo.name || (nodeInfo.manufacturer + ' ' + nodeInfo.product) : '',
                 role: 'state'
             },
             native: nodeInfo,
@@ -817,6 +838,7 @@ function main() {
 
         // Just remember, that such a nodeID created
         nodes[nodeID] = {id: calcName(nodeID), ready: false, native: null};
+        extendNode(nodeID, {});
     });
 
     zwave.on('node available', function (nodeID, nodeInfo) {
@@ -838,6 +860,19 @@ function main() {
         extendNode(nodeID, nodeInfo, function (err) {
             if (!err) nodes[nodeID].ready = true;
             adapter.setForeignState(nodes[nodeID].id + '.ready', true, true);
+
+            if (inclusion) {
+                if (!inclusionRepeat) {
+                    inclusionRepeat = setTimeout(function () {
+                        inclusionRepeat = null;
+                        if (inclusion) {
+                            adapter.log.info('Continue to add devices');
+                            adapter.setState('info.controllerMessage', JSON.stringify({state: 15}), true);
+                            zwave.addNode();
+                        }
+                    }, 5000);
+                }
+            }
         });
     });
 
@@ -925,6 +960,18 @@ function main() {
         adapter.log.info('value removed: ' + nodeID + ' comClass: ' + JSON.stringify(comClass) + ' instance ' + instance + ' value: '  + JSON.stringify(index));
 
         deleteDevice(nodeID);
+        if (exclusion) {
+            if (!exclusionRepeat) {
+                exclusionRepeat = setTimeout(function () {
+                    exclusionRepeat = null;
+                    if (exclusion) {
+                        adapter.log.info('Continue to remove devices');
+                        adapter.setState('info.controllerMessage', JSON.stringify({state: 14}), true);
+                        zwave.removeNode();
+                    }
+                }, 5000);
+            }
+        }
     });
 
     zwave.on('value refreshed', function (nodeID, comClass, valueId) {
@@ -935,13 +982,6 @@ function main() {
     // ------------- controller events ---------------------------
     zwave.on('controller command', function (nodeId, state, error, helpMsg) {
         adapter.log.info('controller command feedback: state: "' + ctrlState[state] + '", error: "' + ctrlError[error] + '", helpmsg: "' + helpMsg + '"');
-        if (helpMsg === 'ControllerCommand - Completed') {
-            if (inclusion) {
-                adapter.setState('inclusionOn', true, true);
-            } else if (exclusion) {
-                adapter.setState('exclusionOn', true, true);
-            }
-        }
         adapter.setState('info.controllerMessage', JSON.stringify({state: state, error: error, helpMsg: helpMsg}), true);
     });
 
