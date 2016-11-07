@@ -157,16 +157,16 @@
         "replaceFailedNode":    {"en": "Reaplace failed",       "de": "Reaplace failed",    "ru": "Reaplace failed"},
         "Select operation":     {"en": "Select operation",      "de": "Auswählen",          "ru": "выберите"},
         "refreshNodeInfo":      {"en": "Refresh info",          "de": "Update Info",        "ru": "Обновить инфо"},
-        "removeFailedNode":     {"en": "Remove failed",         "de": "Remove failed",      "ru": "Remove failed"},
-        "requestNodeNeighborUpdate":  {"en": "Neighbor update",       "de": "Neighbor update",    "ru": "Neighbor update"},
-        "assignReturnRoute":    {"en": "Assign return route", "de": "Assign return route", "ru": "Assign return route"},
-        "deleteAllReturnRoutes": {"en": "Delete all routes",    "de": "Delete all routes",  "ru": "Delete all routes"},
-        "requestNetworkUpdate": {"en": "Network update",        "de": "Network update",     "ru": "Network update"},
-        "replicationSend":      {"en": "Replication",           "de": "Replication",        "ru": "Replication"},
-        "setName":              {"en": "Set name",              "de": "Set name",           "ru": "Set name"},
-        "setLocation":          {"en": "Set location",          "de": "Set location",       "ru": "Set location"},
-        "createButton":         {"en": "Create button",         "de": "Create button",      "ru": "Create button"},
-        "deleteButton":         {"en": "Delete button",         "de": "Delete button",      "ru": "Delete button"},
+        "removeFailedNode":     {"en": "Remove failed",         "de": "Remove failed",      "ru": "Удалить не удалось"},
+        "requestNodeNeighborUpdate":  {"en": "Neighbor update", "de": "Neighbor update",    "ru": "Обновление соединений"},
+        "assignReturnRoute":    {"en": "Assign return route",   "de": "Assign return route", "ru": "Назначить обратный маршрут"},
+        "deleteAllReturnRoutes": {"en": "Delete all routes",    "de": "Delete all routes",  "ru": "Удалить все маршруты"},
+        "requestNetworkUpdate": {"en": "Network update",        "de": "Network update",     "ru": "Сетевое обновление"},
+        "replicationSend":      {"en": "Replication",           "de": "Replication",        "ru": "Копирование"},
+        "setName":              {"en": "Set name",              "de": "Set name",           "ru": "Задать имя"},
+        "setLocation":          {"en": "Set location",          "de": "Set location",       "ru": "Задать локацию"},
+        "createButton":         {"en": "Create button",         "de": "Create button",      "ru": "Создать кнопку"},
+        "deleteButton":         {"en": "Delete button",         "de": "Delete button",      "ru": "Удалить кнопку"},
         "buttonID":             {
             "en": "Please enter button ID:",
             "de": "Bitte Button ID eingeben:",
@@ -185,37 +185,37 @@
     };
 
     var ctrlState = [
-        /*0: */ {'en': 'No command in progress',    'de': 'No command in progress',     'ru': 'No command in progress'},
-        /*1: */ {'en': 'The command is starting',   'de': 'The command is starting',    'ru': 'The command is starting'},
-        /*2: */ {'en': 'The command was cancelled', 'de': 'The command was cancelled',  'ru': 'The command was cancelled'},
+        /*0: */ {'en': 'No command in progress',    'de': 'No command in progress',     'ru': 'Нет команды в процессе'},
+        /*1: */ {'en': 'The command is starting',   'de': 'The command is starting',    'ru': 'Команда запускается'},
+        /*2: */ {'en': 'The command was cancelled', 'de': 'The command was cancelled',  'ru': 'Команда была отменена'},
         /*3: */ {'en': 'Command invocation had error(s) and was aborted',
-                 'de': 'Command invocation had error(s) and was aborted',
-                 'ru': 'Command invocation had error(s) and was aborted'
-                },
+            'de': 'Command invocation had error(s) and was aborted',
+            'ru': 'Команда вызова содержит ошибку и была прервана'
+        },
         /*4: */ {'en': 'Controller is waiting for a user action',
-                 'de': 'Controller is waiting for a user action',
-                 'ru': 'Controller is waiting for a user action'
+            'de': 'Controller is waiting for a user action',
+            'ru': 'Контроллер ожидает действий пользователя'
         },
         /*5: */ {'en': 'Controller command is on a sleep queue wait for device',
-                 'de': 'Controller command is on a sleep queue wait for device',
-                 'ru': 'Controller command is on a sleep queue wait for device'
+            'de': 'Controller command is on a sleep queue wait for device',
+            'ru': 'Команда контроллера находится в очереди'
         },
         /*6: */ {'en': 'The controller is communicating with the other device to carry out the command',
-                 'de': 'The controller is communicating with the other device to carry out the command',
-                 'ru': 'The controller is communicating with the other device to carry out the command'
+            'de': 'The controller is communicating with the other device to carry out the command',
+            'ru': 'Контроллер обменивается данными с другим устройством, чтобы выполнить команду'
         },
         /*7: */ {'en': 'The command has completed successfully',
-                 'de': 'The command has completed successfully',
-                 'ru': 'The command has completed successfully'
+            'de': 'The command has completed successfully',
+            'ru': 'Команда успешно завершена'
         },
         /*8: */ {'en': 'The command has failed',    'de': 'The command has failed', 'ru': 'The command has failed'},
         /*9: */ {'en': 'The controller thinks the node is OK',
-                 'de': 'The controller thinks the node is OK',
-                 'ru': 'The controller thinks the node is OK'
+            'de': 'The controller thinks the node is OK',
+            'ru': 'Контроллер считает, что узел в норме'
         },
         /*10:*/ {'en': 'The controller thinks the node has failed',
-                 'de': 'The controller thinks the node has failed',
-                 'ru': 'The controller thinks the node has failed'
+            'de': 'The controller thinks the node has failed',
+            'ru': 'Контроллер считает, что узел упал'
         },
         {}, // 11
         {}, // 12
@@ -231,98 +231,99 @@
     ];
 
     var ctrlError = [
-        /*0:*/  {'en': 'No error',         'de': 'No error',         'ru': 'No error'},
-        /*1*/   {'en': 'ButtonNotFound',   'de': 'ButtonNotFound',   'ru': 'ButtonNotFound'},
-        /*2:*/  {'en': 'NodeNotFound',     'de': 'NodeNotFound',     'ru': 'NodeNotFound'},
-        /*3:*/  {'en': 'NotBridge',        'de': 'NotBridge',        'ru': 'NotBridge'},
-        /*4:*/  {'en': 'NotSUC',           'de': 'NotSUC',           'ru': 'NotSUC'},
-        /*5:*/  {'en': 'NotSecondary',     'de': 'NotSecondary',     'ru': 'NotSecondary'},
-        /*6:*/  {'en': 'NotPrimary',       'de': 'NotPrimary',       'ru': 'NotPrimary'},
-        /*7:*/  {'en': 'IsPrimary',        'de': 'IsPrimary',        'ru': 'IsPrimary'},
-        /*8:*/  {'en': 'NotFound',         'de': 'NotFound',         'ru': 'NotFound'},
-        /*9:*/  {'en': 'Busy',             'de': 'Busy',             'ru': 'Busy'},
-        /*10:*/ {'en': 'Failed',           'de': 'Failed',           'ru': 'Failed'},
-        /*11:*/ {'en': 'Disabled',         'de': 'Disabled',         'ru': 'Disabled'},
-        /*12:*/ {'en': 'Overflow',         'de': 'Overflow',         'ru': 'Overflow'}
+        /*0:*/  {'en': 'No error',         'de': 'No error',         'ru': 'Без ошибок'},
+        /*1*/   {'en': 'ButtonNotFound',   'de': 'ButtonNotFound',   'ru': 'Кнопка не найдена'},
+        /*2:*/  {'en': 'NodeNotFound',     'de': 'NodeNotFound',     'ru': 'Узел не найден'},
+        /*3:*/  {'en': 'NotBridge',        'de': 'NotBridge',        'ru': 'Нет моста'},
+        /*4:*/  {'en': 'NotSUC',           'de': 'NotSUC',           'ru': 'Нет SUC'},
+        /*5:*/  {'en': 'NotSecondary',     'de': 'NotSecondary',     'ru': 'Нет второстепенного узла'},
+        /*6:*/  {'en': 'NotPrimary',       'de': 'NotPrimary',       'ru': 'Нет главного узла'},
+        /*7:*/  {'en': 'IsPrimary',        'de': 'IsPrimary',        'ru': 'Главный'},
+        /*8:*/  {'en': 'NotFound',         'de': 'NotFound',         'ru': 'Не найден'},
+        /*9:*/  {'en': 'Busy',             'de': 'Busy',             'ru': 'Занят'},
+        /*10:*/ {'en': 'Failed',           'de': 'Failed',           'ru': 'Неудачный'},
+        /*11:*/ {'en': 'Disabled',         'de': 'Disabled',         'ru': 'Отключен'},
+        /*12:*/ {'en': 'Overflow',         'de': 'Overflow',         'ru': 'Переполнение'}
     ];
 
     var commands = {
         'removeFailedNode':  {
             'en': 'Remove a specific failed node from the controller\'s memory.',
             'de': 'Remove a specific failed node from the controller\'s memory.',
-            'ru': 'Remove a specific failed node from the controller\'s memory.'
+            'ru': 'Удалить конкретный сбойный узел из памяти контроллера.'
         },
         'hasNodeFailed': {
             'en': 'Check whether a node is in the controller\'s failed nodes list.',
             'de': 'Check whether a node is in the controller\'s failed nodes list.',
-            'ru': 'Check whether a node is in the controller\'s failed nodes list.'
+            'ru': 'Проверьте правильность узлов в контролере, вышел из строя список узлов.'
         },
         'requestNodeNeighborUpdate': {
             'en': 'Get a node to rebuild its neighbour list.',
             'de': 'Get a node to rebuild its neighbour list.',
-            'ru': 'Get a node to rebuild its neighbour list.'
+            'ru': 'Опросить узлы, чтобы восстановить свой список.'
         },
         'assignReturnRoute': {
             'en': 'Assign a network return routes to a device.',
             'de': 'Assign a network return routes to a device.',
-            'ru': 'Assign a network return routes to a device.'
+            'ru': 'Назначьте сеть маршрутов к устройству.'
         },
         'deleteAllReturnRoutes': {
             'en': 'Delete all return routes from a device.',
             'de': 'Delete all return routes from a device.',
-            'ru': 'Delete all return routes from a device.'
+            'ru': 'Удалить все маршруты к устройству.'
         },
         'sendNodeInformation': {
             'en': 'Send a NIF (node information frame).',
             'de': 'Send a NIF (node information frame).',
-            'ru': 'Send a NIF (node information frame).'
+            'ru': 'Отправить NIF (кадр информации изла).'
         },
         'requestNetworkUpdate': {
             'en': 'Request network information from the SUC/SIS.',
             'de': 'Request network information from the SUC/SIS.',
-            'ru': 'Request network information from the SUC/SIS.'
+            'ru': 'Запрос информации от сети SUC/SIS.'
         },
         'replicationSend': {
             'en': 'Send information from primary to secondary.',
             'de': 'Send information from primary to secondary.',
-            'ru': 'Send information from primary to secondary.'
+            'ru': 'Отправить информацию от главного второстепенному.'
         },
         'createButton': {
             'en': 'Create an id that tracks handheld button presses.',
             'de': 'Create an id that tracks handheld button presses.',
-            'ru': 'Create an id that tracks handheld button presses.'
+            'ru': 'Создать идентификатор отслеживания ручного нажатия кнопки.'
         },
         'deleteButton': {
             'en': 'Delete id that tracks handheld button presses.',
             'de': 'Delete id that tracks handheld button presses.',
-            'ru': 'Delete id that tracks handheld button presses.'
+            'ru': 'Удалить идентификатор отслеживания ручного нажатия кнопки.'
         },
         'replaceFailedNode': {
             'en': 'Replace a non-responding node with another. The node must be in the controller\'s list of failed nodes for this command to succeed.',
             'de': 'Replace a non-responding node with another. The node must be in the controller\'s list of failed nodes for this command to succeed.',
-            'ru': 'Replace a non-responding node with another. The node must be in the controller\'s list of failed nodes for this command to succeed.'
+            'ru': 'Заменить зависший узел на другой. Узел должен находиться в списке ошибочных узлов контроллера.'
         },
         'setName': {
             'en': 'Set node name.',
             'de': 'Set node name.',
-            'ru': 'Set node name.'
+            'ru': 'Назначить имя узла.'
         },
         'setLocation': {
             'en': 'Set node location.',
             'de': 'Set node location.',
-            'ru': 'Set node location.'
+            'ru': 'Задать локацию узла.'
         },
         'healNetworkNode': {
             'en': 'Attempt to heal the network if nodes become unresponsive.',
             'de': 'Attempt to heal the network if nodes become unresponsive.',
-            'ru': 'Attempt to heal the network if nodes become unresponsive.'
+            'ru': 'Попытка исправить сеть узлов не отвечающих на запросы.'
         },
         'refreshNodeInfo': {
             'en': 'Refresh node information.',
             'de': 'Refresh node information.',
-            'ru': 'Refresh node information.'
+            'ru': 'Обновить информацию состояния узлов.'
         }
     };
+
     var nodeCommands = {
         "replaceFailedNode":    {},
         "refreshNodeInfo":      {},
