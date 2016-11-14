@@ -297,9 +297,23 @@ var adapter = utils.adapter({
                 }
                 if (obj.native.type === 'bool' || obj.native.type === 'button') value = !!value;
 
-                adapter.log.debug('setState for: nodeID=' + obj.native.node_id + ': comClass=' + obj.native.class_id + ': index=' + obj.native.index + ': instance=' + obj.native.instance + ': value=' + value);
-
-                if (zwave) zwave.setValue(obj.native.node_id, obj.native.class_id, obj.native.instance, obj.native.index, value);
+                if (obj.common.role === 'meta.config') {
+                    // set a configuration parameter
+                    adapter.log.debug('setConfigParam for: nodeID=' + obj.native.node_id + ': index=' + obj.native.index + ': value=' + value);
+                    if (zwave) {
+                        zwave.setConfigParam(
+                            obj.native.node_id,
+                            obj.native.index,
+                            value,
+                            value.length
+                        );
+                    }
+                }
+                else {
+                    // set a value
+                    adapter.log.debug('setState for: nodeID=' + obj.native.node_id + ': comClass=' + obj.native.class_id + ': index=' + obj.native.index + ': instance=' + obj.native.instance + ': value=' + value);
+                    if (zwave) zwave.setValue(obj.native.node_id, obj.native.class_id, obj.native.instance, obj.native.index, value);
+                }
             } else {
                 if (!nodes[nodeID]) {
                     adapter.log.warn('Object "' + id + '" was not detected');
