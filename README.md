@@ -60,6 +60,20 @@ Often the USB stick has address like ttyUSB0 or ttyUSB1.
 - until the Message "zwave.0 Scan completed" is found in iobroker.log
 - the Object zwave.0.completed has State "true"
 
+**Notice:**
+If you get following error by install:
+
+```
+libopenzwave.so.1.4: cannot open shared object file: No such file or directory
+```
+
+
+You should call:
+
+```
+sudo ldconfig /usr/local/lib64
+```
+
 ## Configuration
 Within Admin Settings you can set following Attributes
 

@@ -286,95 +286,7 @@ var adapter = utils.adapter({
         var obj = objects[id];
         if (obj && obj.native) {
             var nodeID = obj.native.node_id;
-            if (nodes[nodeID]/* && nodes[nodeID].ready*/) {
-                    /*if (
-                        state.val.paramId    !== undefined &&
-                        state.val.paramValue !== undefined &&
-                        state.val.label      !== undefined &&
-                        state.val.comClass   !== undefined &&
-                        state.val.index      !== undefined) {
-
-                        var action     = state.val.action;
-                        var nodeID     = state.val.nodeID;
-                        var paramId    = state.val.paramId;
-                        var paramValue = state.val.paramValue;
-                        var label      = state.val.label.replace(/\./g, '_'); //.replace(/ /g, '_')
-                        var comClass   = state.val.comClass;
-                        var index      = state.val.index;
-                        var changed    = state.val.changed;
-                        var old_native = obj.native;
-
-                        var root_type;
-                        var root_native;
-                        var root_common;
-                        var objr;
-                        var namedValue;
-                        var address;
-                        var rootObject;
-
-                        if (action === 'changeConfig') {
-                            adapter.log.debug('setConfigParam for ' + id + ', paramId = ' + paramId + ', paramValue = ' + paramValue);
-                            zwave.setConfigParam(nodeID, paramId, paramValue, paramValue.length);
-                            old_native.value = paramValue;
-
-                            adapter.log.debug('setObject for ' + id + ', label = ' + label);
-                            address = adapter.namespace + '.NODE' + nodeID;
-
-                            adapter.objects.getObject(address, function (err, res) {
-                                rootObject = res; // TODO: CHECK RESULT
-
-                                if (rootObject !== undefined) {
-                                    root_type   = rootObject.type;
-                                    root_native = rootObject.native;
-                                    root_common = rootObject.common;
-                                    objr = {type: root_type, native: root_native, common: root_common};
-
-                                    if (root_native.classes[comClass][index].values !== undefined) {
-                                        namedValue = root_native.classes[comClass][index].values[paramValue];
-                                    } else {
-                                        namedValue = paramValue;
-                                    }
-
-                                    root_native.classes[comClass][index].value = namedValue;
-                                }
-
-                                if (changed === undefined) {
-                                    adapter.setObject(address, objr);
-                                }
-                            });
-                        } else if (action === 'changeSystem') {
-                            // Todo: Not working
-                            adapter.log.debug('setConfigParam for ' + id + ', paramId = ' + paramId + ', paramValue = ' + paramValue);
-                                zwave.setValue({
-                                    nodeID:   parseInt(obj.native.nodeID),
-                                    class_id: parseInt(obj.native.comClass),
-                                    instance: parseInt(obj.native.instance),
-                                    index:    parseInt(obj.native.index)
-                                }, paramValue);
-                            old_native.value = paramValue;
-
-                            adapter.log.debug('setObject for ' + id + ', label = ' + label);
-                            address = adapter.namespace + '.NODE' + nodeID;
-
-                            adapter.objects.getObject(address, function (err, res) {
-                                rootObject = res; // TODO: CHECK RESULT
-                                if (rootObject !== undefined) {
-                                    root_type = rootObject.type;
-                                    root_native = rootObject.native;
-                                    root_common = rootObject.common;
-                                    objr = {type: root_type, native: root_native, common: root_common};
-                                    //namedValue = root_native.classes[comClass][index].values[paramValue];
-                                    namedValue = paramValue;
-                                    root_native.classes[comClass][index].value = namedValue;
-
-                                    if (changed === undefined) {
-                                        adapter.setObject(address, objr);
-                                    }
-                                }
-                            });
-                        }
-                    }
-                } else {*/
+            if (nodes[nodeID]) {
                 var value = state.val;
                 if (state.val === true || state.val === 'true') {
                     value = 1;
@@ -811,7 +723,7 @@ function main() {
     zwave.on('driver failed', function () {
         adapter.setState('info.connection', false, true);
         adapter.log.error('failed to start driver');
-        zwave.disconnect('/dev/' + adapter.config.usb);
+        zwave.disconnect(adapter.config.usb);
         process.exit();
     });
 
