@@ -1,16 +1,15 @@
 /**
  *      ioBroker Z-Wave Adapter
  *
- *      Copyright bluefox <dogafox@gmail.com>
+ *      Copyright 2016, bluefox <dogafox@gmail.com>
  *
  *      License: GNU LGPL
  */
 
 var utils        = require(__dirname + '/lib/utils'); // Get common adapter utils
-var fs           = require('fs');
 var comClasses   = require(__dirname + '/admin/js/comClasses.js');
-var Serialport   = require('serialport');
-
+var path;
+var fs;
 var zwave;
 
 var objects      = {};
@@ -109,16 +108,9 @@ var adapter = utils.adapter({
             switch (obj.command) {
                 case 'listUart':
                     if (obj.callback) {
-                        if (Serialport) {
-                            // read all found serial ports
-                            Serialport.list(function (err, ports) {
-                                adapter.log.info('List of port: ' + JSON.stringify(ports));
-                                adapter.sendTo(obj.from, obj.command, ports, obj.callback);
-                            });
-                        } else {
-                            adapter.log.warn('Module serialport is not available');
-                            adapter.sendTo(obj.from, obj.command, [{comName: 'Not available'}], obj.callback);
-                        }
+                        var ports = listSerial();
+                        adapter.log.info('List of ports: ' + JSON.stringify(ports));
+                        adapter.sendTo(obj.from, obj.command, ports, obj.callback);
                     }
                     break;
 
@@ -332,6 +324,40 @@ var adapter = utils.adapter({
         callback();
     }
 });
+
+function filterSerialPorts(path) {
+    // get only serial port names
+    if (!(/(tty(S|ACM|USB|AMA|MFD)|rfcomm)/).test(path)) return false;
+
+    return fs
+        .statSync(path)
+        .isCharacterDevice();
+}
+
+function listSerial() {
+    path = path || require('path');
+    fs   = fs   || require('fs');
+
+    // Filter out the devices that aren't serial ports
+    var devDirName = '/dev';
+
+    var result;
+    try {
+        result = fs
+            .readdirSync(devDirName)
+            .map(function (file) {
+                return path.join(devDirName, file);
+            })
+            .filter(filterSerialPorts)
+            .map(function (port) {
+                return {comName: port};
+            });
+    } catch (e) {
+        adapter.log.error('Cannot read "' + devDirName + '": ' + e);
+        result = [];
+    }
+    return result;
+}
 
 function disableInclusion() {
     if (inclusion) {

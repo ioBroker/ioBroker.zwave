@@ -148,6 +148,9 @@ Following global Actions are current supported:
 - Danfoss Z Thermostat 014G0013
 
 ## Changelog
+### 0.4.2 (2016-11-15)
+* (AlCalzone) Read devices from dev and not from serialport
+
 ### 0.4.1 (2016-11-14)
 * (AlCalzone) Allow set of parameters
 

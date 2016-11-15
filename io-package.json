@@ -7,8 +7,13 @@
 			"de": "ZWave Unterstutzung durch Openzwave Paket",
 			"ru": "Поддержка ZWave основанная на Openzwave пакете"
 		},
-        "version":                  "0.4.1",
+        "version":                  "0.4.2",
         "news": {
+            "0.4.2": {
+                "en": "Read devices from dev and not from serialport",
+                "de": "Lese Geräte aus dev und nicht aus serialport",
+                "ru": "Поиск устройств в dev, а не в serialport"
+            },
             "0.4.1": {
                 "en": "Allow set of parameters",
                 "de": "Erlaube setzten von Parametern",
