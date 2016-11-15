@@ -813,6 +813,9 @@ function main() {
             if (!err) nodes[nodeID].ready = true;
             adapter.setForeignState(nodes[nodeID].id + '.ready', true, true);
 
+            adapter.setForeignState(nodes[nodeID].id + '.alive', true, true);
+            adapter.setForeignState(nodes[nodeID].id + '.awake', true, true);
+
             if (inclusion) {
                 if (!inclusionRepeat) {
                     inclusionRepeat = setTimeout(function () {
