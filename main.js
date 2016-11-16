@@ -622,7 +622,7 @@ function extendChannel(nodeID, comClass, valueId) {
     if (objects[stateID]) {
         stateObj = objects[stateID];
         if (stateObj.common.type === 'boolean') {
-            value = value === 'true' || value === 255 || value === '255' || value === 'On' || value === 1  || value === '1';
+            value = value === true || value === 'true' || value === 255 || value === '255' || value === 'On' || value === 1  || value === '1';
         } else if (stateObj.common.states) {
             for (var j in stateObj.common.states) {
                 if (!stateObj.common.states.hasOwnProperty(j)) continue;
