@@ -24,7 +24,7 @@ You need a fully Development Environment (gcc, make,...)
 On some systems the additional package is required: 
 
 ```
-apt-get install pkg-config
+apt-get install pkg-config libudev-dev build-essential curl unzip
 ```
 
 npm install iobroker.zwave does following Steps for you:
@@ -32,12 +32,12 @@ npm install iobroker.zwave does following Steps for you:
 - Download and install latest openzwave from github
 
 ```
-  \# cd /opt
-  \# curl -L -O https://github.com/OpenZWave/open-zwave/archive/master.zip
-  \# unzip master.zip
-  \# cd open-zwave-master
-  \# make
-  \# sudo make install
+cd /opt
+curl -L -O https://github.com/OpenZWave/open-zwave/archive/master.zip
+unzip master.zip
+cd open-zwave-master
+make
+sudo make install
 ```
 
 After that you have to do the following Steps:
