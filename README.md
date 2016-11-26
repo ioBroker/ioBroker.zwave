@@ -58,7 +58,7 @@ Often the USB stick has address like ttyUSB0 or ttyUSB1.
 - Start the new zwave Adapter instance
 - wait
 - until the Message "zwave.0 Scan completed" is found in iobroker.log
-- the Object zwave.0.completed has State "true"
+- the Object zwave.0.info.scanCompleted has State "true"
 
 **Notice:**
 If you get following error by install:
@@ -148,6 +148,9 @@ Following global Actions are current supported:
 - Danfoss Z Thermostat 014G0013
 
 ## Changelog
+### 0.4.3 (2016-11-26)
+* (bluefox) add state "info.scanCompleted"
+
 ### 0.4.2 (2016-11-15)
 * (AlCalzone) Read devices from dev and not from serialport
 
@@ -158,7 +161,7 @@ Following global Actions are current supported:
 * (bluefox) Rewrite adapter completely
 
 ### 0.2.5 (2015-12-21)
- - (husky-koglhof) Objecttree build now on change/added/ready from zwave
+ - (husky-koglhof) Object tree build now on change/added/ready from zwave
  - Default Role/Type/State (needed for history)
  - openzwave-shared 1.1.6
  - last openzwave from github

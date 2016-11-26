@@ -729,6 +729,7 @@ function deleteDevice(nodeID) {
 
 function main() {
     adapter.setState('info.connection', false, true);
+    adapter.setState('info.scanCompleted', false, true);
     adapter.setState('inclusionOn', false, true);
     adapter.setState('exclusionOn', false, true);
 
@@ -770,6 +771,7 @@ function main() {
     zwave.on('scan complete', function () {
         adapter.setState('forceInit', false, true);
         adapter.log.info('Scan completed');
+        adapter.setState('info.scanCompleted', true, true);
         // delete all inactive devices
         var list = [];
         for (var id in objects) {
