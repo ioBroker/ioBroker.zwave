@@ -148,6 +148,9 @@ Following global Actions are current supported:
 - Danfoss Z Thermostat 014G0013
 
 ## Changelog
+### 0.4.4 (2016-11-27)
+* (AlCalzone) Fix enumeration values
+
 ### 0.4.3 (2016-11-26)
 * (bluefox) add state "info.scanCompleted"
 

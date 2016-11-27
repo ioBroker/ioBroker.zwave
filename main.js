@@ -686,10 +686,14 @@ function extendChannel(nodeID, comClass, valueId) {
                     stateObj.common.type = 'boolean';
                     value = (value === 'On');
                 } else {
+                    var offset = 0;
+                    if (valueId.min !== undefined) {
+                        offset = parseFloat(valueId.min) || 0;
+                    }
                     stateObj.common.states = {};
                     for (var i = 0; i < valueId.values.length; i++) {
-                        stateObj.common.states[i] = valueId.values[i];
-                        if (valueId.values[i] === value) value = i;
+                        stateObj.common.states[i + offset] = valueId.values[i];
+                        if (valueId.values[i] === value) value = i + offset;
                     }
                 }
             }

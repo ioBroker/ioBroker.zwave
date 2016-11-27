@@ -7,8 +7,13 @@
 			"de": "ZWave Unterstutzung durch Openzwave Paket",
 			"ru": "Поддержка ZWave основанная на Openzwave пакете"
 		},
-        "version":                  "0.4.3",
+        "version":                  "0.4.4",
         "news": {
+            "0.4.4": {
+                "en": "Fix enumeration values",
+                "de": "Korrigiere manche Zustände",
+                "ru": "Исправлены некоторые значения"
+            },
             "0.4.3": {
                 "en": "add state info.scanCompleted",
                 "de": "Zustnad info.scanCompleted hinzugefügt",
