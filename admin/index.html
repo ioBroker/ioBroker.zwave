@@ -1,11 +1,11 @@
 <html>
 <head>
 <link rel="stylesheet" type="text/css" href="../../lib/css/themes/jquery-ui/redmond/jquery-ui.min.css"/>
+<link rel="stylesheet" type="text/css" href="../../css/adapter.css"/>
 <script type="text/javascript" src="../../lib/js/jquery-1.11.1.min.js"></script>
 <script type="text/javascript" src="../../socket.io/socket.io.js"></script>
-<script type="text/javascript" src="../../lib/js/jquery-ui-1.10.3.full.min.js"></script>
+<script type="text/javascript" src="../../lib/js/jquery-ui.min.js"></script>
 
-<link rel="stylesheet" type="text/css" href="../../css/adapter.css"/>
 <script type="text/javascript" src="../../js/translate.js"></script>
 <script type="text/javascript" src="../../js/adapter-settings.js"></script>
 
@@ -16,9 +16,73 @@
     td.line{
         border-top:1px solid black;
     }
+    .node-img {
+        width: 22px;
+    }
+    .ui-icon-custom-add {
+        background-image: url(img/add.png) !important;
+        background-size: 16px 16px !important;
+    }
+    .ui-icon-custom-hard-reset {
+        background-image: url(img/hard-reset.png) !important;
+        background-size: 16px 16px !important;
+    }
+    .ui-icon-custom-soft-reset {
+        background-image: url(img/soft-reset.png) !important;
+        background-size: 16px 16px !important;
+    }
+    .ui-icon-custom-heal {
+        background-image: url(img/heal.png) !important;
+        background-size: 16px 16px !important;
+    }
+    .ui-icon-custom-neighbors {
+        background-image: url(img/neighbors.png) !important;
+        background-size: 16px 16px !important;
+    }
+    .ui-icon-custom-delete {
+        background-image: url(img/delete.png) !important;
+        background-size: 16px 16px !important;
+    }
+
+    #devices tr:nth-child(even) {
+        background: lightgray;
+    }
+    @keyframes highlight {
+        0% {
+            color: #00f900
+        }
+        80% {
+            color: green
+        }
+        100% {
+            color: black;
+        }
+    }
+    .highlight {
+        animation: highlight 2s;
+    }
+    @keyframes show-pair-off {
+        0% {
+            color: #F90000
+        }
+        80% {
+            color: red
+        }
+        100% {
+            color: black;
+        }
+    }
+
+    .message-error {
+        color: red;
+    }
+    .overflow {
+        height: 150px;
+    }
 </style>
 
 <script type="text/javascript">
+    'use strict';
     var onChange;
     systemDictionary = {
         "OpenZWave adapter settings": {
@@ -65,12 +129,388 @@
             "en": "Suppress Refresh:",
             "de": "Neuladen verhindern:",
             "ru": "Не обновлять:"
+        },
+        "Options":          {"en": "Options",               "de": "Einstellungen",      "ru": "Настройки"},
+        "Devices":          {"en": "Devices",               "de": "Geräte",             "ru": "Устройства"},
+        "Add node":         {"en": "Add node",              "de": "Gerät hinzufügen",   "ru": "Добавить устройство"},
+        "Remove node":      {"en": "Remove node",           "de": "Gerät löschen",      "ru": "Удалить устройство"},
+        "Heal network":     {"en": "Heal network",          "de": "Netzwerk heilen",    "ru": "Вылечить сеть"},
+        "Get neighbors":    {"en": "Get neighbors",         "de": "Finde Nachbarn",     "ru": "Найти соседние"},
+        "Soft reset":       {"en": "Soft reset",            "de": "Soft-Reset",         "ru": "Soft reset"},
+        "Hard reset":       {"en": "Hard reset",            "de": "Hard-Reset",         "ru": "Hard reset"},
+        "ID":               {"en": "ID",                    "de": "ID",                 "ru": "ID"},
+        "Manufacturer":     {"en": "Manufacturer",          "de": "Manufacturer",       "ru": "Производитель"},
+        "Product":          {"en": "Product",               "de": "Produkt",            "ru": "Продукт"},
+        "Type":             {"en": "Type",                  "de": "Typ",                "ru": "Тип"},
+        "Last":             {"en": "Last",                  "de": "Letzte",             "ru": "Last"},
+        "Status":           {"en": "Status",                "de": "Zustand",            "ru": "Состояние"},
+        "ready":            {"en": "ready",                 "de": "Bereit",             "ru": "готов к использованию"},
+        "alive":            {"en": "alive",                 "de": "Aktiv/Alive",        "ru": "живой"},
+        "sleep":            {"en": "sleep",                 "de": "Schläft",            "ru": "спит"},
+        "Select port":      {"en": "Select port",           "de": "Auswählen",          "ru": "выбрать порт"},
+        "First save settings": {
+            "en": "First save settings",
+            "de": "Die Einstellungen müssen gespeichert werden",
+            "ru": "Сначала сохраните настройки"
+        },
+        "Ok":                   {"en": "Ok",                    "de": "Ok",                 "ru": "Ok"},
+        "replaceFailedNode":    {"en": "Reaplace failed",       "de": "Reaplace failed",    "ru": "Reaplace failed"},
+        "Select operation":     {"en": "Select operation",      "de": "Auswählen",          "ru": "выберите"},
+        "refreshNodeInfo":      {"en": "Refresh info",          "de": "Update Info",        "ru": "Обновить инфо"},
+        "removeFailedNode":     {"en": "Remove failed",         "de": "Löschen fehlgeschlagen",     "ru": "Удалить не удалось"},
+        "requestNodeNeighborUpdate":  {"en": "Neighbor update", "de": "Nachbar-Update",     "ru": "Обновление соединений"},
+        "assignReturnRoute":    {"en": "Assign return route",   "de": "Rückgabeweg zuweisen",       "ru": "Назначить обратный маршрут"},
+        "deleteAllReturnRoutes": {"en": "Delete all routes",    "de": "Löschen aller Routierungen", "ru": "Удалить все маршруты"},
+        "requestNetworkUpdate": {"en": "Network update",        "de": "Netzwerkaktualisierung",     "ru": "Сетевое обновление"},
+        "replicationSend":      {"en": "Replication",           "de": "Replikation",        "ru": "Копирование"},
+        "setName":              {"en": "Set name",              "de": "Namen festlegen",    "ru": "Задать имя"},
+        "setLocation":          {"en": "Set location",          "de": "Ort festlegen",      "ru": "Задать локацию"},
+        "createButton":         {"en": "Create button",         "de": "Taste erstellen",    "ru": "Создать кнопку"},
+        "deleteButton":         {"en": "Delete button",         "de": "Taste löschen",      "ru": "Удалить кнопку"},
+        "buttonID":             {
+            "en": "Please enter button ID:",
+            "de": "Bitte Button ID eingeben:",
+            "ru": "Введите пожалуйста ID кнопки"
+        },
+        "name":             {
+            "en": "Please enter node name:",
+            "de": "Bitte Gerätename eingeben:",
+            "ru": "Введите пожалуйста имя устройства:"
+        },
+        "location":             {
+            "en": "Please enter node location:",
+            "de": "Bitte Raum eingeben:",
+            "ru": "Введите пожалуйста комнату для устройства:"
         }
     };
 
+    var ctrlState = [
+        /*0: */ {'en': 'No command in progress',    'de': 'Kein Befehl in Bearbeitung',     'ru': 'Нет команды в процессе'},
+        /*1: */ {'en': 'The command is starting',   'de': 'Der Befehl wird gestartet',    'ru': 'Команда запускается'},
+        /*2: */ {'en': 'The command was cancelled', 'de': 'Der Befehl wurde abgebrochen',  'ru': 'Команда была отменена'},
+        /*3: */ {'en': 'Command invocation had error(s) and was aborted',
+            'de': 'Befehl hatte Fehler und wurde abgebrochen',
+            'ru': 'Команда вызова содержит ошибку и была прервана'
+        },
+        /*4: */ {'en': 'Controller is waiting for a user action',
+            'de': 'Controller wartet auf eine Benutzeraktion',
+            'ru': 'Контроллер ожидает действий пользователя'
+        },
+        /*5: */ {'en': 'Controller command is on a sleep queue wait for device',
+            'de': 'Controller-Befehl befindet sich in der Warteschlange und wartet auf Gerät',
+            'ru': 'Команда контроллера находится в очереди'
+        },
+        /*6: */ {'en': 'The controller is communicating with the other device to carry out the command',
+            'de': 'Der Controller kommuniziert mit dem anderen Gerät um den Befehl auszuführen',
+            'ru': 'Контроллер обменивается данными с другим устройством, чтобы выполнить команду'
+        },
+        /*7: */ {'en': 'The command has completed successfully',
+            'de': 'Der Befehl wurde erfolgreich abgeschlossen',
+            'ru': 'Команда успешно завершена'
+        },
+        /*8: */ {'en': 'The command has failed',    'de': 'The command has failed', 'ru': 'The command has failed'},
+        /*9: */ {'en': 'The controller thinks the node is OK',
+            'de': 'Der Controller denkt das der Knoten OK ist',
+            'ru': 'Контроллер считает, что узел в норме'
+        },
+        /*10:*/ {'en': 'The controller thinks the node has failed',
+            'de': 'Der Controller denkt das der Knoten ausgefallen ist',
+            'ru': 'Контроллер считает, что узел упал'
+        },
+        {}, // 11
+        {}, // 12
+        {}, // 13
+        {}, // 14
+        {   'en': 'Continue to remove devices',
+            'de': 'weitere Geräte löschen',
+            'ru': 'Удаление можно продолжить'}
+        , // 15
+        {   'en': 'Continue to add devices',
+            'de': 'weitere Geräte hinzufügen',
+            'ru': 'Добавление можно продолжить'}
+    ];
+
+    var ctrlError = [
+        /*0:*/  {'en': 'No error',         'de': 'Kein Fehler',         'ru': 'Без ошибок'},
+        /*1*/   {'en': 'ButtonNotFound',   'de': 'Tasternichtgefunden', 'ru': 'Кнопка не найдена'},
+        /*2:*/  {'en': 'NodeNotFound',     'de': 'Knotennichtgefunden', 'ru': 'Узел не найден'},
+        /*3:*/  {'en': 'NotBridge',        'de': 'KeineBrücke',         'ru': 'Нет моста'},
+        /*4:*/  {'en': 'NotSUC',           'de': 'KeinSUC',             'ru': 'Нет SUC'},
+        /*5:*/  {'en': 'NotSecondary',     'de': 'NichtSekundär',       'ru': 'Нет второстепенного узла'},
+        /*6:*/  {'en': 'NotPrimary',       'de': 'NichtPrimär',         'ru': 'Нет главного узла'},
+        /*7:*/  {'en': 'IsPrimary',        'de': 'IstPrimärr',          'ru': 'Главный'},
+        /*8:*/  {'en': 'NotFound',         'de': 'Nichtgefunden',       'ru': 'Не найден'},
+        /*9:*/  {'en': 'Busy',             'de': 'Beschäftigt',         'ru': 'Занят'},
+        /*10:*/ {'en': 'Failed',           'de': 'Gescheitert',         'ru': 'Неудачный'},
+        /*11:*/ {'en': 'Disabled',         'de': 'deaktiviert',         'ru': 'Отключен'},
+        /*12:*/ {'en': 'Overflow',         'de': 'Überlauf',            'ru': 'Переполнение'}
+    ];
+    var commands = {
+        'removeFailedNode':  {
+            'en': 'Remove a specific failed node from the controller\'s memory.',
+            'de': 'Entfernen Sie einen bestimmten ausgefallenen Knoten aus dem Speicher des Controllers.',
+            'ru': 'Удалить конкретный сбойный узел из памяти контроллера.'
+        },
+        'hasNodeFailed': {
+            'en': 'Check whether a node is in the controller\'s failed nodes list.',
+            'de': 'Prüfen Sie ob sich ein Knoten in der Controller-Fehlerliste befindet.',
+            'ru': 'Проверьте правильность узлов в контролере, вышел из строя список узлов.'
+        },
+        'requestNodeNeighborUpdate': {
+            'en': 'Get a node to rebuild its neighbour list.',
+            'de': 'Holen Sie sich einen Knoten um die Nachbarliste neu zu erstellen.',
+            'ru': 'Опросить узлы, чтобы восстановить свой список.'
+        },
+        'assignReturnRoute': {
+            'en': 'Assign a network return routes to a device.',
+            'de': 'Weisen Sie einen Netwerk Rückgabeweg zum Gerät zu.',
+            'ru': 'Назначьте сеть маршрутов к устройству.'
+        },
+        'deleteAllReturnRoutes': {
+            'en': 'Delete all return routes from a device.',
+            'de': 'Löschen Sie alle Rückgabewege von einem Gerät.',
+            'ru': 'Удалить все маршруты к устройству.'
+        },
+        'sendNodeInformation': {
+            'en': 'Send a NIF (node information frame).',
+            'de': 'Senden eines NIF (Knoteninformationsrahmen)).',
+            'ru': 'Отправить NIF (кадр информации изла).'
+        },
+        'requestNetworkUpdate': {
+            'en': 'Request network information from the SUC/SIS.',
+            'de': 'Anfordern von Netzwerkinformationen aus dem SUC / SIS.',
+            'ru': 'Запрос информации от сети SUC/SIS.'
+        },
+        'replicationSend': {
+            'en': 'Send information from primary to secondary.',
+            'de': 'Senden der Informationen von primär nach sekundär.',
+            'ru': 'Отправить информацию от главного второстепенному.'
+        },
+        'createButton': {
+            'en': 'Create an id that tracks handheld button presses.',
+            'de': 'Erstellen einer ID die Handheld-Taste drücken verfolgt.',
+            'ru': 'Создать идентификатор отслеживания ручного нажатия кнопки.'
+        },
+        'deleteButton': {
+            'en': 'Delete id that tracks handheld button presses.',
+            'de': 'Löschen einer ID die Handheld-Taste drücken verfolgt.',
+            'ru': 'Удалить идентификатор отслеживания ручного нажатия кнопки.'
+        },
+        'replaceFailedNode': {
+            'en': 'Replace a non-responding node with another. The node must be in the controller\'s list of failed nodes for this command to succeed.',
+            'de': 'Ersetzen Sie einen nicht antwortenden Knoten durch einen anderen. Der Knoten muss sich in der Controller-Liste der ausgefallenen Knoten befinden, damit dieser Befehl erfolgreich ausgeführt werden kann.',
+            'ru': 'Заменить зависший узел на другой. Узел должен находиться в списке ошибочных узлов контроллера чтобы успешно отработать.'
+        },
+        'setName': {
+            'en': 'Set node name.',
+            'de': 'Knotennamen festlegen.',
+            'ru': 'Назначить имя узла.'
+        },
+        'setLocation': {
+            'en': 'Set node location.',
+            'de': 'Ort des Knotens festlegen.',
+            'ru': 'Задать локацию узла.'
+        },
+        'healNetworkNode': {
+            'en': 'Attempt to heal the network if nodes become unresponsive.',
+            'de': 'Versuche das Netzwerk zu heilen wenn ein knoten nicht mehr reagiert.',
+            'ru': 'Попытка исправить сеть узлов не отвечающих на запросы.'
+        },
+        'refreshNodeInfo': {
+            'en': 'Refresh node information.',
+            'de': 'Aktualisieren von Knoteninformationen.',
+            'ru': 'Обновить информацию состояния узлов.'
+        }
+    };
+
+    var nodeCommands = {
+        "replaceFailedNode":    {},
+        "refreshNodeInfo":      {},
+        "removeFailedNode":     {},
+        "requestNodeNeighborUpdate": {},
+        "assignReturnRoute":    {},
+        "deleteAllReturnRoutes": {},
+        "requestNetworkUpdate": {},
+        "replicationSend":      {},
+//        "setName":              {name: 'name'},
+//        "setLocation":          {name: 'location'},
+        "createButton":         {name: 'buttonID'},
+        "deleteButton":         {name: 'buttonID'}
+    };
+
+    var timeout;
+    var devices = {};
+    var values  = {};
+    var isAlive;
+    var initialCom;
+    var messageTimeout = null;
+
+    function getComPorts(actualValue) {
+        timeout = setTimeout(function () {
+            getComPorts(actualValue);
+        }, 2000);
+
+        sendTo(null, 'listUart', null, function (list) {
+            if (timeout) {
+                clearTimeout(timeout);
+                timeout = null;
+            }
+            if (!list || !list.length) {
+                setTimeout(function () {
+                    getComPorts(actualValue);
+                }, 1000);
+                return;
+            }
+            var text = '<option value="">' + _('Select port') + '</option>';
+            for (var j = 0; j < list.length; j++) {
+                if (list[j].comName === 'Not available') {
+                    text += '<option value="" selected>' + _('Not available') + '</option>';
+                    $('#usb').prop('disabled', true);
+                    break;
+                } else {
+                    text += '<option value="' + list[j].comName + '" ' + ((actualValue === list[j].comName) ? 'selected' : '') + '>' + list[j].comName + '</option>';
+                }
+            }
+            $('#usb').html(text);
+        });
+    }
+
+    function updateStates(id) {
+        if (values[id + '.ready']) {
+            $('.node-ready[data-id="' + devices[id].native.nodeID + '"]').attr('src', 'img/ready' + (values[id + '.ready'].val ? 'On' : '') + '.png');
+        }
+        if (values[id + '.sleep']) {
+            $('.node-sleep[data-id="' + devices[id].native.nodeID + '"]').attr('src', 'img/sleep' + (values[id + '.sleep'].val ? 'On' : '') + '.png');
+        }
+        if (values[id + '.alive']) {
+            $('.node-alive[data-id="' + devices[id].native.nodeID + '"]').attr('src', 'img/alive' + (values[id + '.alive'].val ? 'On' : '') + '.png');
+        }
+    }
+
+    function updateInclusion() {
+        if (values['zwave.' + instance + '.inclusionOn'] && values['zwave.' + instance + '.inclusionOn'].val && (isAlive || common.enabled)) {
+            $('.zwave-operations[data-operation="addNode"]').css('background', '#bfe6c7');
+        } else {
+            $('.zwave-operations[data-operation="addNode"]').css('background', '');
+        }
+
+        if (values['zwave.' + instance + '.exclusionOn'] && values['zwave.' + instance + '.exclusionOn'].val && (isAlive || common.enabled)) {
+            $('.zwave-operations[data-operation="removeNode"]').css('background', 'rgba(254,108,104,0.5)');
+        } else {
+            $('.zwave-operations[data-operation="removeNode"]').css('background', '');
+        }
+    }
+
+    function onSelect() {
+        var $this = $(this);
+        var val = $this.val();
+        var id  = $this.data('id');
+        if (!val) return;
+
+        if (nodeCommands[val].name) {
+            // enter additional parameter
+            var param = prompt(_(nodeCommands[val].name), '');
+            if (param !== '') {
+                sendTo(null, val, {nodeID: id, param: param}, function (result) {
+                    $this.val('');
+                    if ($.ui.selectmenu) $this.selectmenu('refresh');
+                    if (result && result.error) {
+                        showMessage(result.error, _('Error'), 'alert');
+                    } else if (result && result.result) {
+                        showMessage(_(result.result), _('Success'), 'check');
+                    }
+                });
+            }
+        } else {
+            sendTo(null, val, {nodeID: id}, function (result) {
+                $this.val('');
+                if ($.ui.selectmenu) $this.selectmenu('refresh');
+                if (result && result.error) {
+                    showMessage(result.error, _('Error'), 'alert');
+                } else if (result && result.result) {
+                    showMessage(_(result.result), _('Success'), 'check');
+                }
+            });
+        }
+    }
+
+    function showDevice(obj, isFirst) {
+        var text   = '';
+        text += '<td style="text-align: right; white-space: nowrap;">' + obj.native.nodeID  + '</td>';
+        text += '<td style="text-align: right; white-space: nowrap;">' + obj.native.manufacturer  + '</td>';
+        text += '<td style="text-align: right; white-space: nowrap;">' + obj.native.product  + '</td>';
+        text += '<td style="text-align: right; white-space: nowrap;">' + obj.native.type  + '</td>';
+        text += '<td style="text-align: right; white-space: nowrap;">' +
+                '<img src="img/ready.png" class="node-img node-ready" data-id="' + obj.native.nodeID + '" title="' + _('ready') + '"/>' +
+                '<img src="img/alive.png" class="node-img node-alive" data-id="' + obj.native.nodeID + '" title="' + _('alive') + '"/>' +
+                '<img src="img/sleep.png" class="node-img node-sleep" data-id="' + obj.native.nodeID + '" title="' + _('sleep') + '"/>' +
+                '</td>';
+
+        text += '<td style="text-align: center;">' +
+                '<select data-id="' + obj.native.nodeID + '" class="node-operations">' +
+                    '<option value="">' + _('Select operation') + '</option>';
+
+        for (var i in nodeCommands) {
+            text += '<option value="' + i + '">'+ _(i) + '</option>';
+        }
+
+        text += '</select></td>';
+
+        if (devices[obj._id]) {
+            var $tr = $('tr[data-id="' + obj.native.nodeID + '"]');
+            $tr.html(text);
+            $('#tabs-2').animate({
+                scrollTop: $tr.offset().top
+            }, 500);
+        } else {
+            text = '<tr class="device ' + (isFirst ? '' : 'highlight') + '" data-id="' + obj.native.nodeID + '">' + text + '</tr>';
+            $('#devices').append(text);
+        }
+
+        devices[obj._id] = obj;
+
+        var $op = $('.node-operations[data-id="' + obj.native.nodeID + '"]');
+
+        $op.unbind('change').change(onSelect);
+
+        if ($.ui.selectmenu) {
+            $op.selectmenu({
+                width: 250,
+                open: function (event, ui) {
+                    $('#' + $(this).attr('id') + '-menu li')
+                        .unbind('mouseenter')
+                        .unbind('mouseleave')
+                        .mouseenter(function (handler) {
+                            var text = $(handler.currentTarget).text();
+                            if (!text) return;
+                            $($('.node-operations')[0]).find('option').each(function () {
+                                if (text === $(this).text()) {
+                                    var val = $(this).attr('value');
+                                    if (commands[val]) {
+                                        $('#helper').html(commands[val][systemLang] || commands[val].en);
+                                    }
+                                    return false;
+                                }
+                            });
+                        })
+                        .mouseleave(function (handler) {
+                            $('#helper').html('');
+                        });
+                },
+                select: onSelect
+            }).selectmenu('menuWidget').addClass('overflow');
+        }
+
+        if (!isAlive && !common.enabled) {
+            $op.prop('disabled', true);
+        }
+
+        updateStates(obj._id);
+    }
+    
     function setValue(id, value) {
         // example: select elements with id=key and class=value and insert value
-        if ($('#' + id + '.value').attr('type') == 'checkbox') {
+        if ($('#' + id + '.value').attr('type') === 'checkbox') {
             $('#' + id + '.value').prop('checked', value).change(function() {
                 onChange();
             });
@@ -88,7 +528,7 @@
 
         if (subparam && param) {
             for (var key in settings[param][subparam]) {
-                if (typeof settings[param][subparam][key] != 'object') {
+                if (typeof settings[param][subparam][key] !== 'object') {
                     setValue(param + '_' + subparam + '_' + key, settings[param][subparam][key]);
                 } else {
                     alert("4th level is not supported");
@@ -96,7 +536,7 @@
             }
         } else if (param) {
             for (var key in settings[param]) {
-                if (typeof settings[param][key] != 'object') {
+                if (typeof settings[param][key] !== 'object') {
                     setValue(param + '_' + key, settings[param][key]);
                 } else {
                     loadHelper(settings, param, key);
@@ -104,7 +544,7 @@
             }
         } else {
             for (var key in settings) {
-                if (typeof settings[key] != 'object') {
+                if (typeof settings[key] !== 'object') {
                     setValue(key, settings[key]);
                 } else {
                     loadHelper(settings, key);
@@ -118,21 +558,117 @@
         onChange = onchange;
         loadHelper(settings);
         $('#pass_confirm').val($('#pass').val());
-        $('#save').button("disable");
 
-        sendToHost(null, 'getDevList', null, function (res) {
-            var availableTags = [' '];
-            if (res) {
-                for (var t = 0; t < res.length; t++) {
-                    if (res[t].substring(0, 'tty'.length) == 'tty') {
-                        availableTags.push(res[t]);
+        initialCom = settings.usb;
+
+        getIsAdapterAlive(function (_isAlive) {
+            isAlive = _isAlive;
+            if (isAlive || common.enabled) {
+                getComPorts(settings.usb);
+                $('.zwave-operations').button().button('enable');
+            } else {
+                $('#_usb').html('<input id="usb" class="value" value="' + settings.usb + '"/>');
+                $('#usb').change(onChange).keyup(onChange);
+            }
+        });
+        
+        socket.emit('getObjectView', 'system', 'device', {startkey: 'zwave.' + instance + '.', endkey: 'zwave.' + instance + '.\u9999', include_docs: true}, function (err, _devices) {
+            socket.emit('getStates', function (err, _values) {
+                var namespace = 'zwave.' + instance + '.';
+                var len = namespace.length;
+
+                for (var id in _values) {
+                    if (!_values.hasOwnProperty(id)) continue;
+                    if (id.substring(0, len) === namespace) {
+                        if (id.match(/\.alive$/) || id.match(/\.sleep/) || id.match(/\.ready/) || id.match(/\.inclusionOn/) || id.match(/\.exclusionOn/)) {
+                            values[id] = _values[id];
+                        }
+                    }
+                }
+
+                if (_devices && _devices.rows && _devices.rows.length) {
+                    for (var j = 0; j < _devices.rows.length; j++) {
+                        showDevice(_devices.rows[j].value, true);
+                    }
+                }
+
+                updateInclusion();
+
+                socket.emit('subscribeObjects', 'zwave.' + instance + '.*');
+                socket.emit('subscribeStates',  'zwave.' + instance + '.*');
+            });
+        });
+
+        var _namespace = 'zwave.' + instance + '.';
+        var _nlen = _namespace.length;
+
+        socket.on('objectChange', function (id, obj) {
+            if (id.substring(0, _nlen) !== _namespace) return;
+            if (!obj) {
+                if (devices[id]) {
+                    $('tr[data-id="' + devices[id].native.nodeID + '"]').remove();
+                    console.log('Device deleted: ' + id);
+                    delete devices[id];
+                }
+            } else {
+                if (obj.type === 'device' && obj.native) {
+                    if (devices[id]) {
+                        console.log('Device changed: ' + id + ': ' + JSON.stringify(obj.native));
+                    } else {
+                        console.log('New device: ' + id + ': ' + JSON.stringify(obj.native));
+                    }
+                    showDevice(obj);
+                }
+            }
+        });
+
+        socket.on('stateChange', function (id, state) {
+            if (id.substring(0, _nlen) !== _namespace) return;
+            if (id.match(/\.alive$/) || id.match(/\.sleep$/) || id.match(/\.ready$/)) {
+                values[id] = state;
+                id = id.substring(0, id.length - 6);
+                if (devices[id]) updateStates(id);
+            } else
+            if (id.match(/\.exclusionOn$/) || id.match(/\.inclusionOn$/)) {
+                values[id] = state;
+                updateInclusion();
+            } else
+            if (id.match(/\.info.controllerMessage$/)) {
+                var data = JSON.parse(state.val);
+                if (messageTimeout) clearTimeout(messageTimeout);
+                $('#message').html('<span class="highlight ' + (data.error ? 'message-error' : '')+ '">' + ctrlState[data.state][systemLang] + (data.error ? ' - ' + ctrlError[data.error][systemLang] : '') + '</span>');
+                messageTimeout = setTimeout(function () {
+                    messageTimeout = null;
+                    $('#message').html('');
+                }, 10000);
+            }
+        });
+
+        $('#tabs').show().tabs({
+            activate:  function (event, ui) {
+                if (ui.newPanel.attr('id') === 'tabs-2') {
+                    if (initialCom !== $('#usb').val()) {
+                        showMessage(_('First save settings'));
+                        $('#tabs').tabs({active: 0});
                     }
                 }
             }
-            $("#usb").autocomplete({
-                source: availableTags
+        });
+
+        $('.zwave-operations').each(function () {
+            $(this).button({
+                icons: {primary: 'ui-icon-custom-' + $(this).data('icon'), secondary: null}
+            }).button('disable').click(function () {
+                sendTo(null, $(this).data('operation'), null, function (result) {
+                    if (result && result.error) {
+                        showMessage(result.error, _('Error'), 'alert');
+                    } else if (result && result.result) {
+                        showMessage(_(result.result), _('Success'), 'check');
+                    }
+                });
             });
         });
+
         onchange(false);
     }
 
@@ -158,7 +694,7 @@
             var $this = $(this);
             var id = $this.attr('id');
 
-            if ($this.attr('type') == 'checkbox') {
+            if ($this.attr('type') === 'checkbox') {
                 obj = saveHelper(obj, id, $this.prop('checked'))
             } else {
                 obj = saveHelper(obj, id, $this.val())
@@ -167,10 +703,10 @@
         return obj;
     }
 
-    // ... and the function save has to exist.
-    // you have to make sure the callback is called with the settings object as first param!
     function save(callback) {
-        callback(getSettings());
+        var settings = getSettings();
+        initialCom = settings.usb;
+        callback(settings);
     }
 
 </script>
@@ -182,44 +718,75 @@
         <td style="padding-top: 20px;padding-left: 10px"><h3 class="translate">OpenZWave adapter settings</h3></td>
     </tr></table>
 
-    <table>
-        <tbody>
-        <tr>
-            <td class="translate">Force objects re-init:</td>
-            <td><input class="value" id="forceinit" type="checkbox"/></td>
-        </tr>
-        <tr><td class="line" colspan="2"> </td></tr>
-        <tr>
-            <td class="translate">USB name:</td>
-            <td><input class="value" id="usb"/></td>
-        </tr>
-        <tr><td class="line" colspan="2"> </td></tr>
-        <tr>
-            <td class="translate">Logging:</td>
-            <td><input class="value" id="logging" type="checkbox"/></td>
-        </tr>
-        <tr>
-            <td class="translate">Console Output:</td>
-            <td><input class="value" id="consoleoutput" type="checkbox"/></td>
-        </tr>
-        <tr>
-            <td class="translate">Save Config:</td>
-            <td><input class="value" id="saveconfig" type="checkbox"/></td>
-        </tr>
-        <tr><td class="line" colspan="2"> </td></tr>
-        <tr>
-            <td class="translate">Driver Attempts:</td>
-            <td><input class="value" id="driverattempts"/></td>
-        </tr>
-        <tr>
-            <td class="translate">Poll Interval:</td>
-            <td><input class="value" id="pollinterval"/></td>
-        </tr>
-        <tr>
-            <td class="translate">Suppress Refresh:</td>
-            <td><input class="value" id="suppressrefresh" type="checkbox"/></td>
-        </tr>
-        </tbody>
-    </table>
+    <div id="tabs" style="width: 100%; height: calc(100% - 70px); overflow: hidden; display: none;">
+        <ul>
+            <li><a href="#tabs-1" class="translate">Options</a></li>
+            <li><a href="#tabs-2" class="translate">Devices</a></li>
+        </ul>
+        <div id="tabs-1">
+            <table>
+                <tbody>
+                <tr><td class="line" colspan="2"> </td></tr>
+                <tr>
+                    <td><label  class="translate" for="usb">USB name:</label></td>
+                    <td id="_usb"><select class="value" id="usb"></select></td>
+                </tr>
+                <tr><td class="line" colspan="2"> </td></tr>
+                <tr>
+                    <td class="translate">Logging:</td>
+                    <td><input class="value" id="logging" type="checkbox"/></td>
+                </tr>
+                <tr>
+                    <td class="translate">Console Output:</td>
+                    <td><input class="value" id="consoleoutput" type="checkbox"/></td>
+                </tr>
+                <tr>
+                    <td class="translate">Save Config:</td>
+                    <td><input class="value" id="saveconfig" type="checkbox"/></td>
+                </tr>
+                <tr><td class="line" colspan="2"> </td></tr>
+                <tr>
+                    <td class="translate">Driver Attempts:</td>
+                    <td><input class="value" id="driverattempts"/></td>
+                </tr>
+                <tr>
+                    <td class="translate">Poll Interval:</td>
+                    <td><input class="value" id="pollinterval"/></td>
+                </tr>
+                <tr>
+                    <td class="translate">Suppress Refresh:</td>
+                    <td><input class="value" id="suppressrefresh" type="checkbox"/></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div id="tabs-2" style="width: 100%; height: calc(100% - 40px); overflow-x: hidden; overflow-y: auto; padding: 0; margin: 10px">
+            <p>
+                <button data-operation="addNode"      data-icon="add"        class="translate zwave-operations">Add node</button>
+                <button data-operation="removeNode"   data-icon="delete"     class="translate zwave-operations">Remove node</button>
+                <button data-operation="healNetwork"  data-icon="heal"       class="translate zwave-operations">Heal network</button>
+                <button data-operation="getNeighbors" data-icon="neighbors"  class="translate zwave-operations">Get neighbors</button>
+                <button data-operation="softReset"    data-icon="soft-reset" class="translate zwave-operations">Soft reset</button>
+                <button data-operation="hardReset"    data-icon="hard-reset" class="translate zwave-operations">Hard reset</button>
+            </p>
+            <div id="message" style="height: 20px;"></div>
+            <div id="helper" style="height: 20px; width: calc(100% - 40px); text-align: right"></div>
+            <table style="width: calc(100% - 20px); padding-left: 10px">
+                <thead>
+                <tr class="ui-widget-header">
+                    <td style="width: 30px;  text-align: center; white-space: nowrap" class="translate">ID</td>
+                    <td style="width: 100px; text-align: center; white-space: nowrap" class="translate">Manufacturer</td>
+                    <td style="width: 70px;  text-align: center; white-space: nowrap" class="translate">Product</td>
+                    <td style="width: 150px; text-align: center; white-space: nowrap" class="translate">Type</td>
+                    <td style="width: 30px;  text-align: center; white-space: nowrap" class="translate">Status</td>
+                    <td style="width: 20px;  text-align: center; white-space: nowrap" class="translate"></td>
+                </tr>
+                </thead>
+                <tbody id="devices">
+
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
 </body></html>

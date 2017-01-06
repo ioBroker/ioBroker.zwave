@@ -1,13 +1,24 @@
 {
   "name": "iobroker.zwave",
   "description": "ZWave support for ioBroker based on openzwave packet",
-  "version": "0.2.1",
+  "version": "0.4.4",
   "author": {
     "name": "bluefox",
-    "email": "bluefox@ccu.io"
+    "email": "dogafox@gmail.com"
+  },
+  "scripts": {
+    "preinstall": "node lib/preinstall.js",
+    "test": "node node_modules/mocha/bin/mocha"
   },
   "contributors": [
-    "bluefox <bluefox@ccu.io>"
+    {
+      "name": "bluefox",
+      "email": "dogafox@gmail.com"
+    },
+    {
+      "name": "husky-koglhof",
+      "email": "husky.koglhof@icloud.com"
+    }
   ],
   "homepage": "https://github.com/ioBroker/ioBroker.zwave",
   "license": "LGPLv3",
@@ -19,32 +30,29 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/ioBroker/ioBroker.zwave"
+    "url": "git+https://github.com/ioBroker/ioBroker.zwave.git"
   },
   "dependencies": {
-    "openzwave-shared": "~1.0.0"
+    "openzwave-shared": "^1.2.0"
   },
   "devDependencies": {
-    "grunt": "~0.4.4",
-    "grunt-replace": "~0.7.6",
-    "grunt-contrib-jshint": "~0.10.0",
-    "grunt-jscs": "~0.6.1",
-    "grunt-http": "~1.4.1",
-    "grunt-contrib-clean": "~0.5.0",
-    "grunt-contrib-compress": "~0.8.0",
-    "grunt-contrib-copy": "~0.5.0",
-    "grunt-exec": "~0.4.5"
-  },
-  "os": [
-    "darwin",
-    "linux"
-  ],
-  "scripts": {
-    "install": "apt-get install libudev-dev"
+    "grunt": "^0.4.5",
+    "grunt-replace": "^0.9.3",
+    "grunt-contrib-jshint": "^0.11.2",
+    "grunt-jscs": "^2.0.0",
+    "grunt-http": "^1.6.0",
+    "mocha": "^2.3.4",
+    "chai": "^3.4.1"
   },
   "bugs": {
     "url": "https://github.com/ioBroker/ioBroker.zwave/issues"
   },
   "main": "main.js",
-  "readmeFilename": "README.md"
+  "readmeFilename": "README.md",
+  "readme": "![Logo](admin/zwave.png)\nioBroker zwave Adapter\n==============\n\n[![NPM version](http://img.shields.io/npm/v/iobroker.zwave.svg)](https://www.npmjs.com/package/iobroker.zwave)\n[![Downloads](https://img.shields.io/npm/dm/iobroker.zwave.svg)](https://www.npmjs.com/package/iobroker.zwave)\n\n[![NPM](https://nodei.co/npm/iobroker.zwave.png?downloads=true)](https://nodei.co/npm/iobroker.zwave/)\n\nZwave support with openzwave.\n\nFor this adapter is used rather good supported npm module: https://github.com/OpenZWave/node-openzwave-shared\nYou should find out what the name has USB port of the Z-Wave stick and setup it in the adapter settings.\n\n## Important Information\n- On first run, the Adapter needs some time, to calculate all Objects within iobroker.\n- If you add a Device, let the adapter do it's job and wait a little bit.\n- If a Device is not visible within the included Admistration Site, it's not fully imported into ioBroker.\n\n## Installation\nFirst of all, Implementation is tested only on ARM Linux (e.g. Raspberry Pi (2)).\nYou need a fully Development Environment (gcc, make,...)\n\nOn some systems the additional package is required: \n\n```\napt-get install pkg-config\n```\n\nnpm install iobroker.zwave does following Steps for you:\n\n- Download and install latest openzwave from github\n\n```\n  \\# cd /opt\n  \\# curl -L -O https://github.com/OpenZWave/open-zwave/archive/master.zip\n  \\# unzip master.zip\n  \\# cd open-zwave-master\n  \\# make\n  \\# sudo make install\n```\n\nAfter that you have to do the following Steps:\n\n- Put your USB Stick into your Server\n- Check whether the system has recognized the USB stick\n\n```\n  \\# lsusb\n  \\# ls -al /dev/ttyA*\n  \\# ls -al /dev/ttyU*\n```\n  \nOften the USB stick has address like ttyUSB0 or ttyUSB1.\n\n- Go into iobroker admin and add the Zwave Adapter (the installation is rather long, be patient)\n- Configure zwave Adapter as described \n- Start the new zwave Adapter instance\n- wait\n- until the Message \"zwave.0 Scan completed\" is found in iobroker.log\n- the Object zwave.0.completed has State \"true\"\n\n**Notice:**\nIf you get following error by install:\n\n```\nlibopenzwave.so.1.4: cannot open shared object file: No such file or directory\n```\n\n\nYou should call:\n\n```\nsudo ldconfig /usr/local/lib64\n```\n\n## Configuration\nWithin Admin Settings you can set following Attributes\n\n- Force objects re-init (ReInitialize all Objects within ioBroker)\n- USB name (the USB Port of your Z-Wave stick)\n- Logging (enable logging to OZW_Log.txt)\n- Console Output (copy logging to the console, Logs all to ioBroker.log)\n- Save Config (write an XML network layout create a /zwcfg_<HOMEID>.xml on linux)\n- Driver Attempts (try this many times before giving up)\n- Poll Interval (interval between polls in milliseconds)\n- Suppress Refresh (do not send updates if nothing changed)\n\n![admin-settings](img/admin-settings.png)\n\n## Logfiles / Configuration Settings\nIf you have installed iobroker into default Folder:\n\n - Logfile: /opt/iobroker/node_modules/iobroker.zwave/node_modules/openzwave-shared/OZW_Log.txt on linux\n - Configuration: /opt/iobroker/node_modules/iobroker.zwave/node_modules/zwcfg_<HOMEID>.xml on linux\n\n## Device add or remove\nIf you add or remove a device, it takes 60 seconds. Then the page is automatically reloaded.\n\nIf you change the Name or Location, it takes 5 seconds. Then the page is automatically reloaded.\n\n## Features\nWithin OpenZWave Configurator you can see all Nodes and their classes.\n\nFollowing Actions are current supported (only with context menu):\n\n- Set Name and Set Location for Node itself\n- Change Value of a class\n\nFollowing global Actions are current supported:\n\n- Add Nodes\n- Remove Nodes\n- Refresh Nodes (Refresh Nodes from ioBroker Communication)\n\n## Todo\n### ZWave Specific\n\n- Scenes\n- Group Management\n- Polling\n- Controller Commands\n- Configuration Commands\n\n### Global\n\n- Test more Hardware\n- Move config and logfile into iobroker default path (/opt/iobroker/log, /opt/iobroker/data/files/zwave)\n- Language Support (English, German, Russian)\n\n## Tested Hardware\n### ZWave\n\n- ZME_UZB1 USB Stick\n- RazBerry GPIO Board for RaspBerry (1/2)\n\n### Fibaro\n\n- FGBS001 Universal Binary Sensor\n- FGS222 Double Relay Switch 2x1.5kW\n- FGWPE Wall Plug\n- FGSS001 Smoke Sensor\n- FGMS001 Motion Sensor\n\n### Danfoss\n\n- Danfoss Living Connect Room Thermostat (type 0003, id 8010)\n- Danfoss Z Thermostat 014G0013\n\n## Changelog\n### 0.4.2 (2016-11-15)\n* (AlCalzone) Read devices from dev and not from serialport\n\n### 0.4.1 (2016-11-14)\n* (AlCalzone) Allow set of parameters\n\n### 0.4.0 (2016-11-01)\n* (bluefox) Rewrite adapter completely\n\n### 0.2.5 (2015-12-21)\n - (husky-koglhof) Objecttree build now on change/added/ready from zwave\n - Default Role/Type/State (needed for history)\n - openzwave-shared 1.1.6\n - last openzwave from github\n - OpenZWave Security\n\n### 0.2.4 (2015-12-05)\n - (husky-koglhof) fixed hardcoded values\n   Admin Page can Add / Remove ZWave Devices\n   \n### 0.2.3 (2015-11-11)\n - (bluefox) try to fix io-package.json\n\n### 0.2.2 (2015-09-28)\n - (ekarak) API changes for openzwave-shared 1.0.8+\n\n### 0.2.3 (2015-11-11)\n - (bluefox) try to fix io-package.json\n\n### 0.2.2 (2015-09-28)\n - (ekarak) API changes for openzwave-shared 1.0.8+\n\n### 0.2.1 (2015-08-24)\n - (husky-koglhof) Fixed Errors with Config save at OpenZwave Configurator\n\n### 0.2.0 (2015-08-05)\n - (husky-koglhof) Added OpenZWave Configurator, changed Dependency from openzwave to openzwave-shared, Implemented stateChange, objectChange Functions, Implemented extended Settings\n \n### 0.1.0 (2015-01-03)\n - enable npm install.\n \n### 0.0.9 (2014-11-22)\n - Support of new naming concept.\n \n### 0.0.8 (2014-10-31)\n - Fix names of classes.\n\n### 0.0.6 (2014-10-30)\n - Show in config found tty ports.\n \n### 0.0.3 (2014-10-30)\n - Classify channels.\n\n### 0.0.2 (2014-10-28)\n - Initial commit. Still non-functional.\n\n## License\n\nCopyright (c) 2014-2016 bluefox <dogafox@gmail.com>, husky-koglhof <husky.koglhof@icloud.com>\n\nSOFTWARE NOTICE AND LICENSE\n\nOpenZWave is free software: you can redistribute it and/or modify\nit under the terms of the GNU Lesser General Public License as published\nby the Free Software Foundation, either version 3 of the License,\nor (at your option) any later version.\n\nOpenZWave is distributed in the hope that it will be useful,\nbut WITHOUT ANY WARRANTY; without even the implied warranty of\nMERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\nGNU Lesser General Public License for more details.\n\nYou should have received a copy of the GNU Lesser General Public License\nalong with OpenZWave.  If not, see <http://www.gnu.org/licenses/>.\n",
+  "gitHead": "ce661d546ead0f9bdd36867e6c2966f1b7a54924",
+  "_id": "iobroker.zwave@0.4.2",
+  "_shasum": "32cbeec397972311025a792fb44f5b9176ca31ab",
+  "_from": "iobroker.zwave",
+  "_resolved": "file:iobroker.zwave"
 }

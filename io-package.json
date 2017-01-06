@@ -2,47 +2,147 @@
     "common": {
         "name":                     "zwave",
         "title":                    "ZWave",
-        "desc":                     "ZWave support based on openzwave packet",
-        "version":                  "0.2.0",
+        "desc":                     {
+			"en": "ZWave support based on openzwave packet",
+			"de": "ZWave Unterstutzung durch Openzwave Paket",
+			"ru": "Поддержка ZWave основанная на Openzwave пакете"
+		},
+        "version":                  "0.4.4",
+        "news": {
+            "0.4.4": {
+                "en": "Fix enumeration values",
+                "de": "Korrigiere manche Zustände",
+                "ru": "Исправлены некоторые значения"
+            },
+            "0.4.3": {
+                "en": "add state info.scanCompleted",
+                "de": "Zustnad info.scanCompleted hinzugefügt",
+                "ru": "Добавлено состояние info.scanCompleted"
+            },
+            "0.4.2": {
+                "en": "Read devices from dev and not from serialport",
+                "de": "Lese Geräte aus dev und nicht aus serialport",
+                "ru": "Поиск устройств в dev, а не в serialport"
+            },
+            "0.4.1": {
+                "en": "Allow set of parameters",
+                "de": "Erlaube setzten von Parametern",
+                "ru": "Запись в параметры"
+            },
+            "0.4.0": {
+                "en": "Rewrite adapter",
+                "de": "Komplett neuer Adapter",
+                "ru": "Полностью переписанный драйвер"
+            }
+        },
         "mode":                     "daemon",
         "platform":                 "javascript/Node.js",
-        "os":                       ["darwin", "linux"],
         "loglevel":                 "info",
         "keywords":                 ["zwave", "control", "openzwave"],
         "main":                     "main.js",
         "authors": [
-            "Boris Kondratenko", "bluefox <bluefox@ccu.io>",
+            "bluefox <dogafox@gmail.com>",
             "Christian Baumgartner", "husky-koglhof <husky.koglhof@icloud.com>"
         ],
         "license":                  "LGPL",
-        "singletonHost":             true,
         "readme":                   "https://github.com/ioBroker/ioBroker.zwave/blob/master/README.md",
         "icon":                     "zwave.png",
         "extIcon":                  "https://raw.githubusercontent.com/ioBroker/ioBroker.zwave/master/admin/zwave.png",
-        "install":                  true,
-        "dependencies":             ["web"],
         "onlyWWW":                  false,
         "singleton":                true,
         "messagebox":               true,
-		"localLink":                "%web_protocol%://%ip%:%web_port%/zwave/index.html",
-        "adminTab":                {
-            "singleton":    true,
-            "name":         "ZWave",
-            "link":         "%web_protocol%://%ip%:%web_port%/zwave/index.html"
+        "type":                     "hardware",
+        "enabled":                  true,
+        "config":{
+            "minWidth":   800,
+            "width":      1224,
+            "height":     600
         }
     },
     "native": {
-        "usb": "ttyACM0",
-        "logging": false,
-        "consoleoutput": false,
-        "saveconfig": true,
-        "driverattempts": "3",
-        "pollinterval": "500",
-        "suppressrefresh": false,
-        "forceinit": false
+        "usb":              "",
+        "logging":          false,
+        "consoleoutput":    false,
+        "saveconfig":       true,
+        "driverattempts":   3,
+        "pollinterval":     500,
+        "suppressrefresh":  false,
+        "forceinit":        false
     },
     "objects": [
     ],
     "instanceObjects": [
+        {
+            "_id":  "info",
+            "type": "channel",
+            "common": {
+                "name": "Information"
+            },
+            "native": {}
+        },
+        {
+            "_id":  "info.connection",
+            "type": "state",
+            "common": {
+                "role":  "indicator.connected",
+                "name":  "If connected to ZWave stick",
+                "type":  "boolean",
+                "read":  true,
+                "write": false,
+                "def":   false
+            },
+            "native": {}
+        },
+        {
+            "_id":  "info.controllerMessage",
+            "type": "state",
+            "common": {
+                "role":  "state",
+                "name":  "Last controller message",
+                "type":  "string",
+                "read":  true,
+                "write": false
+            },
+            "native": {}
+        },
+        {
+            "_id":  "info.scanCompleted",
+            "type": "state",
+            "common": {
+                "role":  "state",
+                "name":  "Scan fo devices is completed",
+                "desc":  "If scan of devices is completed",
+                "type":  "boolean",
+                "read":  true,
+                "write": false
+            },
+            "native": {}
+        },
+        {
+            "_id":  "inclusionOn",
+            "type": "state",
+            "common": {
+                "role":  "state",
+                "name":  "Inclusion mode activated",
+                "desc":  "If inclusion mode on or off",
+                "type":  "boolean",
+                "read":  true,
+                "write": true
+            },
+            "native": {}
+        },
+        {
+            "_id":  "exclusionOn",
+            "type": "state",
+            "common": {
+                "role":  "state",
+                "name":  "Exclusion mode activated",
+                "desc":  "If exclusion mode on or off",
+                "type":  "boolean",
+                "read":  true,
+                "write": true
+            },
+            "native": {}
+        }
     ]
 }
