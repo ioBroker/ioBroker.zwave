@@ -10,9 +10,9 @@
         "version":                  "0.5.1",
         "news": {
 			"0.5.1": {
-                "en": "Update openzwave-shared. Change install process. Remove fix for enumeratuion values because fixed in library in the meantime",
-                "de": "Update openzwave-shared. Ändere die Installation. Fehlerbehebung für Listen wieder entfernt, weil mittlerweile in der Library selbst behoben.",
-                "ru": "Обновлён пакет openzwave-shared. Изменён процесс установки.  Remove fix for enumeratuion values because fixed in library in the meantime"
+                "en": "Update openzwave-shared. Change install process. Fixed not being able to select configuration options from dropdowns. Note: To complete the fix, delete affected nodes in the ioBroker objects tab before starting the adapter.",
+                "de": "Update openzwave-shared. Ändere die Installation. Fehler behoben das Konfigurationsopnen von Dropdowns nicht ausgewählt werden konnten. Hinweis: Um das Problem vollständig zu lösen müssen die betroffenen Geräte im ioBroker Objekte Tab gelöst werden bevor der Adapter gestartet wird.",
+                "ru": "Обновлён пакет openzwave-shared. Изменён процесс установки.  Fixed not being able to select configuration options from dropdowns. Note: To complete the fix, delete affected nodes in the ioBroker objects tab before starting the adapter."
             },
             "0.4.4": {
                 "en": "Fix enumeration values",
