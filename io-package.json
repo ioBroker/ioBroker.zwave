@@ -7,12 +7,12 @@
 			"de": "ZWave Unterstutzung durch Openzwave Paket",
 			"ru": "Поддержка ZWave основанная на Openzwave пакете"
 		},
-        "version":                  "0.5.0",
+        "version":                  "0.5.1",
         "news": {
-			"0.5.0": {
-                "en": "Update openzwave-shared\nChange install process",
-                "de": "Update openzwave-shared\nÄndere die Installation",
-                "ru": "Обновлён пакет openzwave-shared\nИзменён процесс установки"
+			"0.5.1": {
+                "en": "Update openzwave-shared. Change install process. Remove fix for enumeratuion values because fixed in library in the meantime",
+                "de": "Update openzwave-shared. Ändere die Installation. Fehlerbehebung für Listen wieder entfernt, weil mittlerweile in der Library selbst behoben.",
+                "ru": "Обновлён пакет openzwave-shared. Изменён процесс установки.  Remove fix for enumeratuion values because fixed in library in the meantime"
             },
             "0.4.4": {
                 "en": "Fix enumeration values",

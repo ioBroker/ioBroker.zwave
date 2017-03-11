@@ -562,7 +562,7 @@ function extendChannel(nodeID, comClass, valueId) {
         var newNative = objects[channelID].native || {};
         newNative.nodeID = nodeID;
 
-        // compare native 
+        // compare native
         if (JSON.stringify(objects[channelID].native) !== JSON.stringify(newNative) ||
                 // compare role
             (comClasses[comClass] && comClasses[comClass].role && !objects[channelID].common.role)) {
@@ -686,14 +686,10 @@ function extendChannel(nodeID, comClass, valueId) {
                     stateObj.common.type = 'boolean';
                     value = (value === 'On');
                 } else {
-                    var offset = 0;
-                    if (valueId.min !== undefined) {
-                        offset = parseFloat(valueId.min) || 0;
-                    }
                     stateObj.common.states = {};
                     for (var i = 0; i < valueId.values.length; i++) {
-                        stateObj.common.states[i + offset] = valueId.values[i];
-                        if (valueId.values[i] === value) value = i + offset;
+                        stateObj.common.states[i] = valueId.values[i];
+                        if (valueId.values[i] === value) value = i;
                     }
                 }
             }
