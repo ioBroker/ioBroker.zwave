@@ -321,6 +321,8 @@ var adapter = utils.adapter({
     unload: function (callback) {
         if (zwave) zwave.disconnect(adapter.config.usb);
 
+		resetInstanceStatusInfo();
+
         callback();
     }
 });
@@ -727,11 +729,16 @@ function deleteDevice(nodeID) {
     if (nodes[nodeID]) delete nodes[nodeID];
 }
 
+function resetInstanceStatusInfo() {
+	// resets states with information about adapter status
+	adapter.setState('info.connection', false, true);
+	adapter.setState('info.scanCompleted', false, true);
+	adapter.setState('inclusionOn', false, true);
+	adapter.setState('exclusionOn', false, true);
+}
+
 function main() {
-    adapter.setState('info.connection', false, true);
-    adapter.setState('info.scanCompleted', false, true);
-    adapter.setState('inclusionOn', false, true);
-    adapter.setState('exclusionOn', false, true);
+	resetInstanceStatusInfo();
 
     if (!adapter.config.usb) {
         adapter.log.warn('No USB selected');
