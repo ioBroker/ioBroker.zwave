@@ -148,6 +148,9 @@ Following global Actions are current supported:
 - Danfoss Z Thermostat 014G0013
 
 ## Changelog
+### 0.5.2 (2017-04-05)
+* (AlCalzone) improved handling of instance status objects
+
 ### 0.5.0 (2017-01-08)
 * (bluefox) Update openzwave-shared
 * (ekarak) Change install process

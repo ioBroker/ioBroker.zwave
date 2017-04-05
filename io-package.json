@@ -7,8 +7,13 @@
 			"de": "ZWave Unterstutzung durch Openzwave Paket",
 			"ru": "Поддержка ZWave основанная на Openzwave пакете"
 		},
-        "version":                  "0.5.1",
+        "version":                  "0.5.2",
         "news": {
+			"0.5.2": {
+                "en": "Reset status on start and stop of adapter",
+                "de": "Setzt auf false die Statis beim Aadapterstop und Start",
+                "ru": "Сбрасывает значения статуса при старте и остановке драйвера"
+            },
 			"0.5.1": {
                 "en": "Update openzwave-shared. Change install process. Fixed not being able to select configuration options from dropdowns. Note: To complete the fix, delete affected nodes in the ioBroker objects tab before starting the adapter.",
                 "de": "Update openzwave-shared. Ändere die Installation. Fehler behoben das Konfigurationsopnen von Dropdowns nicht ausgewählt werden konnten. Hinweis: Um das Problem vollständig zu lösen müssen die betroffenen Geräte im ioBroker Objekte Tab gelöst werden bevor der Adapter gestartet wird.",
