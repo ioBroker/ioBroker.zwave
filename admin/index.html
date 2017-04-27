@@ -390,8 +390,10 @@
     function updateInclusion() {
         if (values['zwave.' + instance + '.inclusionOn'] && values['zwave.' + instance + '.inclusionOn'].val && (isAlive || common.enabled)) {
             $('.zwave-operations[data-operation="addNode"]').css('background', '#bfe6c7');
+            $('.zwave-operations[data-operation="addNodeSecure"]').css('background', '#bfe6c7');
         } else {
             $('.zwave-operations[data-operation="addNode"]').css('background', '');
+            $('.zwave-operations[data-operation="addNodeSecure"]').css('background', '');
         }
 
         if (values['zwave.' + instance + '.exclusionOn'] && values['zwave.' + instance + '.exclusionOn'].val && (isAlive || common.enabled)) {
@@ -757,12 +759,17 @@
                     <td class="translate">Suppress Refresh:</td>
                     <td><input class="value" id="suppressrefresh" type="checkbox"/></td>
                 </tr>
+                <tr>
+                    <td class="">Network key:</td>
+                    <td><input class="value" id="networkkey"/></td>
+                </tr>
                 </tbody>
             </table>
         </div>
         <div id="tabs-2" style="width: 100%; height: calc(100% - 40px); overflow-x: hidden; overflow-y: auto; padding: 0; margin: 10px">
             <p>
                 <button data-operation="addNode"      data-icon="add"        class="translate zwave-operations">Add node</button>
+                <button data-operation="addNodeSecure"data-icon="add"        class="translate zwave-operations">Add node secure</button>
                 <button data-operation="removeNode"   data-icon="delete"     class="translate zwave-operations">Remove node</button>
                 <button data-operation="healNetwork"  data-icon="heal"       class="translate zwave-operations">Heal network</button>
                 <button data-operation="getNeighbors" data-icon="neighbors"  class="translate zwave-operations">Get neighbors</button>
