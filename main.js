@@ -18,6 +18,7 @@ var inclusion    = null;
 var exclusion    = null;
 var inclusionRepeat = null;
 var exclusionRepeat = null;
+var addNodeSecure = false;
 
 var notificationCodes = [
     /*0:*/ 'message complete',
@@ -105,6 +106,7 @@ var adapter = utils.adapter({
     },
     message: function (obj) {
         if (obj) {
+            addNodeSecure = false;
             switch (obj.command) {
                 case 'listUart':
                     if (obj.callback) {
@@ -200,6 +202,9 @@ var adapter = utils.adapter({
                     }
                     break;
 
+
+                case 'addNodeSecure':
+                    addNodeSecure = true;
                 case 'addNode':
                     if (inclusion) {
                         disableInclusion();
@@ -209,7 +214,7 @@ var adapter = utils.adapter({
                     disableExclusion();
 
                     if (zwave) {
-                        adapter.log.info('Execute ' + obj.command);
+                        adapter.log.info('Execute addNode ' + (addNodeSecure ? 'secure' : ''));
                         if (!inclusion) {
                             adapter.setState('inclusionOn', true, true);
                         } else {
@@ -221,7 +226,7 @@ var adapter = utils.adapter({
                             adapter.setState('inclusionOn', false, true);
                         }, 60000);
 
-                        zwave.addNode();
+                        zwave.addNode(addNodeSecure);
                         if (obj.callback) adapter.sendTo(obj.from, obj.command, {error: null}, obj.callback);
                     } else {
                         if (obj.callback) adapter.sendTo(obj.from, obj.command, {error: 'not runnung'}, obj.callback);
@@ -753,7 +758,8 @@ function main() {
         SaveConfiguration:    adapter.config.saveconfig,         // true  - write an XML network layout
         DriverMaxAttempts:    adapter.config.driverattempts,     // 3     - try this many times before giving up
         PollInterval:         adapter.config.pollintervall,      // 500   - interval between polls in milliseconds
-        SuppressValueRefresh: adapter.config.suppressrefresh     // false - do not send updates if nothing changed
+        SuppressValueRefresh: adapter.config.suppressrefresh,    // false - do not send updates if nothing changed
+        NetworkKey:           adapter.config.networkkey          // 0102..- use for secure connections
     });
 
     // ------------- controller events ---------------------------
@@ -832,7 +838,7 @@ function main() {
                         if (inclusion) {
                             adapter.log.info('Continue to add devices');
                             adapter.setState('info.controllerMessage', JSON.stringify({state: 15}), true);
-                            zwave.addNode();
+                            zwave.addNode(addNodeSecure);
                         }
                     }, 5000);
                 }
