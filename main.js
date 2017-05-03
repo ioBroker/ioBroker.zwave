@@ -757,7 +757,7 @@ function main() {
         ConsoleOutput:        adapter.config.consoleoutput,      // true  - copy logging to the console
         SaveConfiguration:    adapter.config.saveconfig,         // true  - write an XML network layout
         DriverMaxAttempts:    adapter.config.driverattempts,     // 3     - try this many times before giving up
-        PollInterval:         adapter.config.pollintervall,      // 500   - interval between polls in milliseconds
+        PollInterval:         adapter.config.pollinterval,       // 500   - interval between polls in milliseconds
         SuppressValueRefresh: adapter.config.suppressrefresh,    // false - do not send updates if nothing changed
         NetworkKey:           adapter.config.networkkey          // 0102..- use for secure connections
     });
