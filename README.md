@@ -148,6 +148,9 @@ Following global Actions are current supported:
 - Danfoss Z Thermostat 014G0013
 
 ## Changelog
+### 0.6.0 (2017-05-01)
+* (Pmant) Support secure devices
+
 ### 0.5.2 (2017-04-05)
 * (AlCalzone) improved handling of instance status objects
 
