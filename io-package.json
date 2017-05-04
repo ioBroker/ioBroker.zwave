@@ -64,7 +64,7 @@
         "icon":                     "zwave.png",
         "extIcon":                  "https://raw.githubusercontent.com/ioBroker/ioBroker.zwave/master/admin/zwave.png",
         "onlyWWW":                  false,
-        "singleton":                true,
+        "singletonHost":            true,
         "messagebox":               true,
         "type":                     "hardware",
         "enabled":                  true,
