@@ -459,7 +459,7 @@ function extendNode(nodeID, nodeInfo, callback) {
         if (JSON.stringify(objects[id].native) !== JSON.stringify(nodeInfo)) {
             adapter.log.info('Update ' + id);
             objects[id].native = nodeInfo;
-            if (!objects[id].common.name) objects[id].common.name = nodeInfo.name || nodeInfo.manufacturer ? nodeInfo.name || (nodeInfo.manufacturer + ' ' + nodeInfo.product) : '';
+            if (!objects[id].common.name || nodeInfo.name) objects[id].common.name = nodeInfo.name || nodeInfo.manufacturer ? nodeInfo.name || (nodeInfo.manufacturer + ' ' + nodeInfo.product) : '';
             count++;
             adapter.extendForeignObject(id, objects[id], function () {
                 if (!--count && callback) callback();
