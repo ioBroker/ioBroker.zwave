@@ -77,8 +77,8 @@ systemDictionary = {
     "deleteAllReturnRoutes": {"en": "Delete all routes",    "de": "Löschen aller Routierungen", "ru": "Удалить все маршруты"},
     "requestNetworkUpdate": {"en": "Network update",        "de": "Netzwerkaktualisierung",     "ru": "Сетевое обновление"},
     "replicationSend":      {"en": "Replication",           "de": "Replikation",        "ru": "Копирование"},
-    "setName":              {"en": "Set name",              "de": "Namen festlegen",    "ru": "Задать имя"},
-    "setLocation":          {"en": "Set location",          "de": "Ort festlegen",      "ru": "Задать локацию"},
+    "setNodeName":              {"en": "Set name",              "de": "Namen festlegen",    "ru": "Задать имя"},
+    "setNodeLocation":          {"en": "Set location",          "de": "Ort festlegen",      "ru": "Задать локацию"},
     "createButton":         {"en": "Create button",         "de": "Taste erstellen",    "ru": "Создать кнопку"},
     "deleteButton":         {"en": "Delete button",         "de": "Taste löschen",      "ru": "Удалить кнопку"},
     "buttonID":             {
@@ -215,12 +215,12 @@ var commands = {
         'de': 'Ersetzen Sie einen nicht antwortenden Knoten durch einen anderen. Der Knoten muss sich in der Controller-Liste der ausgefallenen Knoten befinden, damit dieser Befehl erfolgreich ausgeführt werden kann.',
         'ru': 'Заменить зависший узел на другой. Узел должен находиться в списке ошибочных узлов контроллера чтобы успешно отработать.'
     },
-    'setName': {
+    'setNodeName': {
         'en': 'Set node name.',
         'de': 'Knotennamen festlegen.',
         'ru': 'Назначить имя узла.'
     },
-    'setLocation': {
+    'setNodeLocation': {
         'en': 'Set node location.',
         'de': 'Ort des Knotens festlegen.',
         'ru': 'Задать локацию узла.'

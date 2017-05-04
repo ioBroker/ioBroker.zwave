@@ -164,8 +164,8 @@ var adapter = utils.adapter({
                     }
                     break;
 
-                case 'setName':
-                case 'setLocation':
+                case 'setNodeName':
+                case 'setNodeLocation':
                     if (zwave && obj.message) {
                         disableInclusion();
                         disableExclusion();
@@ -456,10 +456,10 @@ function extendNode(nodeID, nodeInfo, callback) {
 
     var count = 0;
     if (objects[id]) {
-        if (JSON.stringify(objects[id].native) !== JSON.stringify(nodeInfo) || !(objects[id].common.name && nodeInfo.manufacturer)) {
+        if (JSON.stringify(objects[id].native) !== JSON.stringify(nodeInfo)) {
             adapter.log.info('Update ' + id);
             objects[id].native = nodeInfo;
-            if (!objects[id].common.name) objects[id].common.name = nodeInfo.manufacturer ? nodeInfo.name || (nodeInfo.manufacturer + ' ' + nodeInfo.product) : '';
+            if (!objects[id].common.name || nodeInfo.name) objects[id].common.name = nodeInfo.name || nodeInfo.manufacturer ? nodeInfo.name || (nodeInfo.manufacturer + ' ' + nodeInfo.product) : '';
             count++;
             adapter.extendForeignObject(id, objects[id], function () {
                 if (!--count && callback) callback();
@@ -468,7 +468,7 @@ function extendNode(nodeID, nodeInfo, callback) {
     } else {
         var devObj = {
             common: {
-                name: nodeInfo.manufacturer ? nodeInfo.name || (nodeInfo.manufacturer + ' ' + nodeInfo.product) : '',
+                name: nodeInfo.name || nodeInfo.manufacturer ? nodeInfo.name || (nodeInfo.manufacturer + ' ' + nodeInfo.product) : '',
                 role: 'state'
             },
             native: nodeInfo,
@@ -530,7 +530,6 @@ function extendNode(nodeID, nodeInfo, callback) {
             if (!--count && callback) callback();
         });
     }
-
     if (nodeInfo.loc) {
         var roomId = 'enum.rooms.' + nodeInfo.loc.replace(/\s/g, '_');
         if (!objects[roomId]) {
@@ -547,7 +546,7 @@ function extendNode(nodeID, nodeInfo, callback) {
                 if (!--count && callback) callback();
             });
         } else if (objects[roomId].common.members && objects[roomId].common.members.indexOf(id) === -1) {
-            objects[roomId].common.members.push(roomId);
+            objects[roomId].common.members.push(id);
             count++;
             adapter.setForeignObject(roomId, objects[roomId], function () {
                 if (!--count && callback) callback();
@@ -757,7 +756,7 @@ function main() {
         ConsoleOutput:        adapter.config.consoleoutput,      // true  - copy logging to the console
         SaveConfiguration:    adapter.config.saveconfig,         // true  - write an XML network layout
         DriverMaxAttempts:    adapter.config.driverattempts,     // 3     - try this many times before giving up
-        PollInterval:         adapter.config.pollintervall,      // 500   - interval between polls in milliseconds
+        PollInterval:         adapter.config.pollinterval,       // 500   - interval between polls in milliseconds
         SuppressValueRefresh: adapter.config.suppressrefresh,    // false - do not send updates if nothing changed
         NetworkKey:           adapter.config.networkkey          // 0102..- use for secure connections
     });
