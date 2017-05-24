@@ -229,7 +229,7 @@ var adapter = utils.adapter({
                         zwave.addNode(addNodeSecure);
                         if (obj.callback) adapter.sendTo(obj.from, obj.command, {error: null}, obj.callback);
                     } else {
-                        if (obj.callback) adapter.sendTo(obj.from, obj.command, {error: 'not runnung'}, obj.callback);
+                        if (obj.callback) adapter.sendTo(obj.from, obj.command, {error: 'not running'}, obj.callback);
                     }
                     break;
 
