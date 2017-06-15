@@ -115,9 +115,22 @@ var adapter = utils.adapter({
 		var predefinedResponses = {
 			OK: { error: null, result: 'ok' },
 			ERROR_UNKNOWN_COMMAND: { error: 'Unknown command!' },
-			ERROR_NOT_RUNNING: {error: 'zwave driver is not running!'}
+			ERROR_NOT_RUNNING: { error: 'zwave driver is not running!' },
+			MISSING_PARAMETER: function (paramName) { return { error: 'missing parameter "' + paramName + '"!' };}
+		}
+		// make required parameters easier
+		function requireParams(params) {
+			if (!(params && params.length)) return true;
+			for (var i = 0; i < params.length; i++) {
+				if (!(obj.message && obj.message.hasOwnProperty(params[i]))) {
+					respond(predefinedResponses.MISSING_PARAMETER(params[i]));
+					return false;
+				}
+			}
+			return true;
 		}
 
+		// handle the message
         if (obj) {
             addNodeSecure = false;
             switch (obj.command) {
@@ -276,8 +289,11 @@ var adapter = utils.adapter({
 				// Association groups management functions:
 				case 'getNumGroups': // zwave.getNumGroups(nodeid) => number;
 					if (zwave && obj.message) {
+						if (!requireParams(["nodeID"])) break;
+
 						disableInclusion();
 						disableExclusion();
+
 						adapter.log.info('Requesting number of association groups from node' + obj.message.nodeID);
 						if (zwave[obj.command]) {
 							var result = zwave[obj.command](obj.message.nodeID);
@@ -293,8 +309,11 @@ var adapter = utils.adapter({
 
 				case 'getGroupLabel': // zwave.getGroupLabel(nodeid, group) => string;
 					if (zwave && obj.message) {
+						if (!requireParams(["nodeID", "group"])) break;
+
 						disableInclusion();
 						disableExclusion();
+
 						adapter.log.info('Requesting label of association group ' + obj.message.group + ' from node ' + obj.message.nodeID);
 						if (zwave[obj.command]) {
 							var result = zwave[obj.command](obj.message.nodeID, obj.message.group);
@@ -310,8 +329,11 @@ var adapter = utils.adapter({
 
 				case 'getAssociations': // zwave.getAssociations(nodeid, group);
 					if (zwave && obj.message) {
+						if (!requireParams(["nodeID", "group"])) break;
+
 						disableInclusion();
 						disableExclusion();
+
 						adapter.log.info('Requesting associations in group ' + obj.message.group + ' from node ' + obj.message.nodeID);
 						if (zwave[obj.command]) {
 							var result = zwave[obj.command](obj.message.nodeID, obj.message.group);
@@ -327,8 +349,11 @@ var adapter = utils.adapter({
 
 				case 'getMaxAssociations': // zwave.getMaxAssociations(nodeid, group);
 					if (zwave && obj.message) {
+						if (!requireParams(["nodeID", "group"])) break;
+
 						disableInclusion();
 						disableExclusion();
+
 						adapter.log.info('Requesting max number of associations in group ' + obj.message.group + ' from node ' + obj.message.nodeID);
 						if (zwave[obj.command]) {
 							var result = zwave[obj.command](obj.message.nodeID, obj.message.group);
@@ -344,8 +369,11 @@ var adapter = utils.adapter({
 
 				case 'addAssociation': // zwave.addAssociation(nodeid, group, target_nodeid);
 					if (zwave && obj.message) {
+						if (!requireParams(["nodeID", "group", "target_nodeid"])) break;
+
 						disableInclusion();
 						disableExclusion();
+
 						adapter.log.info('Adding association with node ' + obj.message.target_nodeid + ' to group ' + obj.message.group + ' of node ' + obj.message.nodeID);
 						if (zwave[obj.command]) {
 							zwave[obj.command](obj.message.nodeID, obj.message.group, obj.message.target_nodeid);
@@ -361,8 +389,11 @@ var adapter = utils.adapter({
 
 				case 'removeAssociation': // zwave.removeAssociation(nodeid, group, target_nodeid);
 					if (zwave && obj.message) {
+						if (!requireParams(["nodeID", "group", "target_nodeid"])) break;
+
 						disableInclusion();
 						disableExclusion();
+
 						adapter.log.info('Removing association with node ' + obj.message.target_nodeid + ' from group ' + obj.message.group + ' of node ' + obj.message.nodeID);
 						if (zwave[obj.command]) {
 							zwave[obj.command](obj.message.nodeID, obj.message.group, obj.message.target_nodeid);
