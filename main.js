@@ -258,7 +258,111 @@ var adapter = utils.adapter({
                     } else {
                         if (obj.callback) adapter.sendTo(obj.from, obj.command, {error: 'not runnung'}, obj.callback);
                     }
-                    break;
+					break;
+
+				// Association groups management functions:
+				case 'getNumGroups': // zwave.getNumGroups(nodeid) => number;
+					if (zwave && obj.message) {
+						disableInclusion();
+						disableExclusion();
+						adapter.log.info('Requesting number of association groups from node' + obj.message.nodeID);
+						if (zwave[obj.command]) {
+							var result = zwave[obj.command](obj.message.nodeID);
+							if (obj.callback) adapter.sendTo(obj.from, obj.command, { error: null, result: result }, obj.callback);
+						} else {
+							adapter.log.error('Unknown command!');
+							if (obj.callback) adapter.sendTo(obj.from, obj.command, { error: 'Unknown command!' }, obj.callback);
+						}
+					} else {
+						if (obj.callback) adapter.sendTo(obj.from, obj.command, { error: 'not runnung' }, obj.callback);
+					}
+					break;
+
+				case 'getGroupLabel': // zwave.getGroupLabel(nodeid, group) => string;
+					if (zwave && obj.message) {
+						disableInclusion();
+						disableExclusion();
+						adapter.log.info('Requesting label of association group ' + obj.message.group + ' from node ' + obj.message.nodeID);
+						if (zwave[obj.command]) {
+							var result = zwave[obj.command](obj.message.nodeID, obj.message.group);
+							if (obj.callback) adapter.sendTo(obj.from, obj.command, { error: null, result: result }, obj.callback);
+						} else {
+							adapter.log.error('Unknown command!');
+							if (obj.callback) adapter.sendTo(obj.from, obj.command, { error: 'Unknown command!' }, obj.callback);
+						}
+					} else {
+						if (obj.callback) adapter.sendTo(obj.from, obj.command, { error: 'not runnung' }, obj.callback);
+					}
+					break;
+
+				case 'getAssociations': // zwave.getAssociations(nodeid, group);
+					if (zwave && obj.message) {
+						disableInclusion();
+						disableExclusion();
+						adapter.log.info('Requesting associations in group ' + obj.message.group + ' from node ' + obj.message.nodeID);
+						if (zwave[obj.command]) {
+							var result = zwave[obj.command](obj.message.nodeID, obj.message.group);
+							if (obj.callback) adapter.sendTo(obj.from, obj.command, { error: null, result: result }, obj.callback);
+						} else {
+							adapter.log.error('Unknown command!');
+							if (obj.callback) adapter.sendTo(obj.from, obj.command, { error: 'Unknown command!' }, obj.callback);
+						}
+					} else {
+						if (obj.callback) adapter.sendTo(obj.from, obj.command, { error: 'not runnung' }, obj.callback);
+					}
+					break;
+
+				case 'getMaxAssociations': // zwave.getMaxAssociations(nodeid, group);
+					if (zwave && obj.message) {
+						disableInclusion();
+						disableExclusion();
+						adapter.log.info('Requesting max number of associations in group ' + obj.message.group + ' from node ' + obj.message.nodeID);
+						if (zwave[obj.command]) {
+							var result = zwave[obj.command](obj.message.nodeID, obj.message.group);
+							if (obj.callback) adapter.sendTo(obj.from, obj.command, { error: null, result: result }, obj.callback);
+						} else {
+							adapter.log.error('Unknown command!');
+							if (obj.callback) adapter.sendTo(obj.from, obj.command, { error: 'Unknown command!' }, obj.callback);
+						}
+					} else {
+						if (obj.callback) adapter.sendTo(obj.from, obj.command, { error: 'not runnung' }, obj.callback);
+					}
+					break;
+
+				case 'addAssociation': // zwave.addAssociation(nodeid, group, target_nodeid);
+					if (zwave && obj.message) {
+						disableInclusion();
+						disableExclusion();
+						adapter.log.info('Adding association with node ' + obj.message.target_nodeid + ' to group ' + obj.message.group + ' of node ' + obj.message.nodeID);
+						if (zwave[obj.command]) {
+							zwave[obj.command](obj.message.nodeID, obj.message.group, obj.message.target_nodeid);
+							if (obj.callback) adapter.sendTo(obj.from, obj.command, { error: null, result: 'ok' }, obj.callback);
+						} else {
+							adapter.log.error('Unknown command!');
+							if (obj.callback) adapter.sendTo(obj.from, obj.command, { error: 'Unknown command!' }, obj.callback);
+						}
+					} else {
+						if (obj.callback) adapter.sendTo(obj.from, obj.command, { error: 'not runnung' }, obj.callback);
+					}
+					break;
+
+				case 'removeAssociation': // zwave.removeAssociation(nodeid, group, target_nodeid);
+					if (zwave && obj.message) {
+						disableInclusion();
+						disableExclusion();
+						adapter.log.info('Removing association with node ' + obj.message.target_nodeid + ' from group ' + obj.message.group + ' of node ' + obj.message.nodeID);
+						if (zwave[obj.command]) {
+							zwave[obj.command](obj.message.nodeID, obj.message.group, obj.message.target_nodeid);
+							if (obj.callback) adapter.sendTo(obj.from, obj.command, { error: null, result: 'ok' }, obj.callback);
+						} else {
+							adapter.log.error('Unknown command!');
+							if (obj.callback) adapter.sendTo(obj.from, obj.command, { error: 'Unknown command!' }, obj.callback);
+						}
+					} else {
+						if (obj.callback) adapter.sendTo(obj.from, obj.command, { error: 'not runnung' }, obj.callback);
+					}
+					break;
+
 
                 default:
                     adapter.log.error('Unknown command: ' + obj.command);
