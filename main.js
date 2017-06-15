@@ -104,15 +104,28 @@ var adapter = utils.adapter({
             });
         });
     },
-    message: function (obj) {
+	message: function (obj) {
+
+		// responds to the adapter that sent the original message
+		function respond(response) {
+			if (obj.callback)
+				adapter.sendTo(obj.from, obj.command, response, obj.callback);
+		}
+		// some predefined responses so we only have to define them once
+		var predefinedResponses = {
+			OK: { error: null, result: 'ok' },
+			ERROR_UNKNOWN_COMMAND: { error: 'Unknown command!' },
+			ERROR_NOT_RUNNING: {error: 'zwave driver is not running!'}
+		}
+
         if (obj) {
             addNodeSecure = false;
             switch (obj.command) {
                 case 'listUart':
                     if (obj.callback) {
                         var ports = listSerial();
-                        adapter.log.info('List of ports: ' + JSON.stringify(ports));
-                        adapter.sendTo(obj.from, obj.command, ports, obj.callback);
+						adapter.log.info('List of ports: ' + JSON.stringify(ports));
+						respond(ports);
                     }
                     break;
 
@@ -127,14 +140,14 @@ var adapter = utils.adapter({
                         // destructive! will wipe out all known configuration
                         adapter.log.info('Execute ' + obj.command);
                         if (zwave[obj.command]) {
-                            zwave[obj.command]();
-                            if (obj.callback) adapter.sendTo(obj.from, obj.command, {error: null, result: 'ok'}, obj.callback);
+							zwave[obj.command]();
+							respond(predefinedResponses.OK);
                         } else {
-                            adapter.log.error('Unknown command!');
-                            if (obj.callback) adapter.sendTo(obj.from, obj.command, {error: 'Unknown command!'}, obj.callback);
+							adapter.log.error('Unknown command!');
+							respond(predefinedResponses.ERROR_UNKNOWN_COMMAND);
                         }
                     } else {
-                        if (obj.callback) adapter.sendTo(obj.from, obj.command, {error: 'not runnung'}, obj.callback);
+						respond(predefinedResponses.ERROR_NOT_RUNNING);
                     }
                     break;
 
@@ -154,13 +167,13 @@ var adapter = utils.adapter({
                         adapter.log.info('Execute ' + obj.command + ' for ' + obj.message.nodeID);
                         if (zwave[obj.command]) {
                             zwave[obj.command](obj.message.nodeID);
-                            if (obj.callback) adapter.sendTo(obj.from, obj.command, {error: null, result: 'ok'}, obj.callback);
+							respond(predefinedResponses.OK);
                         } else {
                             adapter.log.error('Unknown command!');
-                            if (obj.callback) adapter.sendTo(obj.from, obj.command, {error: 'Unknown command!'}, obj.callback);
+							respond(predefinedResponses.ERROR_UNKNOWN_COMMAND);
                         }
                     } else {
-                        if (obj.callback) adapter.sendTo(obj.from, obj.command, {error: 'not runnung'}, obj.callback);
+						respond(predefinedResponses.ERROR_NOT_RUNNING);
                     }
                     break;
 
@@ -172,13 +185,13 @@ var adapter = utils.adapter({
                         adapter.log.info('Execute ' + obj.command + ' for ' + obj.message.nodeID + ' with "' + obj.message.param + '"');
                         if (zwave[obj.command]) {
                             zwave[obj.command](obj.message.nodeID, obj.message.param);
-                            if (obj.callback) adapter.sendTo(obj.from, obj.command, {error: null, result: 'ok'}, obj.callback);
+							respond(predefinedResponses.OK);
                         } else {
                             adapter.log.error('Unknown command!');
-                            if (obj.callback) adapter.sendTo(obj.from, obj.command, {error: 'Unknown command!'}, obj.callback);
+							respond(predefinedResponses.ERROR_UNKNOWN_COMMAND);
                         }
                     } else {
-                        if (obj.callback) adapter.sendTo(obj.from, obj.command, {error: 'not runnung'}, obj.callback);
+						respond(predefinedResponses.ERROR_NOT_RUNNING);
                     }
                     break;
 
@@ -192,13 +205,13 @@ var adapter = utils.adapter({
                         adapter.log.info('Execute ' + obj.command + ' for ' + obj.message.nodeID + ' with "' + obj.message.param + '"');
                         if (zwave[obj.command]) {
                             zwave[obj.command](obj.message.nodeID, obj.message.param);
-                            if (obj.callback) adapter.sendTo(obj.from, obj.command, {error: null, result: 'ok'}, obj.callback);
+							respond(predefinedResponses.OK);
                         } else {
                             adapter.log.error('Unknown command!');
-                            if (obj.callback) adapter.sendTo(obj.from, obj.command, {error: 'Unknown command!'}, obj.callback);
+							respond(predefinedResponses.ERROR_UNKNOWN_COMMAND);
                         }
                     } else {
-                        if (obj.callback) adapter.sendTo(obj.from, obj.command, {error: 'not runnung'}, obj.callback);
+						respond(predefinedResponses.ERROR_NOT_RUNNING);
                     }
                     break;
 
@@ -208,7 +221,7 @@ var adapter = utils.adapter({
                 case 'addNode':
                     if (inclusion) {
                         disableInclusion();
-                        if (obj.callback) adapter.sendTo(obj.from, obj.command, {error: null}, obj.callback);
+						respond(predefinedResponses.OK);
                         return;
                     }
                     disableExclusion();
@@ -227,16 +240,16 @@ var adapter = utils.adapter({
                         }, 60000);
 
                         zwave.addNode(addNodeSecure);
-                        if (obj.callback) adapter.sendTo(obj.from, obj.command, {error: null}, obj.callback);
+						respond(predefinedResponses.OK);
                     } else {
-                        if (obj.callback) adapter.sendTo(obj.from, obj.command, {error: 'not running'}, obj.callback);
+						respond(predefinedResponses.ERROR_NOT_RUNNING);
                     }
                     break;
 
                 case 'removeNode':
                     if (exclusion) {
                         disableExclusion();
-                        if (obj.callback) adapter.sendTo(obj.from, obj.command, {error: null}, obj.callback);
+						respond(predefinedResponses.OK);
                         return;
                     }
                     disableInclusion();
@@ -254,9 +267,9 @@ var adapter = utils.adapter({
                             adapter.setState('exclusionOn', false, true);
                         }, 60000);
                         zwave.removeNode();
-                        if (obj.callback) adapter.sendTo(obj.from, obj.command, {error: null}, obj.callback);
+						respond(predefinedResponses.OK);
                     } else {
-                        if (obj.callback) adapter.sendTo(obj.from, obj.command, {error: 'not runnung'}, obj.callback);
+						respond(predefinedResponses.ERROR_NOT_RUNNING);
                     }
 					break;
 
@@ -268,13 +281,13 @@ var adapter = utils.adapter({
 						adapter.log.info('Requesting number of association groups from node' + obj.message.nodeID);
 						if (zwave[obj.command]) {
 							var result = zwave[obj.command](obj.message.nodeID);
-							if (obj.callback) adapter.sendTo(obj.from, obj.command, { error: null, result: result }, obj.callback);
+							respond({ error: null, result: result });
 						} else {
 							adapter.log.error('Unknown command!');
-							if (obj.callback) adapter.sendTo(obj.from, obj.command, { error: 'Unknown command!' }, obj.callback);
+							respond(predefinedResponses.ERROR_UNKNOWN_COMMAND);
 						}
 					} else {
-						if (obj.callback) adapter.sendTo(obj.from, obj.command, { error: 'not runnung' }, obj.callback);
+						respond(predefinedResponses.ERROR_NOT_RUNNING);
 					}
 					break;
 
@@ -285,13 +298,13 @@ var adapter = utils.adapter({
 						adapter.log.info('Requesting label of association group ' + obj.message.group + ' from node ' + obj.message.nodeID);
 						if (zwave[obj.command]) {
 							var result = zwave[obj.command](obj.message.nodeID, obj.message.group);
-							if (obj.callback) adapter.sendTo(obj.from, obj.command, { error: null, result: result }, obj.callback);
+							respond({ error: null, result: result });
 						} else {
 							adapter.log.error('Unknown command!');
-							if (obj.callback) adapter.sendTo(obj.from, obj.command, { error: 'Unknown command!' }, obj.callback);
+							respond(predefinedResponses.ERROR_UNKNOWN_COMMAND);
 						}
 					} else {
-						if (obj.callback) adapter.sendTo(obj.from, obj.command, { error: 'not runnung' }, obj.callback);
+						respond(predefinedResponses.ERROR_NOT_RUNNING);
 					}
 					break;
 
@@ -302,13 +315,13 @@ var adapter = utils.adapter({
 						adapter.log.info('Requesting associations in group ' + obj.message.group + ' from node ' + obj.message.nodeID);
 						if (zwave[obj.command]) {
 							var result = zwave[obj.command](obj.message.nodeID, obj.message.group);
-							if (obj.callback) adapter.sendTo(obj.from, obj.command, { error: null, result: result }, obj.callback);
+							respond({ error: null, result: result });
 						} else {
 							adapter.log.error('Unknown command!');
-							if (obj.callback) adapter.sendTo(obj.from, obj.command, { error: 'Unknown command!' }, obj.callback);
+							respond(predefinedResponses.ERROR_UNKNOWN_COMMAND);
 						}
 					} else {
-						if (obj.callback) adapter.sendTo(obj.from, obj.command, { error: 'not runnung' }, obj.callback);
+						respond(predefinedResponses.ERROR_NOT_RUNNING);
 					}
 					break;
 
@@ -319,13 +332,13 @@ var adapter = utils.adapter({
 						adapter.log.info('Requesting max number of associations in group ' + obj.message.group + ' from node ' + obj.message.nodeID);
 						if (zwave[obj.command]) {
 							var result = zwave[obj.command](obj.message.nodeID, obj.message.group);
-							if (obj.callback) adapter.sendTo(obj.from, obj.command, { error: null, result: result }, obj.callback);
+							respond({ error: null, result: result });
 						} else {
 							adapter.log.error('Unknown command!');
-							if (obj.callback) adapter.sendTo(obj.from, obj.command, { error: 'Unknown command!' }, obj.callback);
+							respond(predefinedResponses.ERROR_UNKNOWN_COMMAND);
 						}
 					} else {
-						if (obj.callback) adapter.sendTo(obj.from, obj.command, { error: 'not runnung' }, obj.callback);
+						respond(predefinedResponses.ERROR_NOT_RUNNING);
 					}
 					break;
 
@@ -336,13 +349,13 @@ var adapter = utils.adapter({
 						adapter.log.info('Adding association with node ' + obj.message.target_nodeid + ' to group ' + obj.message.group + ' of node ' + obj.message.nodeID);
 						if (zwave[obj.command]) {
 							zwave[obj.command](obj.message.nodeID, obj.message.group, obj.message.target_nodeid);
-							if (obj.callback) adapter.sendTo(obj.from, obj.command, { error: null, result: 'ok' }, obj.callback);
+							respond(predefinedResponses.OK);
 						} else {
 							adapter.log.error('Unknown command!');
-							if (obj.callback) adapter.sendTo(obj.from, obj.command, { error: 'Unknown command!' }, obj.callback);
+							respond(predefinedResponses.ERROR_UNKNOWN_COMMAND);
 						}
 					} else {
-						if (obj.callback) adapter.sendTo(obj.from, obj.command, { error: 'not runnung' }, obj.callback);
+						respond(predefinedResponses.ERROR_NOT_RUNNING);
 					}
 					break;
 
@@ -353,13 +366,13 @@ var adapter = utils.adapter({
 						adapter.log.info('Removing association with node ' + obj.message.target_nodeid + ' from group ' + obj.message.group + ' of node ' + obj.message.nodeID);
 						if (zwave[obj.command]) {
 							zwave[obj.command](obj.message.nodeID, obj.message.group, obj.message.target_nodeid);
-							if (obj.callback) adapter.sendTo(obj.from, obj.command, { error: null, result: 'ok' }, obj.callback);
+							respond(predefinedResponses.OK);
 						} else {
 							adapter.log.error('Unknown command!');
-							if (obj.callback) adapter.sendTo(obj.from, obj.command, { error: 'Unknown command!' }, obj.callback);
+							respond(predefinedResponses.ERROR_UNKNOWN_COMMAND);
 						}
 					} else {
-						if (obj.callback) adapter.sendTo(obj.from, obj.command, { error: 'not runnung' }, obj.callback);
+						respond(predefinedResponses.ERROR_NOT_RUNNING);
 					}
 					break;
 
