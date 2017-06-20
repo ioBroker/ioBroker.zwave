@@ -10,7 +10,8 @@ node_js:
 before_install:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then export CC=clang++; export CXX=clang++; export CXXFLAGS=-std=c++11; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew unlink pkg-config; fi
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then export CXX=g++-4.8; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then export CXX=g++-4.8; CC=gcc-4.8; fi
+  - npm install -g node-gyp
 before_script:
   - npm install winston@2.3.0
   - 'npm install https://github.com/ioBroker/ioBroker.js-controller/tarball/master --production'
@@ -19,4 +20,5 @@ addons:
     sources:
       - ubuntu-toolchain-r-test
     packages:
+      - gcc-4.8
       - g++-4.8
