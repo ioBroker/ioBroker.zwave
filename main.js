@@ -113,6 +113,7 @@ var adapter = utils.adapter({
 		}
 		// some predefined responses so we only have to define them once
 		var predefinedResponses = {
+            ACK: { error: null },
 			OK: { error: null, result: 'ok' },
 			ERROR_UNKNOWN_COMMAND: { error: 'Unknown command!' },
 			ERROR_NOT_RUNNING: { error: 'zwave driver is not running!' },
@@ -234,7 +235,7 @@ var adapter = utils.adapter({
                 case 'addNode':
                     if (inclusion) {
                         disableInclusion();
-						respond(predefinedResponses.OK);
+						respond(predefinedResponses.ACK);
                         return;
                     }
                     disableExclusion();
@@ -253,7 +254,7 @@ var adapter = utils.adapter({
                         }, 60000);
 
                         zwave.addNode(addNodeSecure);
-						respond(predefinedResponses.OK);
+						respond(predefinedResponses.ACK);
                     } else {
 						respond(predefinedResponses.ERROR_NOT_RUNNING);
                     }
@@ -262,7 +263,7 @@ var adapter = utils.adapter({
                 case 'removeNode':
                     if (exclusion) {
                         disableExclusion();
-						respond(predefinedResponses.OK);
+						respond(predefinedResponses.ACK);
                         return;
                     }
                     disableInclusion();
@@ -280,7 +281,7 @@ var adapter = utils.adapter({
                             adapter.setState('exclusionOn', false, true);
                         }, 60000);
                         zwave.removeNode();
-						respond(predefinedResponses.OK);
+						respond(predefinedResponses.ACK);
                     } else {
 						respond(predefinedResponses.ERROR_NOT_RUNNING);
                     }
