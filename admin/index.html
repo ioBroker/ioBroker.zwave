@@ -151,18 +151,13 @@
     }
 
     function updateInclusion() {
-        if (values['zwave.' + instance + '.inclusionOn'] && values['zwave.' + instance + '.inclusionOn'].val && (isAlive || common.enabled)) {
-            $('.zwave-operations[data-operation="addNode"]').css('background', '#bfe6c7');
-            $('.zwave-operations[data-operation="addNodeSecure"]').css('background', '#bfe6c7');
+            if (((values['zwave.' + instance + '.inclusionOn'] && values['zwave.' + instance + '.inclusionOn'].val)
+                || (values['zwave.' + instance + '.exclusionOn'] && values['zwave.' + instance + '.exclusionOn'].val)) && (isAlive || common.enabled)) {
+                $('.zwave-operations').button({disabled: true});
+                $('.zwave-stop').button({disabled: false});
         } else {
-            $('.zwave-operations[data-operation="addNode"]').css('background', '');
-            $('.zwave-operations[data-operation="addNodeSecure"]').css('background', '');
-        }
-
-        if (values['zwave.' + instance + '.exclusionOn'] && values['zwave.' + instance + '.exclusionOn'].val && (isAlive || common.enabled)) {
-            $('.zwave-operations[data-operation="removeNode"]').css('background', 'rgba(254,108,104,0.5)');
-        } else {
-            $('.zwave-operations[data-operation="removeNode"]').css('background', '');
+                $('.zwave-operations').button({disabled: false});
+                $('.zwave-stop').button({disabled: true});
         }
     }
 
@@ -332,8 +327,8 @@
         getIsAdapterAlive(function (_isAlive) {
             isAlive = _isAlive;
             if (isAlive || common.enabled) {
-                getComPorts(settings.usb);
                 $('.zwave-operations').button().button('enable');
+                getComPorts(settings.usb);
             } else {
                 $('#_usb').html('<input id="usb" class="value" value="' + settings.usb + '"/>');
                 $('#usb').change(onChange).keyup(onChange);
@@ -548,7 +543,8 @@
                 <button data-operation="healNetwork"  data-icon="heal"       class="translate zwave-operations">Heal network</button>
                 <button data-operation="getNeighbors" data-icon="neighbors"  class="translate zwave-operations">Get neighbors</button>
                 <button data-operation="softReset"    data-icon="soft-reset" class="translate zwave-operations">Soft reset</button>
-                <button data-operation="hardReset"    data-icon="hard-reset" class="translate zwave-operations">Hard reset</button>
+                <button data-operation="hardReset" data-icon="hard-reset" class="translate zwave-operations">Hard reset</button>
+                <button data-operation="stopCommand" data-icon="stop" class="translate zwave-operations zwave-stop">Stop Command</button>
             </p>
             <div id="message" style="height: 20px;"></div>
             <div id="helper" style="height: 20px; width: calc(100% - 40px); text-align: right"></div>
