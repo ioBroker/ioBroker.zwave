@@ -98,6 +98,7 @@ var adapter = utils.adapter({
                 adapter.subscribeObjects('*');
                 adapter.subscribeStates('*');
                 adapter.subscribeForeignObjects('enum.rooms.*');
+                extendInstanceObjects();
                 setAllNotReady(devices, main);
             });
         });
@@ -464,8 +465,17 @@ function listSerial() {
     return result;
 }
 
+function extendInclusion() {
+    if (inclusion) {
+        clearTimeout(inclusion);
+        inclusion = setTimeout(function () {
+            disableInclusion();
+        }, 30000);
+    }
+}
+
 function disableInclusion() {
-    adapter.log.info('Disable inclusion mode');
+    adapter.log.info('disabled inclusion mode');
     adapter.setState('inclusionOn', false, true);
     if (inclusion) {
         clearTimeout(inclusion);
@@ -477,7 +487,7 @@ function disableInclusion() {
 }
 
 function disableExclusion() {
-    adapter.log.info('Disable exclusion mode');
+    adapter.log.info('disabled exclusion mode');
     adapter.setState('exclusionOn', false, true);
     if (exclusion) {
         clearTimeout(exclusion);
@@ -928,7 +938,8 @@ function main() {
     });
 
     // ------------- nodes events ---------------------------
-    zwave.on('node added', function (nodeID) {
+    zwave.on('node added', function (nodeID) { //first event on inclusion!
+        extendInclusion();
         adapter.log.debug('node added for ' + nodeID + ' found');
 
         // Just remember, that such a nodeID created
@@ -943,6 +954,7 @@ function main() {
 
 
     zwave.on('node available', function (nodeID, nodeInfo) {
+        extendInclusion();
         adapter.log.debug('node available nodeID: ' + nodeID + ', nodeinfo: ' + JSON.stringify(nodeInfo));
         nodes[nodeID] = nodes[nodeID] || {id: calcName(nodeID), ready: false};
         extendNode(nodeID, nodeInfo);
@@ -950,12 +962,14 @@ function main() {
     });
 
     zwave.on('node naming', function (nodeID, nodeInfo) {
+        extendInclusion();
         nodes[nodeID] = nodes[nodeID] || {id: calcName(nodeID), ready: false};
         adapter.log.debug('node naming nodeID: ' + nodeID + ' nodeinfo: ' + JSON.stringify(nodeInfo));
         extendNode(nodeID, nodeInfo);
     });
 
     zwave.on('node ready', function (nodeID, nodeInfo) {
+        extendInclusion();
         adapter.log.info('node ready nodeID: ' + nodeID + ', nodeInfo: ' + JSON.stringify(nodeInfo));
         nodes[nodeID] = nodes[nodeID] || {id: calcName(nodeID), ready: false};
         extendNode(nodeID, nodeInfo, function (err) {
@@ -1008,6 +1022,7 @@ function main() {
 
     // not found in documentation
     zwave.on('notification', function (nodeID, notif) {
+        extendInclusion();
         switch (notif) {
             case 0:
                 adapter.log.debug('node' + nodeID + ': message complete');
@@ -1041,11 +1056,13 @@ function main() {
 
     // ------------- values events ---------------------------
     zwave.on('value added', function (nodeID, comClass, valueId) {
+        extendInclusion();
         adapter.log.debug('value added: nodeID: ' + nodeID + ' comClass: ' + JSON.stringify(comClass) + ' value: '  + JSON.stringify(valueId));
         extendChannel(nodeID, comClass, valueId);
     });
 
     zwave.on('value changed', function (nodeID, comClass, valueId) {
+        extendInclusion();
         adapter.log.debug('value changed: ' + nodeID + ' comClass: ' + JSON.stringify(comClass) + ' value: '  + JSON.stringify(valueId));
         extendChannel(nodeID, comClass, valueId);
     });
@@ -1054,7 +1071,8 @@ function main() {
         adapter.log.info('value removed: ' + nodeID + ' comClass: ' + JSON.stringify(comClass) + ' instance ' + instance + ' value: '  + JSON.stringify(index));
 
         deleteDevice(nodeID, function() { //why here and not on "node removed" ?
-            disableExclusion();
+            //disable exclusion automatically after 5 seconds
+            setTimeout(function(){disableExclusion();}, 5000);
         });
     });
 
@@ -1065,6 +1083,7 @@ function main() {
 
     // ------------- controller events ---------------------------
     zwave.on('controller command', function (nodeId, state, error, helpMsg) {
+        extendInclusion();
         adapter.log.info('controller command feedback: state: "' + ctrlState[state] + '", error: "' + ctrlError[error] + '", helpmsg: "' + helpMsg + '"');
         adapter.setState('info.controllerMessage', JSON.stringify({
             state: state,
@@ -1074,4 +1093,14 @@ function main() {
     });
 
     zwave.connect(adapter.config.usb);
+}
+
+function extendInstanceObjects() {
+    var fs = require('fs'),
+        io = fs.readFileSync(__dirname + "/io-package.json"),
+        objs = JSON.parse(io);
+
+    for (var i = 0; i < objs.instanceObjects.length; i++) {
+        adapter.setObjectNotExists(objs.instanceObjects[i]._id, objs.instanceObjects[i]);
+    }
 }
