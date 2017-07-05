@@ -135,6 +135,110 @@
             "native": {}
         },
         {
+            "_id":  "info.libraryVersion",
+            "type": "state",
+            "common": {
+                "role":  "state",
+                "name":  "Z-Wave Library Version",
+                "desc":  "Version of the Z-Wave API library",
+                "type":  "string",
+                "read":  true,
+                "write": false
+            },
+            "native": {}
+        },
+        {
+            "_id":  "info.libraryTypeName",
+            "type": "state",
+            "common": {
+                "role":  "state",
+                "name":  "Z-Wave Library Type Name",
+                "desc":  "Name of the Z-Wave API library",
+                "type":  "string",
+                "read":  true,
+                "write": false
+            },
+            "native": {}
+        },
+        {
+            "_id":  "info.controllerNodeId",
+            "type": "state",
+            "common": {
+                "role":  "state",
+                "name":  "Node Id of Controller",
+                "desc":  "Node id of the controller",
+                "type":  "number",
+                "read":  true,
+                "write": false
+            },
+            "native": {}
+        },
+        {
+            "_id":  "info.SUCNodeId",
+            "type": "state",
+            "common": {
+                "role":  "state",
+                "name":  "Static update controller",
+                "desc":  "Node id of the static update controller (SUC)",
+                "type":  "number",
+                "read":  true,
+                "write": false
+            },
+            "native": {}
+        },
+        {
+            "_id":  "info.primaryController",
+            "type": "state",
+            "common": {
+                "role":  "state",
+                "name":  "Primary controller",
+                "desc":  "Is the OZW-managed controller the primary controller for this zwave network?",
+                "type":  "boolean",
+                "read":  true,
+                "write": false
+            },
+            "native": {}
+        },
+        {
+            "_id":  "info.staticUpdateController",
+            "type": "state",
+            "common": {
+                "role":  "state",
+                "name":  "SUC",
+                "desc":  "If the controller is a static update controller",
+                "type":  "boolean",
+                "read":  true,
+                "write": false
+            },
+            "native": {}
+        },
+        {
+            "_id":  "info.bridgeController",
+            "type": "state",
+            "common": {
+                "role":  "state",
+                "name":  "Bridge controller",
+                "desc":  "If the controller is using the bridge controller library",
+                "type":  "boolean",
+                "read":  true,
+                "write": false
+            },
+            "native": {}
+        },
+        {
+            "_id":  "info.homeId",
+            "type": "state",
+            "common": {
+                "role":  "state",
+                "name":  "Home Id",
+                "desc":  "Network Home Id",
+                "type":  "string",
+                "read":  true,
+                "write": false
+            },
+            "native": {}
+        },
+        {
             "_id":  "inclusionOn",
             "type": "state",
             "common": {
