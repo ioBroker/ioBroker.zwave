@@ -239,6 +239,19 @@
             "native": {}
         },
         {
+            "_id":  "info.OZW",
+            "type": "state",
+            "common": {
+                "role":  "state",
+                "name":  "OZW Version",
+                "desc":  "Open Z-Wave version",
+                "type":  "string",
+                "read":  true,
+                "write": false
+            },
+            "native": {}
+        },
+        {
             "_id":  "inclusionOn",
             "type": "state",
             "common": {
