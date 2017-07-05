@@ -881,15 +881,15 @@ function main() {
     });
 
     // ------------- controller events ---------------------------
-    zwave.on('connected', function (homeid) {
+    zwave.on('connected', function (ozw) {
         adapter.setState('info.connection', true, true);
-        adapter.setState('info.homeId', homeid, true);
-        adapter.log.info('connected: homeid = ' + homeid);
+        adapter.setState('info.OZW', ozw, true);
+        adapter.log.info('connected: OZW = ' + ozw);
     });
 
     zwave.on('driver ready', function (homeid) {
         adapter.log.info('scanning homeid=0x' + homeid.toString(16) + '...');
-
+        adapter.setState('info.homeId', homeid.toString(16), true);
         adapter.log.info('driver ready: homeid = ' + homeid);
     });
 
