@@ -2,7 +2,10 @@
 <head>
 <link rel="stylesheet" type="text/css" href="../../lib/css/themes/jquery-ui/redmond/jquery-ui.min.css"/>
 <link rel="stylesheet" type="text/css" href="../../css/adapter.css"/>
+<link rel="stylesheet" type="text/css" href="../../lib/css/jquery.multiselect-1.13.css"/>
 <script type="text/javascript" src="../../lib/js/jquery-1.11.1.min.js"></script>
+<script type="text/javascript" src="../../lib/js/jquery-ui.min.js"></script>
+<script type="text/javascript" src="../../lib/js/jquery.multiselect-1.13.min.js"></script>
 <script type="text/javascript" src="../../socket.io/socket.io.js"></script>
 <script type="text/javascript" src="../../lib/js/jquery-ui.min.js"></script>
 
@@ -80,6 +83,11 @@
     .overflow {
         height: 150px;
     }
+
+    .ui-multiselect {
+        padding: 0;
+        vertical-align: top;
+    }
 </style>
 
 <script type="text/javascript">
@@ -151,18 +159,13 @@
     }
 
     function updateInclusion() {
-        if (values['zwave.' + instance + '.inclusionOn'] && values['zwave.' + instance + '.inclusionOn'].val && (isAlive || common.enabled)) {
-            $('.zwave-operations[data-operation="addNode"]').css('background', '#bfe6c7');
-            $('.zwave-operations[data-operation="addNodeSecure"]').css('background', '#bfe6c7');
+            if (((values['zwave.' + instance + '.inclusionOn'] && values['zwave.' + instance + '.inclusionOn'].val)
+                || (values['zwave.' + instance + '.exclusionOn'] && values['zwave.' + instance + '.exclusionOn'].val)) && (isAlive || common.enabled)) {
+                $('.zwave-operations').button({disabled: true});
+                $('.zwave-stop').button({disabled: false});
         } else {
-            $('.zwave-operations[data-operation="addNode"]').css('background', '');
-            $('.zwave-operations[data-operation="addNodeSecure"]').css('background', '');
-        }
-
-        if (values['zwave.' + instance + '.exclusionOn'] && values['zwave.' + instance + '.exclusionOn'].val && (isAlive || common.enabled)) {
-            $('.zwave-operations[data-operation="removeNode"]').css('background', 'rgba(254,108,104,0.5)');
-        } else {
-            $('.zwave-operations[data-operation="removeNode"]').css('background', '');
+                $('.zwave-operations').button({disabled: false});
+                $('.zwave-stop').button({disabled: true});
         }
     }
 
@@ -264,13 +267,16 @@
                 },
                 select: onSelect
             }).selectmenu('menuWidget').addClass('overflow');
-        }
+    }
 
         if (!isAlive && !common.enabled) {
             $op.prop('disabled', true);
         }
 
         updateStates(obj._id);
+
+        $('#assNodeIds').append($("<option>").attr("value", obj.native.nodeID).text('NODE' + obj.native.nodeID));
+        $('#assAssNodes').append($("<option>").attr("value", obj.native.nodeID).text('NODE' + obj.native.nodeID));
     }
     
     function setValue(id, value) {
@@ -332,8 +338,8 @@
         getIsAdapterAlive(function (_isAlive) {
             isAlive = _isAlive;
             if (isAlive || common.enabled) {
-                getComPorts(settings.usb);
                 $('.zwave-operations').button().button('enable');
+                getComPorts(settings.usb);
             } else {
                 $('#_usb').html('<input id="usb" class="value" value="' + settings.usb + '"/>');
                 $('#usb').change(onChange).keyup(onChange);
@@ -361,6 +367,128 @@
                 }
 
                 updateInclusion();
+
+                var maxAss = 0;
+                $('#assNodeIds').selectmenu(
+                    {
+                        width: 250,
+                        select: function( event, ui ) {
+                            console.log('selected node ' + ui.item.value);
+                            sendTo(null, "getNumGroups", {nodeID: ui.item.value}, function (obj) {
+                                $('#assGroups').find('option').remove().end();
+                                $('#assAssNodes').multiselect('disable');
+                                maxAss = 0;
+
+                                if (obj.error) {
+                                    console.log('error: getNumGroups');
+                                    $('#assGroups').append($("<option>").attr("disabled", "disabled").text('-')).selectmenu('refresh');
+                                    return;
+                                }
+                                console.log('node has: ' + obj.result + ' association groups');
+                                for (let i = 1; i <= obj.result; i++) {
+                                    sendTo(null, "getGroupLabel", {nodeID: ui.item.value, group: i}, function (obj) {
+                                        if (obj.error) {
+                                            console.log('error: getGroupLabel');
+                                            obj.result = 'Group ' + i;
+                                        }
+                                        console.log('groupLabel ' + i + ': ' + obj.result);
+                                        if (i > 1) {
+                                            $('#assGroups').append($("<option>").attr("value", i).text(i + ': ' + obj.result)).selectmenu('refresh');
+                                        } else {
+                                            $('#assGroups').append($("<option>").attr("value", i).attr("disabled", "disabled").text(i + ': ' + obj.result)).selectmenu('refresh');
+                                        }
+                                    });
+                                }
+                                if (!obj.result) {
+                                    console.log('node has no association groups');
+                                    $('#assGroups').append($("<option>").attr("disabled", "disabled").text('-')).selectmenu('refresh');
+                                }
+                            });
+                        }
+                    }
+                ).selectmenu( "menuWidget" ).addClass( "overflow" );
+
+                $('#assGroups').selectmenu(
+                    {
+                        width: 250,
+                        select: function( event, ui ) {
+                            console.log('selected association group ' + ui.item.value);
+                            sendTo(null, "getAssociations", {nodeID: $('#assNodeIds').val(), group: ui.item.value}, function (obj) {
+                                $("#assAssNodes option:selected").prop('selected', false);
+                                $("#assAssNodes").multiselect('refresh');
+                                $('#assAssNodes').multiselect('disable');
+                                maxAss = 0;
+                                if (obj.error || !Array.isArray(obj.result)) {
+                                    console.log('error: getAssociations');
+                                    return;
+                                }
+                                console.log('group associations: ' + JSON.stringify(obj.result));
+
+                                obj.result.forEach(function(val) {
+                                    $("#assAssNodes option[value='"+val+"']").prop('selected', true);
+                                    $("#assAssNodes").multiselect('refresh');
+                                });
+
+                                if (ui.item.value > 1) {
+                                    sendTo(null, "getMaxAssociations", {nodeID: $('#assNodeIds').val(), group: ui.item.value}, function (obj) {
+                                        if (obj.error) {
+                                            console.log('error: getMaxAssociations');
+                                            maxAss = 0;
+                                            return;
+                                        }
+                                        console.log('groups max Associations: ' + obj.result);
+                                        if (obj.result) {
+                                            maxAss = obj.result;
+                                            $('#assAssNodes').multiselect('enable');
+                                        }
+                                    });
+                                }
+                            });
+                        }
+                    }
+                ).selectmenu( "menuWidget" ).addClass( "overflow" );
+
+                $('#assAssNodes').multiselect({
+                    header: false,
+                    minWidth: 250,
+                    noneSelectedText: '<span class="ui-selectmenu-text">select nodes</span>',
+                    selectedText: '<span class="ui-selectmenu-text"># nodes selected</span>',
+                    classes: 'ui-selectmenu-button',
+                    click: function(event, ui){
+                        if (ui.checked) {
+                            if( $(this).multiselect("widget").find("input:checked").length > maxAss ){
+                                alert("max associations for this group: " + maxAss);
+                                return false;
+                            }
+                            let currentGroup = $('#assGroups').val();
+                            console.log('adding association: ' + JSON.stringify({nodeID: $('#assNodeIds').val(), group: currentGroup, target_nodeid: ui.value}));
+                            sendTo(null, "addAssociation", {nodeID: $('#assNodeIds').val(), group: currentGroup, target_nodeid: ui.value}, function (obj) {
+                                $('#assAssNodes').multiselect('disable');
+                                if (obj.error || obj.result !== 'ok') {
+                                    console.log('error: getMaxAssociations');
+                                } else {
+                                    console.log('added association');
+                                    setTimeout(function(){
+                                        $('#assGroups').val(1).selectmenu('refresh').val(currentGroup).selectmenu('refresh')
+                                    }, 1000);
+                                }
+                            });
+                        } else {
+                            let currentGroup = $('#assGroups').val();
+                            sendTo(null, "removeAssociation", {nodeID: $('#assNodeIds').val(), group: currentGroup, target_nodeid: ui.value}, function (obj) {
+                                $('#assAssNodes').multiselect('disable');
+                                if (obj.error || obj.result !== 'ok') {
+                                    console.log('error: removeAssociation');
+                                } else {
+                                    console.log('removed association');
+                                    setTimeout(function(){
+                                        $('#assGroups').val(1).selectmenu('refresh').val(currentGroup).selectmenu('refresh')
+                                    }, 1000);
+                                }
+                            });
+                        }
+                    }
+                }).multiselect('disable').addClass( "overflow" );
 
                 socket.emit('subscribeObjects', 'zwave.' + instance + '.*');
                 socket.emit('subscribeStates',  'zwave.' + instance + '.*');
@@ -414,7 +542,7 @@
 
         $('#tabs').show().tabs({
             activate:  function (event, ui) {
-                if (ui.newPanel.attr('id') === 'tabs-2') {
+                if (ui.newPanel.attr('id') !== 'tabs-1') {
                     if (initialCom !== $('#usb').val()) {
                         showMessage(_('First save settings'));
                         $('#tabs').tabs({active: 0});
@@ -490,6 +618,7 @@
         <ul>
             <li><a href="#tabs-1" class="translate">Options</a></li>
             <li><a href="#tabs-2" class="translate">Devices</a></li>
+            <li><a href="#tabs-3" class="translate">Associations</a></li>
         </ul>
         <div id="tabs-1">
             <table>
@@ -548,7 +677,8 @@
                 <button data-operation="healNetwork"  data-icon="heal"       class="translate zwave-operations">Heal network</button>
                 <button data-operation="getNeighbors" data-icon="neighbors"  class="translate zwave-operations">Get neighbors</button>
                 <button data-operation="softReset"    data-icon="soft-reset" class="translate zwave-operations">Soft reset</button>
-                <button data-operation="hardReset"    data-icon="hard-reset" class="translate zwave-operations">Hard reset</button>
+                <button data-operation="hardReset" data-icon="hard-reset" class="translate zwave-operations">Hard reset</button>
+                <button data-operation="stopCommand" data-icon="stop" class="translate zwave-operations zwave-stop">Stop Command</button>
             </p>
             <div id="message" style="height: 20px;"></div>
             <div id="helper" style="height: 20px; width: calc(100% - 40px); text-align: right"></div>
@@ -567,6 +697,16 @@
 
                 </tbody>
             </table>
+        </div>
+        <div id="tabs-3" style="width: 100%; height: calc(100% - 40px); overflow-x: hidden; overflow-y: auto; padding: 0; margin: 10px">
+            <div>
+                <select id="assNodeIds" name="assNodeIds">
+                </select>
+                <select id="assGroups" name="assGroups">
+                </select>
+                <select id="assAssNodes" name="assAssNodes" multiple="multiple">
+                </select>
+            </div>
         </div>
     </div>
 </div>
