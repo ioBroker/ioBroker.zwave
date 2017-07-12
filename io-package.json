@@ -7,8 +7,13 @@
 			"de": "ZWave Unterstutzung durch Openzwave Paket",
 			"ru": "Поддержка ZWave основанная на Openzwave пакете"
 		},
-        "version":                  "0.6.0",
+        "version":                  "0.7.0",
         "news": {
+            "0.7.0": {
+                "en": "Several fixes and add association ui",
+                "de": "Mehrere Fehlerbehebungen und Zuordnungs-UI hinzugefügt",
+                "ru": "Several fixes and add association ui"
+            },
             "0.6.0": {
                 "en": "Support secure devices",
                 "de": "Secure Geräte werden unterstützt",

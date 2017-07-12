@@ -21,7 +21,7 @@ You should find out what the name has USB port of the Z-Wave stick and setup it 
 First of all, Implementation is tested only on ARM Linux (e.g. Raspberry Pi (2)).
 You need a fully Development Environment (gcc, make,...)
 
-On some systems the additional package is required: 
+On some systems the additional package is required:
 
 ```
 apt-get install pkg-config libudev-dev build-essential curl unzip
@@ -50,11 +50,11 @@ After that you have to do the following Steps:
   \# ls -al /dev/ttyA*
   \# ls -al /dev/ttyU*
 ```
-  
+
 Often the USB stick has address like ttyUSB0 or ttyUSB1.
 
 - Go into iobroker admin and add the Zwave Adapter (the installation is rather long, be patient)
-- Configure zwave Adapter as described 
+- Configure zwave Adapter as described
 - Start the new zwave Adapter instance
 - wait
 - until the Message "zwave.0 Scan completed" is found in iobroker.log
@@ -148,6 +148,9 @@ Following global Actions are current supported:
 - Danfoss Z Thermostat 014G0013
 
 ## Changelog
+### 0.7.0 (2017-07-12)
+* (Pmant/AlCalzone) Several fixes and add association ui
+
 ### 0.6.0 (2017-05-01)
 * (Pmant) Support secure devices
 
@@ -183,7 +186,7 @@ Following global Actions are current supported:
 ### 0.2.4 (2015-12-05)
  - (husky-koglhof) fixed hardcoded values
    Admin Page can Add / Remove ZWave Devices
-   
+
 ### 0.2.3 (2015-11-11)
  - (bluefox) try to fix io-package.json
 
@@ -201,19 +204,19 @@ Following global Actions are current supported:
 
 ### 0.2.0 (2015-08-05)
  - (husky-koglhof) Added OpenZWave Configurator, changed Dependency from openzwave to openzwave-shared, Implemented stateChange, objectChange Functions, Implemented extended Settings
- 
+
 ### 0.1.0 (2015-01-03)
  - enable npm install.
- 
+
 ### 0.0.9 (2014-11-22)
  - Support of new naming concept.
- 
+
 ### 0.0.8 (2014-10-31)
  - Fix names of classes.
 
 ### 0.0.6 (2014-10-30)
  - Show in config found tty ports.
- 
+
 ### 0.0.3 (2014-10-30)
  - Classify channels.
 
