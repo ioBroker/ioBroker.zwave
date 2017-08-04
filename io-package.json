@@ -7,8 +7,13 @@
 			"de": "ZWave Unterstutzung durch Openzwave Paket",
 			"ru": "Поддержка ZWave основанная на Openzwave пакете"
 		},
-        "version":                  "0.7.0",
+        "version":                  "0.8.0",
         "news": {
+            "0.7.0": {
+                "en": "Update to Openzwave-shared 1.4",
+                "de": "Update zu Openzwave-shared 1.4",
+                "ru": "Update to Openzwave-shared 1.4"
+            },
             "0.7.0": {
                 "en": "Several fixes and add association ui",
                 "de": "Mehrere Fehlerbehebungen und Zuordnungs-UI hinzugefügt",

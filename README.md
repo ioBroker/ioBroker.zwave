@@ -149,6 +149,9 @@ Following global Actions are current supported:
 
 ## Changelog
 ### 0.7.0 (2017-07-12)
+* (Apollon77) Update to Openzwave-shared 1.4
+
+### 0.7.0 (2017-07-12)
 * (Pmant/AlCalzone) Several fixes and add association ui
 
 ### 0.6.0 (2017-05-01)
