@@ -8,6 +8,7 @@ node_js:
   - '6'
   - '8'
 before_install:
+  - which nodejs || which node
   - 'if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then export CC=clang++; export CXX=clang++; export CXXFLAGS=-std=c++11; fi'
   - 'if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew unlink pkg-config; fi'
   - 'if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then export CXX=g++-4.8; CC=gcc-4.8; fi'
