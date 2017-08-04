@@ -33,7 +33,7 @@
     "url": "git+https://github.com/ioBroker/ioBroker.zwave.git"
   },
   "dependencies": {
-    "openzwave-shared": "^1.2.7"
+    "openzwave-shared": "^1.4.0"
   },
   "devDependencies": {
     "grunt": "^0.4.5",
