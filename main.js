@@ -295,6 +295,62 @@ var adapter = utils.adapter({
 					}
 					break;
 
+				case 'getAllAssociationGroups': // shortcut to get all groups => { groupIndex: {label: <string>, maxAssociations: <number>, isLifeline: <boolean>}, ...}
+					if (zwave && obj.message) {
+						if (!requireParams(["nodeID"])) break;
+						adapter.log.info('Requesting all association groups from node ' + obj.message.nodeID);
+						var result = {};
+						// get the number of groups
+						var numGroups = zwave.getNumGroups(obj.message.nodeID);
+						if (numGroups > 0) {
+							// and for each group request the label and association count
+							for (var group = 1; group <= numGroups; group++) {
+								result[group] = {
+									label: zwave.getGroupLabel(obj.message.nodeID, group),
+									maxAssociations: zwave.getMaxAssociations(obj.message.nodeID, group),
+									isLifeline: false
+								};
+							}
+							// now find out which group is the lifeline
+							var foundLifeline = false;
+							for (var strategy = 1; strategy <= 3; strategy++) {
+								switch (strategy) {
+									case 1: // strategy 1: find the group with maxAssoc 1 and label "Lifeline"
+										for (var group = 1; group <= numGroups; group++) {
+											if (result[group].label === "Lifeline" && result[group].maxAssociations === 1) {
+												result[group].isLifeline = true;
+												foundLifeline = true;
+												break;
+											}
+										}
+										break;
+
+									case 2: // strategy 2: find a group with maxAssoc 1
+										for (var group = 1; group <= numGroups; group++) {
+											if (result[group].maxAssociations === 1) {
+												result[group].isLifeline = true;
+												foundLifeline = true;
+												break;
+											}
+										}
+										break;
+
+									case 3: // strategy 3: use group #1 as lifeline
+										result[1].isLifeline = true;
+										foundLifeline = true;
+										break;
+								}
+								if (foundLifeline) break;
+							}
+						} else {
+							result = "no groups";
+						}
+						respond({ error: null, result: result });
+					} else {
+						respond(predefinedResponses.ERROR_NOT_RUNNING);
+					}
+					break;
+
 				case 'getAssociations': // zwave.getAssociations(nodeid, group);
 					if (zwave && obj.message) {
 						if (!requireParams(["nodeID", "group"])) break;
