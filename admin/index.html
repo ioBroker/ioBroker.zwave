@@ -373,42 +373,42 @@
                     {
                         width: 250,
                         select: function( event, ui ) {
-							console.log('selected node ' + ui.item.value);
+                            console.log('selected node ' + ui.item.value);
 
-							// get all association groups of this node
-							sendTo(null, "getAllAssociationGroups", { nodeID: ui.item.value }, function (obj) {
-								$('#assGroups').find('option').remove().end();
-								$('#assAssNodes').multiselect('disable');
-								maxAss = 0;
+                            // get all association groups of this node
+                            sendTo(null, "getAllAssociationGroups", { nodeID: ui.item.value }, function (obj) {
+                                $('#assGroups').find('option').remove().end();
+                                $('#assAssNodes').multiselect('disable');
+                                maxAss = 0;
 
-								if (obj.error) {
-									console.log('error: getAllAssociationGroups');
-									$('#assGroups').append($("<option>").attr("disabled", "disabled").text('-')).selectmenu('refresh');
-									return;
-								}
+                                if (obj.error) {
+                                    console.log('error: getAllAssociationGroups');
+                                    $('#assGroups').append($("<option>").attr("disabled", "disabled").text('-')).selectmenu('refresh');
+                                    return;
+                                }
 
-								if (obj.result && obj.result !== "no groups") {
-									const numGroups = Object.keys(obj.result).length;
-									console.log('node has: ' + numGroups + ' association groups');
+                                if (obj.result && obj.result !== "no groups") {
+                                    const numGroups = Object.keys(obj.result).length;
+                                    console.log('node has: ' + numGroups + ' association groups');
 
-									for (let i = 1; i <= numGroups; i++) {
-										var group = obj.result[i];
-										console.log('groupLabel ' + i + ': ' + group.label);
-										var option = $("<option>")
-											.attr("value", i)
-											.text(i + ': ' + group.label)
-											.attr("data-lifeline", ""+group.isLifeline)
-											;
-										if (group.isLifeline) option.attr("disabled", "disabled");
-										$('#assGroups').append(option).selectmenu('refresh');
-									}
-								} else {
-									console.log('node has no association groups');
-									$('#assGroups').append($("<option>").attr("disabled", "disabled").text('-')).selectmenu('refresh');
-								}
-							});
+                                    for (let i = 1; i <= numGroups; i++) {
+                                        var group = obj.result[i];
+                                        console.log('groupLabel ' + i + ': ' + group.label);
+                                        var option = $("<option>")
+                                            .attr("value", i)
+                                            .text(i + ': ' + group.label)
+                                            .attr("data-lifeline", ""+group.isLifeline)
+                                            ;
+                                        if (group.isLifeline) option.attr("disabled", "disabled");
+                                        $('#assGroups').append(option).selectmenu('refresh');
+                                    }
+                                } else {
+                                    console.log('node has no association groups');
+                                    $('#assGroups').append($("<option>").attr("disabled", "disabled").text('-')).selectmenu('refresh');
+                                }
+                            });
 
-						}
+                        }
                     }
                 ).selectmenu( "menuWidget" ).addClass( "overflow" );
 
@@ -433,7 +433,7 @@
                                     $("#assAssNodes").multiselect('refresh');
                                 });
 
-								if ($(ui.item).attr("data-lifeline") !== "true") {
+                                if ($(ui.item).attr("data-lifeline") !== "true") {
                                     sendTo(null, "getMaxAssociations", {nodeID: $('#assNodeIds').val(), group: ui.item.value}, function (obj) {
                                         if (obj.error) {
                                             console.log('error: getMaxAssociations');
