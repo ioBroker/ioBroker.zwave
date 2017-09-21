@@ -438,6 +438,12 @@ var adapter = utils.adapter({
         var obj = objects[id];
         if (obj && obj.native) {
             var nodeID = obj.native.node_id;
+            var valueID = { // this allows to shorten the zwave API calls
+                node_id: obj.native.node_id,
+                class_id: obj.native.class_id,
+                instance: obj.native.instance,
+                index: obj.native.index
+            };
             if (nodes[nodeID]) {
                 var value = state.val;
                 if (state.val === true || state.val === 'true') {
@@ -460,11 +466,21 @@ var adapter = utils.adapter({
                             value.length
                         );
                     }
-                }
-                else {
+                } else if (obj.native.type === 'button') {
+                    // openzwave-shared only presses buttons and doesn't release them on setValue
+                    // so we need to press/release them ourselves
+                    adapter.log.debug((value ? 'pushing' : 'releasing') + ' button for: nodeID=' + obj.native.node_id + ': comClass=' + obj.native.class_id + ': index=' + obj.native.index + ': instance=' + obj.native.instance);
+                    if (zwave) {
+                        if (value) {
+                            zwave.pressButton(valueID);
+                        } else {
+                            zwave.releaseButton(valueID);
+                        }
+                    }
+                } else {
                     // set a value
                     adapter.log.debug('setState for: nodeID=' + obj.native.node_id + ': comClass=' + obj.native.class_id + ': index=' + obj.native.index + ': instance=' + obj.native.instance + ': value=' + value);
-                    if (zwave) zwave.setValue(obj.native.node_id, obj.native.class_id, obj.native.instance, obj.native.index, value);
+                    if (zwave) zwave.setValue(valueID, value);
                 }
             } else {
                 if (!nodes[nodeID]) {
