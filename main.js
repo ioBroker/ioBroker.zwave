@@ -972,6 +972,7 @@ function deleteDevice(nodeID, callback) {
 function resetInstanceStatusInfo() {
     // resets states with information about adapter status
     adapter.setState('info.connection', false, true);
+    adapter.setState('info.driverReady', false, true);
     adapter.setState('info.scanCompleted', false, true);
     adapter.setState('info.libraryVersion', '', true);
     adapter.setState('info.libraryTypeName', '', true);
@@ -1001,19 +1002,20 @@ function main() {
 
     // ------------- controller events ---------------------------
     zwave.on('connected', function (ozw) {
-        adapter.setState('info.connection', true, true);
         adapter.setState('info.OZW', ozw, true);
-        adapter.log.info('connected: OZW = ' + ozw);
+        adapter.log.info('device connected: OZW = ' + ozw);
     });
 
     zwave.on('driver ready', function (homeid) {
         adapter.log.info('scanning homeid=0x' + homeid.toString(16) + '...');
         adapter.setState('info.homeId', homeid.toString(16), true);
         adapter.log.info('driver ready: homeid = ' + homeid);
+        adapter.setState('info.driverReady', true, true);
     });
 
     zwave.on('driver failed', function () {
         adapter.setState('info.connection', false, true);
+        adapter.setState('info.driverReady', false, true);
         adapter.log.error('failed to start driver');
         zwave.disconnect(adapter.config.usb);
         process.exit();
@@ -1023,7 +1025,9 @@ function main() {
         adapter.setState('forceInit', false, true);
         adapter.log.info('Scan completed');
         adapter.setState('info.scanCompleted', true, true);
-
+        // set status to green only after the scan is completed
+        adapter.setState('info.connection', true, true);
+        
         adapter.setState('info.libraryVersion', zwave.getLibraryVersion(), true);
         adapter.setState('info.libraryTypeName', zwave.getLibraryTypeName(), true);
         adapter.setState('info.controllerNodeId', zwave.getControllerNodeId(), true);

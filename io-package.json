@@ -9,7 +9,7 @@
 		},
         "version":                  "0.8.0",
         "news": {
-            "0.7.0": {
+            "0.8.0": {
                 "en": "Update to Openzwave-shared 1.4",
                 "de": "Update zu Openzwave-shared 1.4",
                 "ru": "Update to Openzwave-shared 1.4"
@@ -111,7 +111,8 @@
             "type": "state",
             "common": {
                 "role":  "indicator.connected",
-                "name":  "If connected to ZWave stick",
+                "name":  "ZWave ready to use",
+                "desc":  "If the ZWave driver has finished initializing",
                 "type":  "boolean",
                 "read":  true,
                 "write": false,
@@ -132,11 +133,24 @@
             "native": {}
         },
         {
+            "_id":  "info.driverReady",
+            "type": "state",
+            "common": {
+                "role":  "state",
+                "name":  "If the ZWave driver is loaded and ready",
+                "type":  "boolean",
+                "read":  true,
+                "write": false,
+                "def":   false
+            },
+            "native": {}
+        },
+        {
             "_id":  "info.scanCompleted",
             "type": "state",
             "common": {
                 "role":  "state",
-                "name":  "Scan fo devices is completed",
+                "name":  "Scan of devices is completed",
                 "desc":  "If scan of devices is completed",
                 "type":  "boolean",
                 "read":  true,
