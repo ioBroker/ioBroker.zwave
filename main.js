@@ -438,6 +438,12 @@ var adapter = utils.adapter({
         var obj = objects[id];
         if (obj && obj.native) {
             var nodeID = obj.native.node_id;
+            var valueID = { // this allows to shorten the zwave API calls
+                node_id: obj.native.node_id,
+                class_id: obj.native.class_id,
+                instance: obj.native.instance,
+                index: obj.native.index
+            };
             if (nodes[nodeID]) {
                 var value = state.val;
                 if (state.val === true || state.val === 'true') {
@@ -460,11 +466,21 @@ var adapter = utils.adapter({
                             value.length
                         );
                     }
-                }
-                else {
+                } else if (obj.native.type === 'button') {
+                    // openzwave-shared only presses buttons and doesn't release them on setValue
+                    // so we need to press/release them ourselves
+                    adapter.log.debug((value ? 'pushing' : 'releasing') + ' button for: nodeID=' + obj.native.node_id + ': comClass=' + obj.native.class_id + ': index=' + obj.native.index + ': instance=' + obj.native.instance);
+                    if (zwave) {
+                        if (value) {
+                            zwave.pressButton(valueID);
+                        } else {
+                            zwave.releaseButton(valueID);
+                        }
+                    }
+                } else {
                     // set a value
                     adapter.log.debug('setState for: nodeID=' + obj.native.node_id + ': comClass=' + obj.native.class_id + ': index=' + obj.native.index + ': instance=' + obj.native.instance + ': value=' + value);
-                    if (zwave) zwave.setValue(obj.native.node_id, obj.native.class_id, obj.native.instance, obj.native.index, value);
+                    if (zwave) zwave.setValue(valueID, value);
                 }
             } else {
                 if (!nodes[nodeID]) {
@@ -588,6 +604,41 @@ function delObjects(list, callback) {
             } else {
                 setTimeout(delObjects, 0, list, callback);
             }
+        });
+    }
+}
+
+// This fixes existing zwave state objects, so they are using role="switch" instead of role="button"
+// because Zwave buttons support two states. Call 
+function fixZwaveButtons(callback) {
+    adapter.log.debug('fixing zwave buttons to use common.role "switch" instead of "button"');
+    // Find all state objects representing a zwave button
+    var stateObjs = Object.keys(objects)
+        .filter(function (id) { return id.startsWith(adapter.namespace); })
+        .map(function (id) { return objects[id] })
+        .filter(function (obj) { return obj.type === "state" && obj.common.role === "button" && obj.native.type === "button"; })
+        ;
+    if (!(stateObjs && stateObjs.length > 0)) {
+        // no objects to fix, return immediately
+        if (callback) callback();
+        return;
+    } else {
+        adapter.log.debug('found ' + stateObjs.length + ' states to fix');
+        doFix(stateObjs);
+    }
+
+    function doFix(list) {
+        if (!list.length) {
+            adapter.log.debug('done fixing states');
+            if (callback) callback();
+            return;
+        }
+
+        var obj = list.pop();
+        var id = obj.id || obj._id;
+        obj.common.role = "switch";
+        adapter.setObject(id, obj, function (err) {
+            setTimeout(doFix, 0, list);
         });
     }
 }
@@ -846,15 +897,17 @@ function extendChannel(nodeID, comClass, valueId) {
             type:   'state',
             _id:    stateID
         };
-        if (valueId.units)               stateObj.common.unit = valueId.units;
+        if (valueId.units) stateObj.common.unit = valueId.units;
 
         if (valueId.type === 'byte' || valueId.type === 'int' || valueId.type === 'decimal' || valueId.type === 'short') stateObj.common.type = 'number';
         if (valueId.type === 'bool') stateObj.common.type = 'boolean';
         if (valueId.type === 'string') stateObj.common.type = 'string';
 
         if (valueId.type === 'button') {
-            stateObj.common.type  = 'boolean';
-            stateObj.common.role  = 'button';
+            stateObj.common.type = 'boolean';
+            // TODO: in the long run, this should be a special role which supports 3 states:
+            // neutral, pressed => sends true, released => sends false
+            stateObj.common.role  = 'switch';
             stateObj.common.write = true;
             stateObj.common.read  = false;
         }
@@ -990,7 +1043,10 @@ function main() {
                 }
             }
         }
-        delObjects(list);
+        delObjects(list, function () {
+            // after deleting unneccessary devices, fix button states
+            fixZwaveButtons();
+        });
     });
 
     // ------------- nodes events ---------------------------
