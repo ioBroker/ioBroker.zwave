@@ -156,15 +156,20 @@ var adapter = utils.adapter({
                     break;
 
                 case 'softReset':
-                case 'hardReset':
+                case 'hardReset': // destructive! will wipe out all known configuration
                 case 'healNetwork':
                 case 'getNeighbors':
                     if (zwave) {
-                        // destructive! will wipe out all known configuration
                         adapter.log.info('Execute ' + obj.command);
                         if (zwave[obj.command]) {
                             zwave[obj.command]();
                             respond(predefinedResponses.OK);
+                            
+                            if (obj.command === "hardReset") {
+                                // hardReset deletes all node info on the controller
+                                // make sure the nodes get deleted in ioBroker aswell
+                                deleteAllNonControllerNodes();
+                            }
                         } else {
                             adapter.log.error('Unknown command!');
                             respond(predefinedResponses.ERROR_UNKNOWN_COMMAND);
@@ -964,9 +969,26 @@ function getAllSubObjects(nodeID, list) {
 }
 
 function deleteDevice(nodeID, callback) {
-    delObjects(getAllSubObjects(nodeID), callback);
+    delObjects(getAllSubObjects(nodeID), function() {
+        // delete the node before calling the callback
+        // so deleteAllNonControllerNodes works
+        if (nodes[nodeID]) delete nodes[nodeID];
+        if (typeof callback === "function") callback();
+    });
+}
 
-    if (nodes[nodeID]) delete nodes[nodeID];
+function deleteAllNonControllerNodes() {
+    // find the last node which is not the controller (ID 1)
+    var allNodeIDs = Object.keys(nodes);
+    if (allNodeIDs.length <= 1) return;
+    var lastNodeID = allNodeIDs[allNodeIDs.length-1];
+    // delete it
+    if (lastNodeID > 1) {
+        deleteDevice(lastNodeID, function() {
+            // and continue with the next one
+            setTimeout(deleteAllNonControllerNodes, 0);
+        });
+    }
 }
 
 function resetInstanceStatusInfo() {
