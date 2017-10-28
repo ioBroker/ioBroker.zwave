@@ -868,7 +868,8 @@ function extendChannel(nodeID, comClass, valueId) {
         stateObj = objects[stateID];
         if (stateObj.common.type === 'boolean') {
             value = value === true || value === 'true' || value === 255 || value === '255' || value === 'On' || value === 1  || value === '1';
-        } else if (stateObj.common.type === 'number') {
+        } else if (valueId.type === "decimal") {
+            // OZW reports strings, so parse them
             value = !isNaN(parseFloat(value)) ? parseFloat(value) : value;
         } else if (stateObj.common.states) {
             for (var j in stateObj.common.states) {
@@ -941,6 +942,9 @@ function extendChannel(nodeID, comClass, valueId) {
                         if (valueId.values[i] === value) value = i;
                     }
                 }
+            } else if (valueId.type === "decimal") {
+                // OZW reports strings, so parse them
+                value = !isNaN(parseFloat(value)) ? parseFloat(value) : value;
             }
         }
 
