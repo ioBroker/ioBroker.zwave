@@ -148,6 +148,14 @@ Following global Actions are current supported:
 - Danfoss Z Thermostat 014G0013
 
 ## Changelog
+
+### 0.9.0 (2017-10-28)
+* (AlCalzone) Fixed lifeline detection in admin UI
+* (AlCalzone) Updated buttons to match their behaviour in OZW
+* (AlCalzone) Only set adapter status to green after OZW is done initializing
+* (AlCalzone) Fixed hard reset: also delete all nodes from ioBroker
+* (Pmant/AlCalzone) Parse decimal values into floats, not strings
+
 ### 0.8.0 (2017-07-12)
 * (Apollon77) Update to Openzwave-shared 1.4
 
