@@ -21,55 +21,51 @@ You should find out what the name has USB port of the Z-Wave stick and setup it 
 First of all, Implementation is tested only on ARM Linux (e.g. Raspberry Pi (2)).
 You need a fully Development Environment (gcc, make,...)
 
-On some systems the additional package is required:
-
-```
+### Install additional packages
+On some systems it will be necessary to install additional packages. Therefore run the following on the console before installing the adapter:
+```bash
 apt-get install pkg-config libudev-dev build-essential curl unzip
 ```
 
-npm install iobroker.zwave does following Steps for you:
+### Raspberry Pi3 only: Activate GPIO UART
+On Raspberry Pi 3, the UART is by default occupied by the bluetooth module. To activate it for use with a GPIO module, follow these steps:
 
-- Download and install latest openzwave from github
+1. `sudo nano /boot/cmdline.txt`
+	1. remove `console=serial0,115200`
+	1. save the file and close it
 
-```
-cd /opt
-curl -L -O https://github.com/OpenZWave/open-zwave/archive/master.zip
-unzip master.zip
-cd open-zwave-master
-make
-sudo make install
-```
+2. `sudo nano /boot/config.txt`  
+Look for each of the following lines. If they are commented out with a `#`, remove that. If they don't exist, add them to the end of the file:
+	* `dtoverlay=pi3-miniuart-bt`
+	* `enable_uart=1`
+	* `force_turbo=1`
 
-After that you have to do the following Steps:
+3. reboot
 
-- Put your USB Stick into your Server
-- Check whether the system has recognized the USB stick
-
-```
-  \# lsusb
-  \# ls -al /dev/ttyA*
-  \# ls -al /dev/ttyU*
-```
-
-Often the USB stick has address like ttyUSB0 or ttyUSB1.
+### First start
+The GPIO module usually has an address like `/dev/ttyAMA0` or `/dev/ttyACM0`.
+The USB stick can be found under `/dev/ttyUSB0` or `/dev/ttyUSB1`.
 
 - Go into iobroker admin and add the Zwave Adapter (the installation is rather long, be patient)
-- Configure zwave Adapter as described
-- Start the new zwave Adapter instance
-- wait
-- until the Message "zwave.0 Scan completed" is found in iobroker.log
-- the Object zwave.0.info.scanCompleted has State "true"
+- Start the new zwave Adapter instance and select the controller device's address from the dropdown in the admin UI.
+- If your device is not detected, check it or try to manually enter its address when the adapter is turned off.
+- Wait until the indicator in the "Instances" tab turns green or the message "zwave.0 Scan completed" is found in the iobroker log.
 
-**Notice:**
-If you get following error by install:
-
+### Known issues
+If you get the following (or similar) error after starting the adapter
 ```
 libopenzwave.so.1.4: cannot open shared object file: No such file or directory
 ```
 
-
-You should call:
-
+you can fix it by running
+```
+sudo ldconfig
+```
+or
+```
+sudo ldconfig /usr/local
+```
+or
 ```
 sudo ldconfig /usr/local/lib64
 ```
