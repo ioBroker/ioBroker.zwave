@@ -58,7 +58,7 @@ var ctrlError = [
     /*12:*/ 'Overflow'
 ];
 
-var adapter = utils.adapter({
+var adapter = utils.Adapter({
     name: 'zwave',
 
     ready: function () {
