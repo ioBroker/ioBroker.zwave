@@ -15,7 +15,7 @@ before_install:
   - 'if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then export CXX=g++-4.8; CC=gcc-4.8; fi'
   - npm install -g node-gyp
 install:
-  - sudo npm install --unsafe-perms
+  - npm install --unsafe-perms
 before_script:
   - npm install winston@2.3.1
   - 'npm install https://github.com/ioBroker/ioBroker.js-controller/tarball/master --production'
