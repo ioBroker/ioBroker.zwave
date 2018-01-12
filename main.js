@@ -1,3 +1,5 @@
+'use strict';
+
 /**
  *      ioBroker Z-Wave Adapter
  *
