@@ -8,10 +8,11 @@
  *      License: GNU LGPL
  */
 
-var utils        = require(__dirname + '/lib/utils'); // Get common adapter utils
-var comClasses   = require(__dirname + '/admin/js/comClasses.js');
-var path;
-var fs;
+const path       = require("path");
+const fs         = require("fs");
+
+const utils      = require(path.join(__dirname, 'lib/utils')); // Get common adapter utils
+const comClasses = require(path.join(__dirname, 'admin/js/comClasses.js'));
 var zwave;
 
 var objects      = {};
@@ -521,9 +522,6 @@ function filterSerialPorts(path) {
 }
 
 function listSerial() {
-    path = path || require('path');
-    fs   = fs   || require('fs');
-
     // Filter out the devices that aren't serial ports
     var devDirName = '/dev';
 
