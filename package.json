@@ -36,6 +36,7 @@
     "openzwave-shared": "^1.4.0"
   },
   "devDependencies": {
+    "@types/node": "^4.2.23",
     "grunt": "^1.0.1",
     "grunt-replace": "^1.0.1",
     "grunt-contrib-jshint": "^1.1.0",
