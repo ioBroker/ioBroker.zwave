@@ -1,7 +1,7 @@
 {
   "name": "iobroker.zwave",
   "description": "ZWave support for ioBroker based on openzwave packet",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "author": {
     "name": "bluefox",
     "email": "dogafox@gmail.com"

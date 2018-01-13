@@ -4,11 +4,16 @@
         "title":                    "ZWave",
         "desc":                     {
 			"en": "ZWave support based on openzwave packet",
-			"de": "ZWave Unterstutzung durch Openzwave Paket",
+			"de": "ZWave-Unterstützung durch Openzwave Paket",
 			"ru": "Поддержка ZWave основанная на Openzwave пакете"
 		},
-        "version":                  "0.9.0",
+        "version":                  "0.9.1",
         "news": {
+            "0.9.1": {
+                "en": "Simplified resolving the location of the JS-Controller",
+                "de": "Vereinfachte Auflösung des JS-Controller Speicherorts",
+                "ru": "Упрощенное решение о местоположении JS-контроллера"
+            },
             "0.9.0": {
                 "en": "Several fixes: Lifeline, button states, hard reset, decimal values",
                 "de": "Diverse fixes: Lifeline, Button-States, hard reset, Decimalwerte",

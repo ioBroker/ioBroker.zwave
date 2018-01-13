@@ -145,6 +145,9 @@ Following global Actions are current supported:
 
 ## Changelog
 
+### 0.9.1 (2018-01-13)
+* (AlCalzone) Simplified resolving the location of the JS-Controller
+
 ### 0.9.0 (2017-10-28)
 * (AlCalzone) Fixed lifeline detection in admin UI
 * (AlCalzone) Updated buttons to match their behaviour in OZW
