@@ -275,7 +275,7 @@ var adapter = utils.Adapter({
                         if (!requireParams(["nodeID"])) break;
                         adapter.log.info('Requesting number of association groups from node' + obj.message.nodeID);
                         if (zwave[obj.command]) {
-                            var result = zwave[obj.command](obj.message.nodeID);
+                            let result = zwave[obj.command](obj.message.nodeID);
                             respond({ error: null, result: result });
                         } else {
                             adapter.log.error('Unknown command!');
@@ -291,7 +291,7 @@ var adapter = utils.Adapter({
                         if (!requireParams(["nodeID", "group"])) break;
                         adapter.log.info('Requesting label of association group ' + obj.message.group + ' from node ' + obj.message.nodeID);
                         if (zwave[obj.command]) {
-                            var result = zwave[obj.command](obj.message.nodeID, obj.message.group);
+                            let result = zwave[obj.command](obj.message.nodeID, obj.message.group);
                             respond({ error: null, result: result });
                         } else {
                             adapter.log.error('Unknown command!');
@@ -306,7 +306,8 @@ var adapter = utils.Adapter({
                     if (zwave && obj.message) {
                         if (!requireParams(["nodeID"])) break;
                         adapter.log.info('Requesting all association groups from node ' + obj.message.nodeID);
-                        var result = {};
+                        /** @type {Record<string, any> | string} */
+                        let result = {};
                         // get the number of groups
                         var numGroups = zwave.getNumGroups(obj.message.nodeID);
                         if (numGroups > 0) {
@@ -363,7 +364,7 @@ var adapter = utils.Adapter({
                         if (!requireParams(["nodeID", "group"])) break;
                         adapter.log.info('Requesting associations in group ' + obj.message.group + ' from node ' + obj.message.nodeID);
                         if (zwave[obj.command]) {
-                            var result = zwave[obj.command](obj.message.nodeID, obj.message.group);
+                            let result = zwave[obj.command](obj.message.nodeID, obj.message.group);
                             respond({ error: null, result: result });
                         } else {
                             adapter.log.error('Unknown command!');
@@ -379,7 +380,7 @@ var adapter = utils.Adapter({
                         if (!requireParams(["nodeID", "group"])) break;
                         adapter.log.info('Requesting max number of associations in group ' + obj.message.group + ' from node ' + obj.message.nodeID);
                         if (zwave[obj.command]) {
-                            var result = zwave[obj.command](obj.message.nodeID, obj.message.group);
+                            let result = zwave[obj.command](obj.message.nodeID, obj.message.group);
                             respond({ error: null, result: result });
                         } else {
                             adapter.log.error('Unknown command!');
@@ -526,7 +527,7 @@ function listSerial() {
     // Filter out the devices that aren't serial ports
     var devDirName = '/dev';
 
-    var result;
+    let result;
     try {
         result = fs
             .readdirSync(devDirName)
@@ -989,7 +990,7 @@ function deleteAllNonControllerNodes() {
     // find the last node which is not the controller (ID 1)
     var allNodeIDs = Object.keys(nodes);
     if (allNodeIDs.length <= 1) return;
-    var lastNodeID = allNodeIDs[allNodeIDs.length-1];
+    var lastNodeID = parseInt(allNodeIDs[allNodeIDs.length - 1]);
     // delete it
     if (lastNodeID > 1) {
         deleteDevice(lastNodeID, function() {
@@ -1243,7 +1244,7 @@ function main() {
 
 function extendInstanceObjects() {
     var fs = require('fs'),
-        io = fs.readFileSync(__dirname + "/io-package.json"),
+        io = fs.readFileSync(path.join(__dirname, "io-package.json"), "utf8"),
         objs = JSON.parse(io);
 
     for (var i = 0; i < objs.instanceObjects.length; i++) {
