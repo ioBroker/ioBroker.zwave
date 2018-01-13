@@ -7,10 +7,10 @@ var fs        = require('fs');
 
 describe('Test package.json and io-package.json', function() {
     it('Test package files', function (done) {
-        var fileContentIOPackage = fs.readFileSync(__dirname + '/../io-package.json');
+        var fileContentIOPackage = fs.readFileSync(__dirname + '/../io-package.json', 'utf8');
         var ioPackage = JSON.parse(fileContentIOPackage);
 
-        var fileContentNPMPackage = fs.readFileSync(__dirname + '/../package.json');
+        var fileContentNPMPackage = fs.readFileSync(__dirname + '/../package.json', 'utf8');
         var npmPackage = JSON.parse(fileContentNPMPackage);
 
         expect(ioPackage).to.be.an('object');
