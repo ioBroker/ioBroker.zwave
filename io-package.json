@@ -1,15 +1,15 @@
 {
     "common": {
-        "name":                     "zwave",
-        "title":                    "ZWave",
-        "desc":                     {
-			"en": "ZWave support based on openzwave packet",
-			"de": "ZWave-Unterstützung durch Openzwave Paket",
-			"ru": "Поддержка ZWave основанная на Openzwave пакете"
-		},
-        "version":                  "0.9.1",
+        "name": "zwave",
+        "title": "ZWave",
+        "desc": {
+            "en": "ZWave support based on openzwave packet",
+            "de": "ZWave-Unterstützung durch Openzwave Paket",
+            "ru": "Поддержка ZWave основанная на Openzwave пакете"
+        },
+        "version": "1.0.0",
         "news": {
-            "0.9.1": {
+            "1.0.0": {
                 "en": "Simplified resolving the location of the JS-Controller",
                 "de": "Vereinfachte Auflösung des JS-Controller Speicherorts",
                 "ru": "Упрощенное решение о местоположении JS-контроллера"
@@ -34,12 +34,12 @@
                 "de": "Secure Geräte werden unterstützt",
                 "ru": "Поддерживаются secure устройства"
             },
-			"0.5.2": {
+            "0.5.2": {
                 "en": "Reset status on start and stop of adapter",
                 "de": "Setzt auf false die Statis beim Aadapterstop und Start",
                 "ru": "Сбрасывает значения статуса при старте и остановке драйвера"
             },
-			"0.5.1": {
+            "0.5.1": {
                 "en": "Update openzwave-shared. Change install process. Fixed not being able to select configuration options from dropdowns. Note: To complete the fix, delete affected nodes in the ioBroker objects tab before starting the adapter.",
                 "de": "Update openzwave-shared. Ändere die Installation. Fehler behoben das Konfigurationsopnen von Dropdowns nicht ausgewählt werden konnten. Hinweis: Um das Problem vollständig zu lösen müssen die betroffenen Geräte im ioBroker Objekte Tab gelöst werden bevor der Adapter gestartet wird.",
                 "ru": "Обновлён пакет openzwave-shared. Изменён процесс установки.  Fixed not being able to select configuration options from dropdowns. Note: To complete the fix, delete affected nodes in the ioBroker objects tab before starting the adapter."
@@ -70,46 +70,50 @@
                 "ru": "Полностью переписанный драйвер"
             }
         },
-        "mode":                     "daemon",
-        "platform":                 "javascript/Node.js",
-        "loglevel":                 "info",
-        "keywords":                 ["zwave", "control", "openzwave"],
-        "main":                     "main.js",
+        "mode": "daemon",
+        "platform": "javascript/Node.js",
+        "loglevel": "info",
+        "keywords": [
+            "zwave",
+            "control",
+            "openzwave"
+        ],
+        "main": "main.js",
         "authors": [
             "bluefox <dogafox@gmail.com>",
-            "Christian Baumgartner", "husky-koglhof <husky.koglhof@icloud.com>"
+            "Christian Baumgartner",
+            "husky-koglhof <husky.koglhof@icloud.com>"
         ],
-        "license":                  "LGPL",
-        "readme":                   "https://github.com/ioBroker/ioBroker.zwave/blob/master/README.md",
-        "icon":                     "zwave.png",
-        "extIcon":                  "https://raw.githubusercontent.com/ioBroker/ioBroker.zwave/master/admin/zwave.png",
-        "onlyWWW":                  false,
-        "singletonHost":            true,
-        "messagebox":               true,
-        "type":                     "hardware",
-        "enabled":                  true,
-        "config":{
-            "minWidth":   800,
-            "width":      1224,
-            "height":     600
+        "license": "LGPL",
+        "readme": "https://github.com/ioBroker/ioBroker.zwave/blob/master/README.md",
+        "icon": "zwave.png",
+        "extIcon": "https://raw.githubusercontent.com/ioBroker/ioBroker.zwave/master/admin/zwave.png",
+        "onlyWWW": false,
+        "singletonHost": true,
+        "messagebox": true,
+        "type": "hardware",
+        "enabled": true,
+        "config": {
+            "minWidth": 800,
+            "width": 1224,
+            "height": 600
         }
     },
     "native": {
-        "usb":              "",
-        "logging":          false,
-        "consoleoutput":    false,
-        "saveconfig":       true,
-        "driverattempts":   3,
-        "pollinterval":     500,
-        "suppressrefresh":  false,
-        "forceinit":        false,
+        "usb": "",
+        "logging": false,
+        "consoleoutput": false,
+        "saveconfig": true,
+        "driverattempts": 3,
+        "pollinterval": 500,
+        "suppressrefresh": false,
+        "forceinit": false,
         "networkkey": "0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08,0x09,0x0A,0x0B,0x0C,0x0D,0x0E,0x0F,0x10"
     },
-    "objects": [
-    ],
+    "objects": [],
     "instanceObjects": [
         {
-            "_id":  "info",
+            "_id": "info",
             "type": "channel",
             "common": {
                 "name": "Information"
@@ -117,196 +121,196 @@
             "native": {}
         },
         {
-            "_id":  "info.connection",
+            "_id": "info.connection",
             "type": "state",
             "common": {
-                "role":  "indicator.connected",
-                "name":  "ZWave ready to use",
-                "desc":  "If the ZWave driver has finished initializing",
-                "type":  "boolean",
-                "read":  true,
+                "role": "indicator.connected",
+                "name": "ZWave ready to use",
+                "desc": "If the ZWave driver has finished initializing",
+                "type": "boolean",
+                "read": true,
                 "write": false,
-                "def":   false
+                "def": false
             },
             "native": {}
         },
         {
-            "_id":  "info.controllerMessage",
+            "_id": "info.controllerMessage",
             "type": "state",
             "common": {
-                "role":  "state",
-                "name":  "Last controller message",
-                "type":  "string",
-                "read":  true,
+                "role": "state",
+                "name": "Last controller message",
+                "type": "string",
+                "read": true,
                 "write": false
             },
             "native": {}
         },
         {
-            "_id":  "info.driverReady",
+            "_id": "info.driverReady",
             "type": "state",
             "common": {
-                "role":  "state",
-                "name":  "If the ZWave driver is loaded and ready",
-                "type":  "boolean",
-                "read":  true,
+                "role": "state",
+                "name": "If the ZWave driver is loaded and ready",
+                "type": "boolean",
+                "read": true,
                 "write": false,
-                "def":   false
+                "def": false
             },
             "native": {}
         },
         {
-            "_id":  "info.scanCompleted",
+            "_id": "info.scanCompleted",
             "type": "state",
             "common": {
-                "role":  "state",
-                "name":  "Scan of devices is completed",
-                "desc":  "If scan of devices is completed",
-                "type":  "boolean",
-                "read":  true,
+                "role": "state",
+                "name": "Scan of devices is completed",
+                "desc": "If scan of devices is completed",
+                "type": "boolean",
+                "read": true,
                 "write": false
             },
             "native": {}
         },
         {
-            "_id":  "info.libraryVersion",
+            "_id": "info.libraryVersion",
             "type": "state",
             "common": {
-                "role":  "state",
-                "name":  "Z-Wave Library Version",
-                "desc":  "Version of the Z-Wave API library",
-                "type":  "string",
-                "read":  true,
+                "role": "state",
+                "name": "Z-Wave Library Version",
+                "desc": "Version of the Z-Wave API library",
+                "type": "string",
+                "read": true,
                 "write": false
             },
             "native": {}
         },
         {
-            "_id":  "info.libraryTypeName",
+            "_id": "info.libraryTypeName",
             "type": "state",
             "common": {
-                "role":  "state",
-                "name":  "Z-Wave Library Type Name",
-                "desc":  "Name of the Z-Wave API library",
-                "type":  "string",
-                "read":  true,
+                "role": "state",
+                "name": "Z-Wave Library Type Name",
+                "desc": "Name of the Z-Wave API library",
+                "type": "string",
+                "read": true,
                 "write": false
             },
             "native": {}
         },
         {
-            "_id":  "info.controllerNodeId",
+            "_id": "info.controllerNodeId",
             "type": "state",
             "common": {
-                "role":  "state",
-                "name":  "Node Id of Controller",
-                "desc":  "Node id of the controller",
-                "type":  "number",
-                "read":  true,
+                "role": "state",
+                "name": "Node Id of Controller",
+                "desc": "Node id of the controller",
+                "type": "number",
+                "read": true,
                 "write": false
             },
             "native": {}
         },
         {
-            "_id":  "info.SUCNodeId",
+            "_id": "info.SUCNodeId",
             "type": "state",
             "common": {
-                "role":  "state",
-                "name":  "Static update controller",
-                "desc":  "Node id of the static update controller (SUC)",
-                "type":  "number",
-                "read":  true,
+                "role": "state",
+                "name": "Static update controller",
+                "desc": "Node id of the static update controller (SUC)",
+                "type": "number",
+                "read": true,
                 "write": false
             },
             "native": {}
         },
         {
-            "_id":  "info.primaryController",
+            "_id": "info.primaryController",
             "type": "state",
             "common": {
-                "role":  "state",
-                "name":  "Primary controller",
-                "desc":  "Is the OZW-managed controller the primary controller for this zwave network?",
-                "type":  "boolean",
-                "read":  true,
+                "role": "state",
+                "name": "Primary controller",
+                "desc": "Is the OZW-managed controller the primary controller for this zwave network?",
+                "type": "boolean",
+                "read": true,
                 "write": false
             },
             "native": {}
         },
         {
-            "_id":  "info.staticUpdateController",
+            "_id": "info.staticUpdateController",
             "type": "state",
             "common": {
-                "role":  "state",
-                "name":  "SUC",
-                "desc":  "If the controller is a static update controller",
-                "type":  "boolean",
-                "read":  true,
+                "role": "state",
+                "name": "SUC",
+                "desc": "If the controller is a static update controller",
+                "type": "boolean",
+                "read": true,
                 "write": false
             },
             "native": {}
         },
         {
-            "_id":  "info.bridgeController",
+            "_id": "info.bridgeController",
             "type": "state",
             "common": {
-                "role":  "state",
-                "name":  "Bridge controller",
-                "desc":  "If the controller is using the bridge controller library",
-                "type":  "boolean",
-                "read":  true,
+                "role": "state",
+                "name": "Bridge controller",
+                "desc": "If the controller is using the bridge controller library",
+                "type": "boolean",
+                "read": true,
                 "write": false
             },
             "native": {}
         },
         {
-            "_id":  "info.homeId",
+            "_id": "info.homeId",
             "type": "state",
             "common": {
-                "role":  "state",
-                "name":  "Home Id",
-                "desc":  "Network Home Id",
-                "type":  "string",
-                "read":  true,
+                "role": "state",
+                "name": "Home Id",
+                "desc": "Network Home Id",
+                "type": "string",
+                "read": true,
                 "write": false
             },
             "native": {}
         },
         {
-            "_id":  "info.OZW",
+            "_id": "info.OZW",
             "type": "state",
             "common": {
-                "role":  "state",
-                "name":  "OZW Version",
-                "desc":  "Open Z-Wave version",
-                "type":  "string",
-                "read":  true,
+                "role": "state",
+                "name": "OZW Version",
+                "desc": "Open Z-Wave version",
+                "type": "string",
+                "read": true,
                 "write": false
             },
             "native": {}
         },
         {
-            "_id":  "inclusionOn",
+            "_id": "inclusionOn",
             "type": "state",
             "common": {
-                "role":  "state",
-                "name":  "Inclusion mode activated",
-                "desc":  "If inclusion mode on or off",
-                "type":  "boolean",
-                "read":  true,
+                "role": "state",
+                "name": "Inclusion mode activated",
+                "desc": "If inclusion mode on or off",
+                "type": "boolean",
+                "read": true,
                 "write": true
             },
             "native": {}
         },
         {
-            "_id":  "exclusionOn",
+            "_id": "exclusionOn",
             "type": "state",
             "common": {
-                "role":  "state",
-                "name":  "Exclusion mode activated",
-                "desc":  "If exclusion mode on or off",
-                "type":  "boolean",
-                "read":  true,
+                "role": "state",
+                "name": "Exclusion mode activated",
+                "desc": "If exclusion mode on or off",
+                "type": "boolean",
+                "read": true,
                 "write": true
             },
             "native": {}
