@@ -70,6 +70,13 @@ or
 sudo ldconfig /usr/local/lib64
 ```
 
+If all of those commands don't work, the following process might:
+1. `sudo nano /etc/ld.so.conf.d/zwave.conf`
+	1. enter `/usr/local/lib64`
+	1. quit the editor with `CTRL+X`, confirm with `Y` to save the changes
+	
+1. `sudo ldconfig`
+
 ## Configuration
 Within Admin Settings you can set following Attributes
 
