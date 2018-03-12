@@ -144,6 +144,9 @@ Following global Actions are current supported:
 - FGWPE Wall Plug
 - FGSS001 Smoke Sensor
 - FGMS001 Motion Sensor
+- FGS-223 Double Switch 2
+- FGR-222 Roller Shutter 2
+- FGDW-002 Door/Window Sensor 2
 
 ### Danfoss
 
