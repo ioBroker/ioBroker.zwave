@@ -155,6 +155,9 @@ Following global Actions are current supported:
 
 ## Changelog
 
+### 1.0.1 (2018-05-01)
+* (AlCalzone) Use new OZW version for compatibility with NodeJS 10
+
 ### 1.0.0 (2018-01-31)
 * (AlCalzone) Simplified resolving the location of the JS-Controller
 

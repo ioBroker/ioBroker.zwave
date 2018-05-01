@@ -1,7 +1,7 @@
 {
   "name": "iobroker.zwave",
   "description": "ZWave support for ioBroker based on openzwave packet",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "author": {
     "name": "bluefox",
     "email": "dogafox@gmail.com"
@@ -33,7 +33,7 @@
     "url": "git+https://github.com/ioBroker/ioBroker.zwave.git"
   },
   "dependencies": {
-    "openzwave-shared": "^1.4.0"
+    "openzwave-shared": "^1.4.3"
   },
   "devDependencies": {
     "@types/node": "^4.2.23",

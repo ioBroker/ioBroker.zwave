@@ -7,8 +7,13 @@
             "de": "ZWave-Unterstützung durch Openzwave Paket",
             "ru": "Поддержка ZWave основанная на Openzwave пакете"
         },
-        "version": "1.0.0",
+        "version": "1.0.1",
         "news": {
+            "1.0.1": {
+                "en": "Use new OZW version for compatibility with NodeJS 10",
+                "de": "Neue OZW-Version für Kompatibilität mit NodeJS 10 verwendet",
+                "ru": "Используйте новую версию OZW для совместимости с NodeJS 10"
+            },
             "1.0.0": {
                 "en": "Simplified resolving the location of the JS-Controller",
                 "de": "Vereinfachte Auflösung des JS-Controller Speicherorts",
