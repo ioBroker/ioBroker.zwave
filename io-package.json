@@ -4,15 +4,27 @@
         "title": "ZWave",
         "desc": {
             "en": "ZWave support based on openzwave packet",
-            "de": "ZWave-Unterstützung durch Openzwave Paket",
-            "ru": "Поддержка ZWave основанная на Openzwave пакете"
+            "de": "ZWave-Unterstützung basiert auf Openzwave-Paket",
+            "ru": "Поддержка ZWave на основе пакета openzwave",
+            "pt": "Suporte ZWave baseado em pacote openzwave",
+            "nl": "ZWave-ondersteuning op basis van openzwave-pakket",
+            "fr": "Support ZWave basé sur le paquet openzwave",
+            "it": "Supporto ZWave basato sul pacchetto openzwave",
+            "es": "Soporte ZWave basado en paquete openzwave",
+            "pl": "ZWave wsparcie oparte na pakiecie openzwave"
         },
-        "version": "1.0.1",
+        "version": "1.1.0",
         "news": {
-            "1.0.1": {
-                "en": "Use new OZW version for compatibility with NodeJS 10",
-                "de": "Neue OZW-Version für Kompatibilität mit NodeJS 10 verwendet",
-                "ru": "Используйте новую версию OZW для совместимости с NodeJS 10"
+            "1.1.0": {
+                "en": "Used new OZW version for compatibility with NodeJS 10",
+                "de": "Verwendete neue OZW-Version für Kompatibilität mit NodeJS 10",
+                "ru": "Используется новая версия OZW для совместимости с NodeJS 10",
+                "pt": "Usou a nova versão OZW para compatibilidade com o NodeJS 10",
+                "nl": "Gebruikte nieuwe OZW-versie voor compatibiliteit met NodeJS 10",
+                "fr": "Nouvelle version OZW utilisée pour la compatibilité avec NodeJS 10",
+                "it": "Utilizzata la nuova versione OZW per compatibilità con NodeJS 10",
+                "es": "Nueva versión OZW usada para compatibilidad con NodeJS 10",
+                "pl": "Używana nowa wersja OZW dla kompatybilności z NodeJS 10"
             },
             "1.0.0": {
                 "en": "Simplified resolving the location of the JS-Controller",

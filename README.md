@@ -1,5 +1,5 @@
 ![Logo](admin/zwave.png)
-ioBroker zwave Adapter
+# ioBroker zwave Adapter
 ==============
 
 [![NPM version](http://img.shields.io/npm/v/iobroker.zwave.svg)](https://www.npmjs.com/package/iobroker.zwave)
@@ -248,7 +248,7 @@ Following global Actions are current supported:
 
 ## License
 
-Copyright (c) 2014-2016 bluefox <dogafox@gmail.com>, husky-koglhof <husky.koglhof@icloud.com>
+Copyright (c) 2014-2018 bluefox <dogafox@gmail.com>, husky-koglhof <husky.koglhof@icloud.com>
 
 SOFTWARE NOTICE AND LICENSE
 
