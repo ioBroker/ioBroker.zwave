@@ -649,13 +649,24 @@ function fixZwaveButtons(callback) {
     }
 }
 
+/**
+ * Replaces forbidden chars in strings used for IDs
+ * @param {string} id The ID which might contain forbidden
+ * @param {boolean} [includeDots=false] Whether "." should be escaped aswell
+ * @returns {string}
+ */
+function replaceForbiddenCharsInID(id, includeDots) {
+    const regex = new RegExp(`[\\*\\?\\[\\]"'\\s${includeDots ? "\\." : ""}]+`, "g");
+    return id.replace(regex, '_');
+}
+
 function calcName(nodeID, comClass, idx, instance) {
     var name = adapter.namespace + '.NODE' + nodeID;
     if (comClass) {
         name += '.' + ((comClasses[comClass] ? comClasses[comClass].name : '') || ('CLASSES' + comClass));
 
         if (idx !== undefined) {
-            idx = idx.replace(/[.\s]+/g, '_');
+            idx = replaceForbiddenCharsInID(idx, true);
             name = name + '.' + idx;
 
             if (instance !== undefined) {
@@ -771,7 +782,7 @@ function extendNode(nodeID, nodeInfo, callback) {
     }
 
     if (nodeInfo.loc) {
-        var roomId = 'enum.rooms.' + nodeInfo.loc.replace(/\s/g, '_');
+        var roomId = 'enum.rooms.' + replaceForbiddenCharsInID(nodeInfo.loc, false);
         if (!objects[roomId]) {
             count++;
             objects[roomId] = {
