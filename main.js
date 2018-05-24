@@ -1200,7 +1200,7 @@ function main() {
                     "type": "state"
                 };
 
-                obj.common.role = "switch";
+                obj.common.role = "state";
                 adapter.setObject(id, obj);
             }
             adapter.log.debug("Put scene " + sceneid + " from node " + nodeID + " into database");
