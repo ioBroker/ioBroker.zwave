@@ -1169,7 +1169,7 @@ function main() {
          - etc.
          */
         
-        // Workaround for Popp / ZME_WALLC_S for example
+        // Workaround for Popp / ZME_WALLC_S for example 
         // We save the scene id direct into a state (e.g. zwave.0.NODE3.scene)
         // if Configuration (e.g. zwave.0.NODE3.CONFIGURATION.Command_to_Control_Group_A) is set to "Send Scenes(4)"
         // Examples:
