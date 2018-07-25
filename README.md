@@ -155,7 +155,10 @@ Following global Actions are current supported:
 
 ## Changelog
 
-### 1.0.1 (2018-05-01)
+### 1.2.0 (2018-07-25)
+* (AlCalzone) Forbidden chars in state IDs are replaced
+
+### 1.1.0 (2018-05-01)
 * (AlCalzone) Use new OZW version for compatibility with NodeJS 10
 
 ### 1.0.0 (2018-01-31)

@@ -13,8 +13,13 @@
             "es": "Soporte ZWave basado en paquete openzwave",
             "pl": "ZWave wsparcie oparte na pakiecie openzwave"
         },
-        "version": "1.1.0",
+        "version": "1.2.0",
         "news": {
+            "1.2.0": {
+                "en": "Forbidden chars in state IDs are replaced",
+                "de": "Verbotene Zeichen in Zustands-IDs werden ersetzt",
+                "ru": "Заменены запрещенные символы в идентификаторах штата"
+            },
             "1.1.0": {
                 "en": "Used new OZW version for compatibility with NodeJS 10",
                 "de": "Verwendete neue OZW-Version für Kompatibilität mit NodeJS 10",
