@@ -1149,7 +1149,9 @@ function main() {
     });
 
     zwave.on('scene event', function (nodeID, sceneid) {
-        adapter.log.debug('node' + nodeID + ': scene event for ' + sceneid + ', currently not implemented');
+        // adapter.log.debug('node' + nodeID + ': scene event for ' + sceneid + ', currently not implemented');
+        adapter.log.debug('node' + nodeID + ': scene event for ' + sceneid + ', currently only partially implemented');
+
         /*
          For example when you have your Aeon Labs Minimote setup with the following configuration:
 
@@ -1166,6 +1168,44 @@ function main() {
          - sceneid of 3 when (2) is Pressed
          - etc.
          */
+        
+        // Workaround for Popp / ZME_WALLC_S for example 
+        // We save the scene id direct into a state (e.g. zwave.0.NODE3.scene)
+        // if Configuration (e.g. zwave.0.NODE3.CONFIGURATION.Command_to_Control_Group_A) is set to "Send Scenes(4)"
+        // Examples:
+        // First Button (top, left) Pressed 1 Time: 11
+        // First Button (top, left) Pressed 2 Times: 12
+        // First Button (top, left) Key Held down: 13
+        // First Button (top, left) Key Released: 15
+        // Second Button (top, right): Pressed 1 Time: 21
+        // Second Button (top, right) Pressed 2 Times: 22
+        // and so on...
+        
+        if (nodes[nodeID]) {
+            adapter.log.debug(JSON.stringify(nodes[nodeID]));
+            var id = "zwave.0.NODE" + nodeID + ".scene";
+            var object = objects[id];
+            if (object === undefined || object === null) {
+                adapter.log.warn("object + " + id  + " does not exist yet");
+
+                var obj = {
+                    "common": {
+                        "name": "Received scenes from node",
+                        "type": "mixed",
+                        "role": "state",
+                        "write": true,
+                        "read": true
+                    },
+                    "native": {},
+                    "type": "state"
+                };
+
+                obj.common.role = "state";
+                adapter.setObject(id, obj);
+            }
+            adapter.log.debug("Put scene " + sceneid + " from node " + nodeID + " into database");
+            adapter.setState(id, sceneid)
+        }
     });
 
     zwave.on('polling enabled', function (nodeID) {
