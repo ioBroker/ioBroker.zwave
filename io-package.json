@@ -13,8 +13,12 @@
             "es": "Soporte ZWave basado en paquete openzwave",
             "pl": "ZWave wsparcie oparte na pakiecie openzwave"
         },
-        "version": "1.2.0",
+        "version": "1.3.0",
         "news": {
+            "1.3.0": {
+                "en": "Experimental support for CentralScene commands",
+                "de": "Experimentelle Unterstützung für CentralScene Kommandos"
+            },
             "1.2.0": {
                 "en": "Forbidden chars in state IDs are replaced",
                 "de": "Verbotene Zeichen in Zustands-IDs werden ersetzt",
