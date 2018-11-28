@@ -155,6 +155,13 @@ Following global Actions are current supported:
 
 ## Changelog
 
+### 1.3.2 (2018-11-28)
+* (AlCalzone) Replace all chars in state IDs that are forbidden in JS-Controller 1.5+
+* (AlCalzone) Include @types/iobroker and strongly type adapter config properties
+
+### 1.3.0
+* (AlCalzone) Experimental support for CentralScene
+
 ### 1.2.0 (2018-07-25)
 * (AlCalzone) Forbidden chars in state IDs are replaced
 

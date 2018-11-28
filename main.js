@@ -61,6 +61,7 @@ var ctrlError = [
     /*12:*/ 'Overflow'
 ];
 
+/** @type {ioBroker.Adapter} */
 var adapter = utils.Adapter({
     name: 'zwave',
 
@@ -656,8 +657,10 @@ function fixZwaveButtons(callback) {
  * @returns {string}
  */
 function replaceForbiddenCharsInID(id, includeDots) {
-    const regex = new RegExp(`[\\*\\?\\[\\]"'\\s${includeDots ? "\\." : ""}]+`, "g");
-    return id.replace(regex, '_');
+    const regex = adapter.FORBIDDEN_CHARS || new RegExp(`[\\*\\?\\[\\]"'\\s}]+`, "g");
+    id = id.replace(regex, '_');
+    if (includeDots) id = id.replace(/\./g, '');
+    return id;
 }
 
 function calcName(nodeID, comClass, idx, instance) {
@@ -698,13 +701,14 @@ function extendNode(nodeID, nodeInfo, callback) {
             });
         }
     } else {
+        /** @type {ioBroker.SettableObject} */
         var devObj = {
             common: {
                 name: nodeInfo.name || nodeInfo.manufacturer ? nodeInfo.name || (nodeInfo.manufacturer + ' ' + nodeInfo.product) : '',
                 role: 'state'
             },
             native: nodeInfo,
-            type:  'device'
+            type: 'device'
         };
         adapter.log.info('Create new device: ' + id + '[' + devObj.common.name + ']');
         count++;
@@ -831,6 +835,7 @@ function extendChannel(nodeID, comClass, valueId) {
             adapter.extendForeignObject(channelID, objects[channelID]);
         }
     } else {
+        /** @type {ioBroker.SettableObject} */
         var chObj = {
             common: {
                 name: valueId.label
@@ -905,7 +910,8 @@ function extendChannel(nodeID, comClass, valueId) {
         }
         if (value !== undefined) adapter.setForeignState(stateID, value, true);
     } else {
-        stateObj = {
+        /** @type {ioBroker.StateObject} */
+        stateObj = ({
             common: {
                 name:  valueId.label,
                 type:  type || 'number',
@@ -916,7 +922,7 @@ function extendChannel(nodeID, comClass, valueId) {
             native: valueId,
             type:   'state',
             _id:    stateID
-        };
+        });
         if (valueId.units) stateObj.common.unit = valueId.units;
 
         if (valueId.type === 'byte' || valueId.type === 'int' || valueId.type === 'decimal' || valueId.type === 'short') stateObj.common.type = 'number';
