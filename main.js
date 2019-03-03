@@ -11,7 +11,7 @@
 const path       = require("path");
 const fs         = require("fs");
 
-const utils      = require(path.join(__dirname, 'lib/utils')); // Get common adapter utils
+const utils = require('@iobroker/adapter-core'); // Get common adapter utils
 const comClasses = require(path.join(__dirname, 'admin/js/comClasses.js'));
 var zwave;
 
