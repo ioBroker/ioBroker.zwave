@@ -37,15 +37,15 @@
     "url": "git+https://github.com/ioBroker/ioBroker.zwave.git"
   },
   "dependencies": {
-    "openzwave-shared": "^1.4.3"
+    "openzwave-shared": "^1.4.3",
+    "@iobroker/adapter-core": "^1.0.3"
   },
   "devDependencies": {
     "@types/iobroker": "^1.4.0",
     "@types/node": "^4.2.23",
     "chai": "^4.1.2",
     "gulp": "^3.9.1",
-    "mocha": "^6.0.2",
-    "@iobroker/adapter-core": "^1.0.3"
+    "mocha": "^6.0.2"
   },
   "bugs": {
     "url": "https://github.com/ioBroker/ioBroker.zwave/issues"
