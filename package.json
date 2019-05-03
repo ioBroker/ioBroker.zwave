@@ -8,7 +8,10 @@
   },
   "scripts": {
     "preinstall": "node lib/preinstall.js",
-    "test": "node node_modules/mocha/bin/mocha --exit"
+    "test:package": "mocha test/package --exit",
+    "test:unit": "mocha test/unit --exit",
+    "test:integration": "mocha test/integration --exit",
+    "test": "npm run test:package && npm run test:unit"
   },
   "contributors": [
     {
@@ -41,6 +44,7 @@
     "@iobroker/adapter-core": "^1.0.3"
   },
   "devDependencies": {
+    "@iobroker/testing": "^1.2.0",
     "@types/iobroker": "^1.4.0",
     "@types/node": "^4.2.23",
     "chai": "^4.1.2",
