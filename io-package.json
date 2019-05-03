@@ -118,7 +118,7 @@
             "Christian Baumgartner",
             "husky-koglhof <husky.koglhof@icloud.com>"
         ],
-        "license": "LGPLv3",
+        "license": "LGPL-3.0-or-later",
         "readme": "https://github.com/ioBroker/ioBroker.zwave/blob/master/README.md",
         "icon": "zwave.png",
         "extIcon": "https://raw.githubusercontent.com/ioBroker/ioBroker.zwave/master/admin/zwave.png",

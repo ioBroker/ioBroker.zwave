@@ -28,7 +28,7 @@
     }
   ],
   "homepage": "https://github.com/ioBroker/ioBroker.zwave",
-  "license": "LGPLv3",
+  "license": "LGPL-3.0-or-later",
   "keywords": [
     "ioBroker",
     "zwave",
