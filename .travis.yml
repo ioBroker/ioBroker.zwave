@@ -1,7 +1,8 @@
 os:
   - linux
   - osx
-  - windows
+  # Windows compilation does not seem to be working
+  # - windows
 sudo: required
 
 language: node_js
