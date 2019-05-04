@@ -61,457 +61,469 @@ var ctrlError = [
     /*12:*/ 'Overflow'
 ];
 
-/** @type {ioBroker.Adapter} */
-var adapter = utils.Adapter({
-    name: 'zwave',
+/**
+ * The adapter instance
+ * @type {ioBroker.Adapter}
+ */
+let adapter;
 
-    ready: function () {
-        adapter.objects.getObjectList({
-            startkey: adapter.namespace + '.',
-            endkey:   adapter.namespace + '.\u9999',
-            include_docs: true
-        }, function (err, res) {
+/**
+ * Starts the adapter instance
+ * @param {Partial<ioBroker.AdapterOptions>} [options]
+ */
+function startAdapter(options) {
+    // Create the adapter and define its methods
+    return adapter = utils.adapter(Object.assign({}, options, {
+        name: 'zwave',
+
+        ready: function () {
             adapter.objects.getObjectList({
-                startkey: 'enum.rooms.',
-                endkey:   'enum.rooms.\u9999',
+                startkey: adapter.namespace + '.',
+                endkey:   adapter.namespace + '.\u9999',
                 include_docs: true
-            }, function (err, rooms) {
-                objects = {};
-                var devices = [];
-                if (res) {
-                    res = res.rows;
+            }, function (err, res) {
+                adapter.objects.getObjectList({
+                    startkey: 'enum.rooms.',
+                    endkey:   'enum.rooms.\u9999',
+                    include_docs: true
+                }, function (err, rooms) {
+                    objects = {};
+                    var devices = [];
                     if (res) {
-                        for (var i = 0; i < res.length; i++) {
-                            objects[res[i].value._id] = res[i].value;
-                            if (res[i].value.type === 'device') devices.push(res[i].value._id);
+                        res = res.rows;
+                        if (res) {
+                            for (var i = 0; i < res.length; i++) {
+                                objects[res[i].value._id] = res[i].value;
+                                if (res[i].value.type === 'device') devices.push(res[i].value._id);
+                            }
                         }
                     }
-                }
 
-                if (rooms) {
-                    res = rooms.rows;
-                    if (res) {
-                        for (var r = 0; r < res.length; r++) {
-                            objects[res[r].value._id] = res[r].value;
+                    if (rooms) {
+                        res = rooms.rows;
+                        if (res) {
+                            for (var r = 0; r < res.length; r++) {
+                                objects[res[r].value._id] = res[r].value;
+                            }
                         }
                     }
-                }
 
-                adapter.log.debug('received all objects');
+                    adapter.log.debug('received all objects');
 
-                adapter.subscribeObjects('*');
-                adapter.subscribeStates('*');
-                adapter.subscribeForeignObjects('enum.rooms.*');
-                extendInstanceObjects();
-                setAllNotReady(devices, main);
+                    adapter.subscribeObjects('*');
+                    adapter.subscribeStates('*');
+                    adapter.subscribeForeignObjects('enum.rooms.*');
+                    extendInstanceObjects();
+                    setAllNotReady(devices, main);
+                });
             });
-        });
-    },
-    message: function (obj) {
+        },
+        message: function (obj) {
 
-        // responds to the adapter that sent the original message
-        function respond(response) {
-            if (obj.callback)
-                adapter.sendTo(obj.from, obj.command, response, obj.callback);
-        }
-        // some predefined responses so we only have to define them once
-        var predefinedResponses = {
-            ACK: { error: null },
-            OK: { error: null, result: 'ok' },
-            ERROR_UNKNOWN_COMMAND: { error: 'Unknown command!' },
-            ERROR_NOT_RUNNING: { error: 'zwave driver is not running!' },
-            MISSING_PARAMETER: function (paramName) {
-                return {error: 'missing parameter "' + paramName + '"!'};
-            },
-            COMMAND_RUNNING: {error: 'command running'}
-        };
-        // make required parameters easier
-        function requireParams(params) {
-            if (!(params && params.length)) return true;
-            for (var i = 0; i < params.length; i++) {
-                if (!(obj.message && obj.message.hasOwnProperty(params[i]))) {
-                    respond(predefinedResponses.MISSING_PARAMETER(params[i]));
-                    return false;
-                }
+            // responds to the adapter that sent the original message
+            function respond(response) {
+                if (obj.callback)
+                    adapter.sendTo(obj.from, obj.command, response, obj.callback);
             }
-            return true;
-        }
-
-        // handle the message
-        if (obj) {
-            if (obj.command !== 'stopCommand' && obj.command !== 'listUart' && (inclusion || exclusion)) {
-                respond(predefinedResponses.COMMAND_RUNNING);
-                return;
-            }
-            addNodeSecure = false;
-            switch (obj.command) {
-                case 'stopCommand':
-                    disableInclusion();
-                    disableExclusion();
-                    respond(predefinedResponses.ACK);
-                    break;
-
-                case 'listUart':
-                    if (obj.callback) {
-                        var ports = listSerial();
-                        adapter.log.info('List of ports: ' + JSON.stringify(ports));
-                        respond(ports);
-                    }
-                    break;
-
-                case 'softReset':
-                case 'hardReset': // destructive! will wipe out all known configuration
-                case 'healNetwork':
-                case 'getNeighbors':
-                    if (zwave) {
-                        adapter.log.info('Execute ' + obj.command);
-                        if (zwave[obj.command]) {
-                            zwave[obj.command]();
-                            respond(predefinedResponses.OK);
-                            
-                            if (obj.command === "hardReset") {
-                                // hardReset deletes all node info on the controller
-                                // make sure the nodes get deleted in ioBroker aswell
-                                deleteAllNonControllerNodes();
-                            }
-                        } else {
-                            adapter.log.error('Unknown command!');
-                            respond(predefinedResponses.ERROR_UNKNOWN_COMMAND);
-                        }
-                    } else {
-                        respond(predefinedResponses.ERROR_NOT_RUNNING);
-                    }
-                    break;
-
-                case 'removeFailedNode':
-                case 'requestNodeNeighborUpdate':
-                case 'assignReturnRoute':
-                case 'deleteAllReturnRoutes':
-                case 'replaceFailedNode':
-                case 'requestNetworkUpdate':
-                case 'replicationSend':
-                case 'refreshNodeInfo':
-                case 'healNetworkNode':
-                    if (zwave && obj.message) {
-                        adapter.log.info('Execute ' + obj.command + ' for ' + obj.message.nodeID);
-                        if (zwave[obj.command]) {
-                            zwave[obj.command](obj.message.nodeID);
-                            respond(predefinedResponses.OK);
-                        } else {
-                            adapter.log.error('Unknown command!');
-                            respond(predefinedResponses.ERROR_UNKNOWN_COMMAND);
-                        }
-                    } else {
-                        respond(predefinedResponses.ERROR_NOT_RUNNING);
-                    }
-                    break;
-
-                case 'setNodeName':
-                case 'setNodeLocation':
-                    if (zwave && obj.message) {
-                        adapter.log.info('Execute ' + obj.command + ' for ' + obj.message.nodeID + ' with "' + obj.message.param + '"');
-                        if (zwave[obj.command]) {
-                            zwave[obj.command](obj.message.nodeID, obj.message.param);
-                            respond(predefinedResponses.OK);
-                        } else {
-                            adapter.log.error('Unknown command!');
-                            respond(predefinedResponses.ERROR_UNKNOWN_COMMAND);
-                        }
-                    } else {
-                        respond(predefinedResponses.ERROR_NOT_RUNNING);
-                    }
-                    break;
-
-                // createButton(nodeid, buttonid)
-                // deleteButton(nodeid, buttonid)
-                case 'createButton':
-                case 'deleteButton':
-                    if (zwave && obj.message) {
-                        adapter.log.info('Execute ' + obj.command + ' for ' + obj.message.nodeID + ' with "' + obj.message.param + '"');
-                        if (zwave[obj.command]) {
-                            zwave[obj.command](obj.message.nodeID, obj.message.param);
-                            respond(predefinedResponses.OK);
-                        } else {
-                            adapter.log.error('Unknown command!');
-                            respond(predefinedResponses.ERROR_UNKNOWN_COMMAND);
-                        }
-                    } else {
-                        respond(predefinedResponses.ERROR_NOT_RUNNING);
-                    }
-                    break;
-
-
-                case 'addNodeSecure':
-                    addNodeSecure = true;
-                case 'addNode':
-                    if (zwave) {
-                        adapter.log.info('Execute addNode ' + (addNodeSecure ? 'secure' : ''));
-                        adapter.setState('inclusionOn', true, true);
-                        inclusion = setTimeout(function () {
-                            disableInclusion();
-                        }, 60000);
-                        zwave.addNode(addNodeSecure);
-                        respond(predefinedResponses.ACK);
-                    } else {
-                        respond(predefinedResponses.ERROR_NOT_RUNNING);
-                    }
-                    break;
-
-                case 'removeNode':
-                    if (zwave) {
-                        adapter.log.info('Execute ' + obj.command);
-                        adapter.setState('exclusionOn', true, true);
-                        exclusion = setTimeout(function () {
-                            disableExclusion();
-                        }, 60000);
-                        zwave.removeNode();
-                        respond(predefinedResponses.ACK);
-                    } else {
-                        respond(predefinedResponses.ERROR_NOT_RUNNING);
-                    }
-                    break;
-
-                // Association groups management functions:
-                case 'getNumGroups': // zwave.getNumGroups(nodeid) => number;
-                    if (zwave && obj.message) {
-                        if (!requireParams(["nodeID"])) break;
-                        adapter.log.info('Requesting number of association groups from node' + obj.message.nodeID);
-                        if (zwave[obj.command]) {
-                            let result = zwave[obj.command](obj.message.nodeID);
-                            respond({ error: null, result: result });
-                        } else {
-                            adapter.log.error('Unknown command!');
-                            respond(predefinedResponses.ERROR_UNKNOWN_COMMAND);
-                        }
-                    } else {
-                        respond(predefinedResponses.ERROR_NOT_RUNNING);
-                    }
-                    break;
-
-                case 'getGroupLabel': // zwave.getGroupLabel(nodeid, group) => string;
-                    if (zwave && obj.message) {
-                        if (!requireParams(["nodeID", "group"])) break;
-                        adapter.log.info('Requesting label of association group ' + obj.message.group + ' from node ' + obj.message.nodeID);
-                        if (zwave[obj.command]) {
-                            let result = zwave[obj.command](obj.message.nodeID, obj.message.group);
-                            respond({ error: null, result: result });
-                        } else {
-                            adapter.log.error('Unknown command!');
-                            respond(predefinedResponses.ERROR_UNKNOWN_COMMAND);
-                        }
-                    } else {
-                        respond(predefinedResponses.ERROR_NOT_RUNNING);
-                    }
-                    break;
-
-                case 'getAllAssociationGroups': // shortcut to get all groups => { groupIndex: {label: <string>, maxAssociations: <number>, isLifeline: <boolean>}, ...}
-                    if (zwave && obj.message) {
-                        if (!requireParams(["nodeID"])) break;
-                        adapter.log.info('Requesting all association groups from node ' + obj.message.nodeID);
-                        /** @type {Record<string, any> | string} */
-                        let result = {};
-                        // get the number of groups
-                        var numGroups = zwave.getNumGroups(obj.message.nodeID);
-                        if (numGroups > 0) {
-                            // and for each group request the label and association count
-                            for (var group = 1; group <= numGroups; group++) {
-                                result[group] = {
-                                    label: zwave.getGroupLabel(obj.message.nodeID, group),
-                                    maxAssociations: zwave.getMaxAssociations(obj.message.nodeID, group),
-                                    isLifeline: false
-                                };
-                            }
-                            // now find out which group is the lifeline
-                            var foundLifeline = false;
-                            for (var strategy = 1; strategy <= 3; strategy++) {
-                                switch (strategy) {
-                                    case 1: // strategy 1: find the group with maxAssoc 1 and label "Lifeline"
-                                        for (var group = 1; group <= numGroups; group++) {
-                                            if (result[group].label === "Lifeline" && result[group].maxAssociations === 1) {
-                                                result[group].isLifeline = true;
-                                                foundLifeline = true;
-                                                break;
-                                            }
-                                        }
-                                        break;
-
-                                    case 2: // strategy 2: find a group with maxAssoc 1
-                                        for (var group = 1; group <= numGroups; group++) {
-                                            if (result[group].maxAssociations === 1) {
-                                                result[group].isLifeline = true;
-                                                foundLifeline = true;
-                                                break;
-                                            }
-                                        }
-                                        break;
-
-                                    case 3: // strategy 3: use group #1 as lifeline
-                                        result[1].isLifeline = true;
-                                        foundLifeline = true;
-                                        break;
-                                }
-                                if (foundLifeline) break;
-                            }
-                        } else {
-                            result = "no groups";
-                        }
-                        respond({ error: null, result: result });
-                    } else {
-                        respond(predefinedResponses.ERROR_NOT_RUNNING);
-                    }
-                    break;
-
-                case 'getAssociations': // zwave.getAssociations(nodeid, group);
-                    if (zwave && obj.message) {
-                        if (!requireParams(["nodeID", "group"])) break;
-                        adapter.log.info('Requesting associations in group ' + obj.message.group + ' from node ' + obj.message.nodeID);
-                        if (zwave[obj.command]) {
-                            let result = zwave[obj.command](obj.message.nodeID, obj.message.group);
-                            respond({ error: null, result: result });
-                        } else {
-                            adapter.log.error('Unknown command!');
-                            respond(predefinedResponses.ERROR_UNKNOWN_COMMAND);
-                        }
-                    } else {
-                        respond(predefinedResponses.ERROR_NOT_RUNNING);
-                    }
-                    break;
-
-                case 'getMaxAssociations': // zwave.getMaxAssociations(nodeid, group);
-                    if (zwave && obj.message) {
-                        if (!requireParams(["nodeID", "group"])) break;
-                        adapter.log.info('Requesting max number of associations in group ' + obj.message.group + ' from node ' + obj.message.nodeID);
-                        if (zwave[obj.command]) {
-                            let result = zwave[obj.command](obj.message.nodeID, obj.message.group);
-                            respond({ error: null, result: result });
-                        } else {
-                            adapter.log.error('Unknown command!');
-                            respond(predefinedResponses.ERROR_UNKNOWN_COMMAND);
-                        }
-                    } else {
-                        respond(predefinedResponses.ERROR_NOT_RUNNING);
-                    }
-                    break;
-
-                case 'addAssociation': // zwave.addAssociation(nodeid, group, target_nodeid);
-                    if (zwave && obj.message) {
-                        if (!requireParams(["nodeID", "group", "target_nodeid"])) break;
-                        adapter.log.info('Adding association with node ' + obj.message.target_nodeid + ' to group ' + obj.message.group + ' of node ' + obj.message.nodeID);
-                        if (zwave[obj.command]) {
-                            zwave[obj.command](obj.message.nodeID, obj.message.group, obj.message.target_nodeid);
-                            respond(predefinedResponses.OK);
-                        } else {
-                            adapter.log.error('Unknown command!');
-                            respond(predefinedResponses.ERROR_UNKNOWN_COMMAND);
-                        }
-                    } else {
-                        respond(predefinedResponses.ERROR_NOT_RUNNING);
-                    }
-                    break;
-
-                case 'removeAssociation': // zwave.removeAssociation(nodeid, group, target_nodeid);
-                    if (zwave && obj.message) {
-                        if (!requireParams(["nodeID", "group", "target_nodeid"])) break;
-                        adapter.log.info('Removing association with node ' + obj.message.target_nodeid + ' from group ' + obj.message.group + ' of node ' + obj.message.nodeID);
-                        if (zwave[obj.command]) {
-                            zwave[obj.command](obj.message.nodeID, obj.message.group, obj.message.target_nodeid);
-                            respond(predefinedResponses.OK);
-                        } else {
-                            adapter.log.error('Unknown command!');
-                            respond(predefinedResponses.ERROR_UNKNOWN_COMMAND);
-                        }
-                    } else {
-                        respond(predefinedResponses.ERROR_NOT_RUNNING);
-                    }
-                    break;
-
-                default:
-                    adapter.log.error('Unknown command: ' + obj.command);
-                    break;
-            }
-        }
-    },
-
-    objectChange: function (id, obj) {
-        if (!obj) {
-            if (objects[id]) delete objects[id];
-        } else {
-            objects[id] = obj;
-        }
-    },
-
-    stateChange: function (id, state) {
-        if (!state || state.ack || state.val === undefined) return;
-
-        adapter.log.debug('stateChange ' + id + ' set ' + JSON.stringify(state));
-
-        var obj = objects[id];
-        if (obj && obj.native) {
-            var nodeID = obj.native.node_id;
-            var valueID = { // this allows to shorten the zwave API calls
-                node_id: obj.native.node_id,
-                class_id: obj.native.class_id,
-                instance: obj.native.instance,
-                index: obj.native.index
+            // some predefined responses so we only have to define them once
+            var predefinedResponses = {
+                ACK: { error: null },
+                OK: { error: null, result: 'ok' },
+                ERROR_UNKNOWN_COMMAND: { error: 'Unknown command!' },
+                ERROR_NOT_RUNNING: { error: 'zwave driver is not running!' },
+                MISSING_PARAMETER: function (paramName) {
+                    return {error: 'missing parameter "' + paramName + '"!'};
+                },
+                COMMAND_RUNNING: {error: 'command running'}
             };
-            if (nodes[nodeID]) {
-                var value = state.val;
-                if (state.val === true || state.val === 'true') {
-                    value = 1;
-                    if (obj.native.max !== undefined && obj.native.max !== obj.native.min) value = obj.native.max;
-                } else if (state.val === false || state.val === 'false') {
-                    value = 0;
-                    if (obj.native.min !== undefined && obj.native.max !== obj.native.min) value = obj.native.min;
-                }
-                if (obj.native.type === 'bool' || obj.native.type === 'button') value = !!value;
-
-                if (obj.common.role === 'meta.config') {
-                    // set a configuration parameter
-                    adapter.log.debug('setConfigParam for: nodeID=' + obj.native.node_id + ': index=' + obj.native.index + ': value=' + value);
-                    if (zwave) {
-                        zwave.setConfigParam(
-                            obj.native.node_id,
-                            obj.native.index,
-                            value,
-                            value.length
-                        );
+            // make required parameters easier
+            function requireParams(params) {
+                if (!(params && params.length)) return true;
+                for (var i = 0; i < params.length; i++) {
+                    if (!(obj.message && obj.message.hasOwnProperty(params[i]))) {
+                        respond(predefinedResponses.MISSING_PARAMETER(params[i]));
+                        return false;
                     }
-                } else if (obj.native.type === 'button') {
-                    // openzwave-shared only presses buttons and doesn't release them on setValue
-                    // so we need to press/release them ourselves
-                    adapter.log.debug((value ? 'pushing' : 'releasing') + ' button for: nodeID=' + obj.native.node_id + ': comClass=' + obj.native.class_id + ': index=' + obj.native.index + ': instance=' + obj.native.instance);
-                    if (zwave) {
-                        if (value) {
-                            zwave.pressButton(valueID);
-                        } else {
-                            zwave.releaseButton(valueID);
+                }
+                return true;
+            }
+
+            // handle the message
+            if (obj) {
+                if (obj.command !== 'stopCommand' && obj.command !== 'listUart' && (inclusion || exclusion)) {
+                    respond(predefinedResponses.COMMAND_RUNNING);
+                    return;
+                }
+                addNodeSecure = false;
+                switch (obj.command) {
+                    case 'stopCommand':
+                        disableInclusion();
+                        disableExclusion();
+                        respond(predefinedResponses.ACK);
+                        break;
+
+                    case 'listUart':
+                        if (obj.callback) {
+                            var ports = listSerial();
+                            adapter.log.info('List of ports: ' + JSON.stringify(ports));
+                            respond(ports);
                         }
+                        break;
+
+                    case 'softReset':
+                    case 'hardReset': // destructive! will wipe out all known configuration
+                    case 'healNetwork':
+                    case 'getNeighbors':
+                        if (zwave) {
+                            adapter.log.info('Execute ' + obj.command);
+                            if (zwave[obj.command]) {
+                                zwave[obj.command]();
+                                respond(predefinedResponses.OK);
+                                
+                                if (obj.command === "hardReset") {
+                                    // hardReset deletes all node info on the controller
+                                    // make sure the nodes get deleted in ioBroker aswell
+                                    deleteAllNonControllerNodes();
+                                }
+                            } else {
+                                adapter.log.error('Unknown command!');
+                                respond(predefinedResponses.ERROR_UNKNOWN_COMMAND);
+                            }
+                        } else {
+                            respond(predefinedResponses.ERROR_NOT_RUNNING);
+                        }
+                        break;
+
+                    case 'removeFailedNode':
+                    case 'requestNodeNeighborUpdate':
+                    case 'assignReturnRoute':
+                    case 'deleteAllReturnRoutes':
+                    case 'replaceFailedNode':
+                    case 'requestNetworkUpdate':
+                    case 'replicationSend':
+                    case 'refreshNodeInfo':
+                    case 'healNetworkNode':
+                        if (zwave && obj.message) {
+                            adapter.log.info('Execute ' + obj.command + ' for ' + obj.message.nodeID);
+                            if (zwave[obj.command]) {
+                                zwave[obj.command](obj.message.nodeID);
+                                respond(predefinedResponses.OK);
+                            } else {
+                                adapter.log.error('Unknown command!');
+                                respond(predefinedResponses.ERROR_UNKNOWN_COMMAND);
+                            }
+                        } else {
+                            respond(predefinedResponses.ERROR_NOT_RUNNING);
+                        }
+                        break;
+
+                    case 'setNodeName':
+                    case 'setNodeLocation':
+                        if (zwave && obj.message) {
+                            adapter.log.info('Execute ' + obj.command + ' for ' + obj.message.nodeID + ' with "' + obj.message.param + '"');
+                            if (zwave[obj.command]) {
+                                zwave[obj.command](obj.message.nodeID, obj.message.param);
+                                respond(predefinedResponses.OK);
+                            } else {
+                                adapter.log.error('Unknown command!');
+                                respond(predefinedResponses.ERROR_UNKNOWN_COMMAND);
+                            }
+                        } else {
+                            respond(predefinedResponses.ERROR_NOT_RUNNING);
+                        }
+                        break;
+
+                    // createButton(nodeid, buttonid)
+                    // deleteButton(nodeid, buttonid)
+                    case 'createButton':
+                    case 'deleteButton':
+                        if (zwave && obj.message) {
+                            adapter.log.info('Execute ' + obj.command + ' for ' + obj.message.nodeID + ' with "' + obj.message.param + '"');
+                            if (zwave[obj.command]) {
+                                zwave[obj.command](obj.message.nodeID, obj.message.param);
+                                respond(predefinedResponses.OK);
+                            } else {
+                                adapter.log.error('Unknown command!');
+                                respond(predefinedResponses.ERROR_UNKNOWN_COMMAND);
+                            }
+                        } else {
+                            respond(predefinedResponses.ERROR_NOT_RUNNING);
+                        }
+                        break;
+
+
+                    case 'addNodeSecure':
+                        addNodeSecure = true;
+                    case 'addNode':
+                        if (zwave) {
+                            adapter.log.info('Execute addNode ' + (addNodeSecure ? 'secure' : ''));
+                            adapter.setState('inclusionOn', true, true);
+                            inclusion = setTimeout(function () {
+                                disableInclusion();
+                            }, 60000);
+                            zwave.addNode(addNodeSecure);
+                            respond(predefinedResponses.ACK);
+                        } else {
+                            respond(predefinedResponses.ERROR_NOT_RUNNING);
+                        }
+                        break;
+
+                    case 'removeNode':
+                        if (zwave) {
+                            adapter.log.info('Execute ' + obj.command);
+                            adapter.setState('exclusionOn', true, true);
+                            exclusion = setTimeout(function () {
+                                disableExclusion();
+                            }, 60000);
+                            zwave.removeNode();
+                            respond(predefinedResponses.ACK);
+                        } else {
+                            respond(predefinedResponses.ERROR_NOT_RUNNING);
+                        }
+                        break;
+
+                    // Association groups management functions:
+                    case 'getNumGroups': // zwave.getNumGroups(nodeid) => number;
+                        if (zwave && obj.message) {
+                            if (!requireParams(["nodeID"])) break;
+                            adapter.log.info('Requesting number of association groups from node' + obj.message.nodeID);
+                            if (zwave[obj.command]) {
+                                let result = zwave[obj.command](obj.message.nodeID);
+                                respond({ error: null, result: result });
+                            } else {
+                                adapter.log.error('Unknown command!');
+                                respond(predefinedResponses.ERROR_UNKNOWN_COMMAND);
+                            }
+                        } else {
+                            respond(predefinedResponses.ERROR_NOT_RUNNING);
+                        }
+                        break;
+
+                    case 'getGroupLabel': // zwave.getGroupLabel(nodeid, group) => string;
+                        if (zwave && obj.message) {
+                            if (!requireParams(["nodeID", "group"])) break;
+                            adapter.log.info('Requesting label of association group ' + obj.message.group + ' from node ' + obj.message.nodeID);
+                            if (zwave[obj.command]) {
+                                let result = zwave[obj.command](obj.message.nodeID, obj.message.group);
+                                respond({ error: null, result: result });
+                            } else {
+                                adapter.log.error('Unknown command!');
+                                respond(predefinedResponses.ERROR_UNKNOWN_COMMAND);
+                            }
+                        } else {
+                            respond(predefinedResponses.ERROR_NOT_RUNNING);
+                        }
+                        break;
+
+                    case 'getAllAssociationGroups': // shortcut to get all groups => { groupIndex: {label: <string>, maxAssociations: <number>, isLifeline: <boolean>}, ...}
+                        if (zwave && obj.message) {
+                            if (!requireParams(["nodeID"])) break;
+                            adapter.log.info('Requesting all association groups from node ' + obj.message.nodeID);
+                            /** @type {Record<string, any> | string} */
+                            let result = {};
+                            // get the number of groups
+                            var numGroups = zwave.getNumGroups(obj.message.nodeID);
+                            if (numGroups > 0) {
+                                // and for each group request the label and association count
+                                for (var group = 1; group <= numGroups; group++) {
+                                    result[group] = {
+                                        label: zwave.getGroupLabel(obj.message.nodeID, group),
+                                        maxAssociations: zwave.getMaxAssociations(obj.message.nodeID, group),
+                                        isLifeline: false
+                                    };
+                                }
+                                // now find out which group is the lifeline
+                                var foundLifeline = false;
+                                for (var strategy = 1; strategy <= 3; strategy++) {
+                                    switch (strategy) {
+                                        case 1: // strategy 1: find the group with maxAssoc 1 and label "Lifeline"
+                                            for (var group = 1; group <= numGroups; group++) {
+                                                if (result[group].label === "Lifeline" && result[group].maxAssociations === 1) {
+                                                    result[group].isLifeline = true;
+                                                    foundLifeline = true;
+                                                    break;
+                                                }
+                                            }
+                                            break;
+
+                                        case 2: // strategy 2: find a group with maxAssoc 1
+                                            for (var group = 1; group <= numGroups; group++) {
+                                                if (result[group].maxAssociations === 1) {
+                                                    result[group].isLifeline = true;
+                                                    foundLifeline = true;
+                                                    break;
+                                                }
+                                            }
+                                            break;
+
+                                        case 3: // strategy 3: use group #1 as lifeline
+                                            result[1].isLifeline = true;
+                                            foundLifeline = true;
+                                            break;
+                                    }
+                                    if (foundLifeline) break;
+                                }
+                            } else {
+                                result = "no groups";
+                            }
+                            respond({ error: null, result: result });
+                        } else {
+                            respond(predefinedResponses.ERROR_NOT_RUNNING);
+                        }
+                        break;
+
+                    case 'getAssociations': // zwave.getAssociations(nodeid, group);
+                        if (zwave && obj.message) {
+                            if (!requireParams(["nodeID", "group"])) break;
+                            adapter.log.info('Requesting associations in group ' + obj.message.group + ' from node ' + obj.message.nodeID);
+                            if (zwave[obj.command]) {
+                                let result = zwave[obj.command](obj.message.nodeID, obj.message.group);
+                                respond({ error: null, result: result });
+                            } else {
+                                adapter.log.error('Unknown command!');
+                                respond(predefinedResponses.ERROR_UNKNOWN_COMMAND);
+                            }
+                        } else {
+                            respond(predefinedResponses.ERROR_NOT_RUNNING);
+                        }
+                        break;
+
+                    case 'getMaxAssociations': // zwave.getMaxAssociations(nodeid, group);
+                        if (zwave && obj.message) {
+                            if (!requireParams(["nodeID", "group"])) break;
+                            adapter.log.info('Requesting max number of associations in group ' + obj.message.group + ' from node ' + obj.message.nodeID);
+                            if (zwave[obj.command]) {
+                                let result = zwave[obj.command](obj.message.nodeID, obj.message.group);
+                                respond({ error: null, result: result });
+                            } else {
+                                adapter.log.error('Unknown command!');
+                                respond(predefinedResponses.ERROR_UNKNOWN_COMMAND);
+                            }
+                        } else {
+                            respond(predefinedResponses.ERROR_NOT_RUNNING);
+                        }
+                        break;
+
+                    case 'addAssociation': // zwave.addAssociation(nodeid, group, target_nodeid);
+                        if (zwave && obj.message) {
+                            if (!requireParams(["nodeID", "group", "target_nodeid"])) break;
+                            adapter.log.info('Adding association with node ' + obj.message.target_nodeid + ' to group ' + obj.message.group + ' of node ' + obj.message.nodeID);
+                            if (zwave[obj.command]) {
+                                zwave[obj.command](obj.message.nodeID, obj.message.group, obj.message.target_nodeid);
+                                respond(predefinedResponses.OK);
+                            } else {
+                                adapter.log.error('Unknown command!');
+                                respond(predefinedResponses.ERROR_UNKNOWN_COMMAND);
+                            }
+                        } else {
+                            respond(predefinedResponses.ERROR_NOT_RUNNING);
+                        }
+                        break;
+
+                    case 'removeAssociation': // zwave.removeAssociation(nodeid, group, target_nodeid);
+                        if (zwave && obj.message) {
+                            if (!requireParams(["nodeID", "group", "target_nodeid"])) break;
+                            adapter.log.info('Removing association with node ' + obj.message.target_nodeid + ' from group ' + obj.message.group + ' of node ' + obj.message.nodeID);
+                            if (zwave[obj.command]) {
+                                zwave[obj.command](obj.message.nodeID, obj.message.group, obj.message.target_nodeid);
+                                respond(predefinedResponses.OK);
+                            } else {
+                                adapter.log.error('Unknown command!');
+                                respond(predefinedResponses.ERROR_UNKNOWN_COMMAND);
+                            }
+                        } else {
+                            respond(predefinedResponses.ERROR_NOT_RUNNING);
+                        }
+                        break;
+
+                    default:
+                        adapter.log.error('Unknown command: ' + obj.command);
+                        break;
+                }
+            }
+        },
+
+        objectChange: function (id, obj) {
+            if (!obj) {
+                if (objects[id]) delete objects[id];
+            } else {
+                objects[id] = obj;
+            }
+        },
+
+        stateChange: function (id, state) {
+            if (!state || state.ack || state.val === undefined) return;
+
+            adapter.log.debug('stateChange ' + id + ' set ' + JSON.stringify(state));
+
+            var obj = objects[id];
+            if (obj && obj.native) {
+                var nodeID = obj.native.node_id;
+                var valueID = { // this allows to shorten the zwave API calls
+                    node_id: obj.native.node_id,
+                    class_id: obj.native.class_id,
+                    instance: obj.native.instance,
+                    index: obj.native.index
+                };
+                if (nodes[nodeID]) {
+                    var value = state.val;
+                    if (state.val === true || state.val === 'true') {
+                        value = 1;
+                        if (obj.native.max !== undefined && obj.native.max !== obj.native.min) value = obj.native.max;
+                    } else if (state.val === false || state.val === 'false') {
+                        value = 0;
+                        if (obj.native.min !== undefined && obj.native.max !== obj.native.min) value = obj.native.min;
+                    }
+                    if (obj.native.type === 'bool' || obj.native.type === 'button') value = !!value;
+
+                    if (obj.common.role === 'meta.config') {
+                        // set a configuration parameter
+                        adapter.log.debug('setConfigParam for: nodeID=' + obj.native.node_id + ': index=' + obj.native.index + ': value=' + value);
+                        if (zwave) {
+                            zwave.setConfigParam(
+                                obj.native.node_id,
+                                obj.native.index,
+                                value,
+                                value.length
+                            );
+                        }
+                    } else if (obj.native.type === 'button') {
+                        // openzwave-shared only presses buttons and doesn't release them on setValue
+                        // so we need to press/release them ourselves
+                        adapter.log.debug((value ? 'pushing' : 'releasing') + ' button for: nodeID=' + obj.native.node_id + ': comClass=' + obj.native.class_id + ': index=' + obj.native.index + ': instance=' + obj.native.instance);
+                        if (zwave) {
+                            if (value) {
+                                zwave.pressButton(valueID);
+                            } else {
+                                zwave.releaseButton(valueID);
+                            }
+                        }
+                    } else {
+                        // set a value
+                        adapter.log.debug('setState for: nodeID=' + obj.native.node_id + ': comClass=' + obj.native.class_id + ': index=' + obj.native.index + ': instance=' + obj.native.instance + ': value=' + value);
+                        if (zwave) zwave.setValue(valueID, value);
                     }
                 } else {
-                    // set a value
-                    adapter.log.debug('setState for: nodeID=' + obj.native.node_id + ': comClass=' + obj.native.class_id + ': index=' + obj.native.index + ': instance=' + obj.native.instance + ': value=' + value);
-                    if (zwave) zwave.setValue(valueID, value);
+                    if (!nodes[nodeID]) {
+                        adapter.log.warn('Object "' + id + '" was not detected');
+                    } else {
+                        adapter.log.warn('Object "' + id + '" is not ready');
+                    }
                 }
             } else {
-                if (!nodes[nodeID]) {
-                    adapter.log.warn('Object "' + id + '" was not detected');
-                } else {
-                    adapter.log.warn('Object "' + id + '" is not ready');
-                }
+                adapter.log.warn('Object "' + id + '" not found for stateChange');
             }
-        } else {
-            adapter.log.warn('Object "' + id + '" not found for stateChange');
+        },
+
+        unload: function (callback) {
+            if (zwave) zwave.disconnect(adapter.config.usb);
+
+            resetInstanceStatusInfo();
+
+            callback();
         }
-    },
-
-    unload: function (callback) {
-        if (zwave) zwave.disconnect(adapter.config.usb);
-
-        resetInstanceStatusInfo();
-
-        callback();
-    }
-});
+    }));
+}
 
 function filterSerialPorts(path) {
     // get only serial port names
@@ -1064,7 +1076,7 @@ function main() {
         adapter.setState('info.driverReady', false, true);
         adapter.log.error('failed to start driver');
         zwave.disconnect(adapter.config.usb);
-        process.exit();
+        typeof adapter.terminate === 'function' ? adapter.terminate('failed to start driver') : process.exit();
     });
 
     zwave.on('scan complete', function () {
@@ -1305,4 +1317,12 @@ function extendInstanceObjects() {
     for (var i = 0; i < objs.instanceObjects.length; i++) {
         adapter.setObjectNotExists(objs.instanceObjects[i]._id, objs.instanceObjects[i]);
     }
+}
+
+if (module.parent) {
+    // Export startAdapter in compact mode
+    module.exports = startAdapter;
+} else {
+    // otherwise start the instance directly
+    startAdapter();
 }
