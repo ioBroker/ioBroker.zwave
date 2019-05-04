@@ -13,8 +13,12 @@
             "es": "Soporte ZWave basado en paquete openzwave",
             "pl": "ZWave wsparcie oparte na pakiecie openzwave"
         },
-        "version": "1.3.2",
+        "version": "1.4.0",
         "news": {
+            "1.4.0": {
+                "en": "* Fixed breaks with OpenZWave 1.6\n* Switched to new testing\n* Support for compact mode",
+                "de": "* Build-breaks mit OpenZWave 1.6 gefixt\n* Zu neuer Testing-Routine gewechselt\n* Unterstützung für compact mode"
+            },
             "1.3.2": {
                 "en": "Replace all chars in state IDs that are forbidden in JS-Controller 1.5+",
                 "de": "Alle Zeichen werden ersetzt, die in State-IDs in JS-Controller 1.5+ verboten sind"
@@ -85,7 +89,7 @@
             },
             "0.4.3": {
                 "en": "add state info.scanCompleted",
-                "de": "Zustnad info.scanCompleted hinzugefügt",
+                "de": "Zustand info.scanCompleted hinzugefügt",
                 "ru": "Добавлено состояние info.scanCompleted"
             },
             "0.4.2": {
