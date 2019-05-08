@@ -23,6 +23,6 @@ test_script:
   # Package tests fail for now because materialize is not supported
   # - npm run test:package
   - npm run test:unit
-  - export DEBUG=testing:*
+  - set DEBUG=testing:*
   - npm run test:integration
 build: 'off'
