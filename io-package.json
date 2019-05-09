@@ -13,8 +13,12 @@
             "es": "Soporte ZWave basado en paquete openzwave",
             "pl": "ZWave wsparcie oparte na pakiecie openzwave"
         },
-        "version": "1.4.0",
+        "version": "1.4.1",
         "news": {
+            "1.4.1": {
+                "en": "Pinned version of OpenZWave to 1.4 because 1.6 is not compatible yet",
+                "de": "OpenZWave-Version auf 1.4 festgelegt, weil 1.6 noch nicht kompatibel ist"
+            },
             "1.4.0": {
                 "en": "* Fixed breaks with OpenZWave 1.6\n* Switched to new testing\n* Support for compact mode",
                 "de": "* Build-breaks mit OpenZWave 1.6 gefixt\n* Zu neuer Testing-Routine gewechselt\n* Unterstützung für compact mode"
