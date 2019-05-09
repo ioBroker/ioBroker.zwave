@@ -4,8 +4,9 @@ environment:
     - nodejs_version: '6'
     - nodejs_version: '8'
     - nodejs_version: '10'
-    - nodejs_version: '12'
-    - nodejs_version: ''
+    # Node 12 is blocked by https://github.com/OpenZWave/node-openzwave-shared/issues/280
+    # - nodejs_version: '12'
+    # - nodejs_version: ''
 platform:
   - x86
   - x64
@@ -23,6 +24,6 @@ test_script:
   # Package tests fail for now because materialize is not supported
   # - npm run test:package
   - npm run test:unit
-  - export DEBUG=testing:*
+  - set DEBUG=testing:*
   - npm run test:integration
 build: 'off'
