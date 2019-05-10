@@ -4,15 +4,13 @@ environment:
     - nodejs_version: '6'
     - nodejs_version: '8'
     - nodejs_version: '10'
-    # Node 12 is blocked by https://github.com/OpenZWave/node-openzwave-shared/issues/280
-    # - nodejs_version: '12'
-    # - nodejs_version: ''
+    - nodejs_version: '12'
 platform:
   - x86
   - x64
 clone_folder: 'c:\projects\%APPVEYOR_PROJECT_NAME%'
 install:
-  - ps: 'Install-Product node $env:nodejs_version $env:platform'
+  - ps: 'Update-NodeJsInstallation (Get-NodeJsLatestBuild $env:nodejs_version) $env:platform'
   - ps: '$NpmVersion = (npm -v).Substring(0,1)'
   - ps: 'if($NpmVersion -eq 5) { npm install -g npm@5 }'
   - ps: npm --version
@@ -21,9 +19,7 @@ install:
   - node --version
   - npm --version
 test_script:
-  # Package tests fail for now because materialize is not supported
-  # - npm run test:package
-  - npm run test:unit
-  - set DEBUG=testing:*
-  - npm run test:integration
+  - 'npm run test:unit'
+  - 'set DEBUG=testing:*'
+  - 'npm run test:integration'
 build: 'off'
