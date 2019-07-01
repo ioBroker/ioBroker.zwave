@@ -13,8 +13,12 @@
             "es": "Soporte ZWave basado en paquete openzwave",
             "pl": "ZWave wsparcie oparte na pakiecie openzwave"
         },
-        "version": "1.4.1",
+        "version": "1.4.2",
         "news": {
+            "1.4.2": {
+                "en": "Don't use FORBIDDEN_CHARS regex from JS-Controller because spaces should be escaped aswell.",
+                "de": "Referenz auf FORBIDDEN_CHARS regex aus JS-Controller entfernt um Leerzeichen ebenfalls zu escapen"
+            },
             "1.4.1": {
                 "en": "Pinned version of OpenZWave to 1.4 because 1.6 is not compatible yet",
                 "de": "OpenZWave-Version auf 1.4 festgelegt, weil 1.6 noch nicht kompatibel ist"

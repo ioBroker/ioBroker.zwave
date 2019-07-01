@@ -669,7 +669,9 @@ function fixZwaveButtons(callback) {
  * @returns {string}
  */
 function replaceForbiddenCharsInID(id, includeDots) {
-    const regex = adapter.FORBIDDEN_CHARS || new RegExp(`[\\*\\?\\[\\]"'\\s}]+`, "g");
+    // Although JS-Controller offers a FORBIDDEN_CHARS regex on the adapter class,
+    // we use our own here, because we need to escape spaces aswell
+    const regex = /[\*\?\[\]"'\s}]+/g;
     id = id.replace(regex, '_');
     if (includeDots) id = id.replace(/\./g, '');
     return id;
