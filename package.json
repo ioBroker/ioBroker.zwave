@@ -40,7 +40,7 @@
     "url": "git+https://github.com/ioBroker/ioBroker.zwave.git"
   },
   "dependencies": {
-    "openzwave-shared": "AlCalzone/node-openzwave-shared#ozw-1.4",
+    "openzwave-shared": "latest",
     "@iobroker/adapter-core": "^1.0.3"
   },
   "devDependencies": {
