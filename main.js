@@ -919,7 +919,7 @@ function extendChannel(nodeID, comClass, valueId) {
             if (role && !stateObj.common.role) stateObj.common.role = role;
 
             stateObj.native = valueId;
-            adapter.log.info('State updated: ' + stateID + ' = ' + value + ', index = ' + valueId.index + ', comClass = ' + comClass + ', instance = ' + valueId.instance);
+            adapter.log.debug('State updated: ' + stateID + ' = ' + value + ', index = ' + valueId.index + ', comClass = ' + comClass + ', instance = ' + valueId.instance);
             adapter.extendForeignObject(stateID, stateObj);
         }
         if (value !== undefined) adapter.setForeignState(stateID, value, true);
@@ -1124,8 +1124,8 @@ function main() {
     });
 
     zwave.on('node removed', function (nodeID) {
-        adapter.log.debug('node removed (not implemented): ' + nodeID);
-
+        adapter.log.info('node removed: ' + nodeID);
+        //deleteDevice(nodeID);
     });
 
 
@@ -1286,10 +1286,10 @@ function main() {
     zwave.on('value removed', function (nodeID, comClass, instance, index) {
         adapter.log.info('value removed: ' + nodeID + ' comClass: ' + JSON.stringify(comClass) + ' instance ' + instance + ' value: '  + JSON.stringify(index));
 
-        deleteDevice(nodeID, function() { //why here and not on "node removed" ?
+        //deleteDevice(nodeID, function() { //why here and not on "node removed" ?
             //disable exclusion automatically after 5 seconds
-            setTimeout(function(){disableExclusion();}, 5000);
-        });
+        //    setTimeout(function(){disableExclusion();}, 5000);
+        //});
     });
 
     zwave.on('value refreshed', function (nodeID, comClass, valueId) {
