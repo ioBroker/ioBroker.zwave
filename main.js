@@ -1300,7 +1300,7 @@ function main() {
     // ------------- controller events ---------------------------
     zwave.on('controller command', function (nodeId, state, error, helpMsg) {
         extendInclusion();
-        adapter.log.info('controller command feedback: state: "' + ctrlState[state] + '", error: "' + ctrlError[error] + '", helpmsg: "' + helpMsg + '"');
+        adapter.log.info('controller command feedback for node ' + nodeId + ': state: "' + ctrlState[state] + '", error: "' + ctrlError[error] + '", helpmsg: "' + helpMsg + '"');
         adapter.setState('info.controllerMessage', JSON.stringify({
             state: state,
             error: error,
