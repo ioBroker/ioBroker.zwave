@@ -1125,7 +1125,7 @@ function main() {
 
     zwave.on('node removed', function (nodeID) {
         adapter.log.info('node removed: ' + nodeID);
-        //deleteDevice(nodeID);
+        deleteDevice(nodeID);
     });
 
 
@@ -1229,11 +1229,11 @@ function main() {
     });
 
     zwave.on('polling enabled', function (nodeID) {
-        adapter.log.debug('node' + nodeID + ': polling ENABLED, currently not implemented');
+        adapter.log.info('node' + nodeID + ': polling ENABLED, currently not implemented');
     });
 
     zwave.on('polling disabled', function (nodeID) {
-        adapter.log.debug('node' + nodeID + ': polling DISABLED, currently not implemented');
+        adapter.log.info('node' + nodeID + ': polling DISABLED, currently not implemented');
     });
 
     // not found in documentation
@@ -1284,16 +1284,15 @@ function main() {
     });
 
     zwave.on('value removed', function (nodeID, comClass, instance, index) {
-        adapter.log.info('value removed: ' + nodeID + ' comClass: ' + JSON.stringify(comClass) + ' instance ' + instance + ' value: '  + JSON.stringify(index));
+        adapter.log.debug('value removed: ' + nodeID + ' comClass: ' + JSON.stringify(comClass) + ' instance ' + instance + ' value: '  + JSON.stringify(index));
 
-        //deleteDevice(nodeID, function() { //why here and not on "node removed" ?
-            //disable exclusion automatically after 5 seconds
-        //    setTimeout(function(){disableExclusion();}, 5000);
-        //});
+        var id = calcName(nodeID, comClass, index, instance);
+        var list = [ id ];
+        delObjects(list);
     });
 
     zwave.on('value refreshed', function (nodeID, comClass, valueId) {
-        adapter.log.debug('value refreshed nodeID: ' + nodeID + ', commandclass: ' + JSON.stringify(comClass) + ', value: ' + JSON.stringify(valueId) + ', currently not implemented');
+        adapter.log.debug('value refreshed nodeID: ' + nodeID + ', commandclass: ' + JSON.stringify(comClass) + ', value: ' + JSON.stringify(valueId));
         extendChannel(nodeID, comClass, valueId);
     });
 
