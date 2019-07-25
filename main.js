@@ -1287,7 +1287,7 @@ function main() {
         adapter.log.debug('value removed: ' + nodeID + ' comClass: ' + JSON.stringify(comClass) + ' instance ' + instance + ' value: '  + JSON.stringify(index));
 
         const id = calcName(nodeID, comClass, index, instance);
-        delObjects([list]);
+        delObjects([id]);
     });
 
     zwave.on('value refreshed', function (nodeID, comClass, valueId) {
