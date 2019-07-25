@@ -1286,9 +1286,8 @@ function main() {
     zwave.on('value removed', function (nodeID, comClass, instance, index) {
         adapter.log.debug('value removed: ' + nodeID + ' comClass: ' + JSON.stringify(comClass) + ' instance ' + instance + ' value: '  + JSON.stringify(index));
 
-        var id = calcName(nodeID, comClass, index, instance);
-        var list = [ id ];
-        delObjects(list);
+        const id = calcName(nodeID, comClass, index, instance);
+        delObjects([list]);
     });
 
     zwave.on('value refreshed', function (nodeID, comClass, valueId) {
