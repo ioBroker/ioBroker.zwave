@@ -919,7 +919,7 @@ function extendChannel(nodeID, comClass, valueId) {
             if (role && !stateObj.common.role) stateObj.common.role = role;
 
             stateObj.native = valueId;
-            adapter.log.info('State updated: ' + stateID + ' = ' + value + ', index = ' + valueId.index + ', comClass = ' + comClass + ', instance = ' + valueId.instance);
+            adapter.log.debug('State updated: ' + stateID + ' = ' + value + ', index = ' + valueId.index + ', comClass = ' + comClass + ', instance = ' + valueId.instance);
             adapter.extendForeignObject(stateID, stateObj);
         }
         if (value !== undefined) adapter.setForeignState(stateID, value, true);
@@ -1124,8 +1124,8 @@ function main() {
     });
 
     zwave.on('node removed', function (nodeID) {
-        adapter.log.debug('node removed (not implemented): ' + nodeID);
-
+        adapter.log.info('node removed: ' + nodeID);
+        deleteDevice(nodeID);
     });
 
 
@@ -1229,11 +1229,11 @@ function main() {
     });
 
     zwave.on('polling enabled', function (nodeID) {
-        adapter.log.debug('node' + nodeID + ': polling ENABLED, currently not implemented');
+        adapter.log.info('node' + nodeID + ': polling ENABLED, currently not implemented');
     });
 
     zwave.on('polling disabled', function (nodeID) {
-        adapter.log.debug('node' + nodeID + ': polling DISABLED, currently not implemented');
+        adapter.log.info('node' + nodeID + ': polling DISABLED, currently not implemented');
     });
 
     // not found in documentation
@@ -1284,23 +1284,21 @@ function main() {
     });
 
     zwave.on('value removed', function (nodeID, comClass, instance, index) {
-        adapter.log.info('value removed: ' + nodeID + ' comClass: ' + JSON.stringify(comClass) + ' instance ' + instance + ' value: '  + JSON.stringify(index));
+        adapter.log.debug('value removed: ' + nodeID + ' comClass: ' + JSON.stringify(comClass) + ' instance ' + instance + ' value: '  + JSON.stringify(index));
 
-        deleteDevice(nodeID, function() { //why here and not on "node removed" ?
-            //disable exclusion automatically after 5 seconds
-            setTimeout(function(){disableExclusion();}, 5000);
-        });
+        const id = calcName(nodeID, comClass, index, instance);
+        delObjects([id]);
     });
 
     zwave.on('value refreshed', function (nodeID, comClass, valueId) {
-        adapter.log.debug('value refreshed nodeID: ' + nodeID + ', commandclass: ' + JSON.stringify(comClass) + ', value: ' + JSON.stringify(valueId) + ', currently not implemented');
+        adapter.log.debug('value refreshed nodeID: ' + nodeID + ', commandclass: ' + JSON.stringify(comClass) + ', value: ' + JSON.stringify(valueId));
         extendChannel(nodeID, comClass, valueId);
     });
 
     // ------------- controller events ---------------------------
     zwave.on('controller command', function (nodeId, state, error, helpMsg) {
         extendInclusion();
-        adapter.log.info('controller command feedback: state: "' + ctrlState[state] + '", error: "' + ctrlError[error] + '", helpmsg: "' + helpMsg + '"');
+        adapter.log.info('controller command feedback for node ' + nodeId + ': state: "' + ctrlState[state] + '", error: "' + ctrlError[error] + '", helpmsg: "' + helpMsg + '"');
         adapter.setState('info.controllerMessage', JSON.stringify({
             state: state,
             error: error,
