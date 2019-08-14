@@ -13,8 +13,20 @@
             "es": "Soporte ZWave basado en paquete openzwave",
             "pl": "ZWave wsparcie oparte na pakiecie openzwave"
         },
-        "version": "1.5.0",
+        "version": "1.5.1",
         "news": {
+            "1.5.1": {
+                "en": "The refresh node command no longer excludes the node",
+                "de": "Der Befehl zum Aktualisieren des Knotens schließt den Knoten nicht mehr aus",
+                "ru": "Команда обновления узла больше не исключает узел",
+                "pt": "O comando refresh node não exclui mais o nó",
+                "nl": "De opdracht Vernieuwen knoop sluit de knoop niet langer uit",
+                "fr": "La commande d'actualisation du noeud n'exclut plus le noeud",
+                "it": "Il comando di aggiornamento del nodo non esclude più il nodo",
+                "es": "El comando actualizar nodo ya no excluye el nodo",
+                "pl": "Polecenie odświeżania węzła nie wyklucza już węzła",
+                "zh-cn": "刷新节点命令不再排除该节点"
+            },
             "1.5.0": {
                 "en": "Update OpenZWave dependency to version 1.6",
                 "de": "OpenZWave-Abhängigkeit auf Version 1.6 geupdated"
