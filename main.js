@@ -1283,11 +1283,18 @@ function main() {
         extendChannel(nodeID, comClass, valueId);
     });
 
-    zwave.on('value removed', function (nodeID, comClass, instance, index) {
-        adapter.log.debug('value removed: ' + nodeID + ' comClass: ' + JSON.stringify(comClass) + ' instance ' + instance + ' value: '  + JSON.stringify(index));
-
-        const id = calcName(nodeID, comClass, index, instance);
-        delObjects([id]);
+    zwave.on('value removed', function (nodeID, comClass, instance, index) {                
+        adapter.log.debug('value removed: ' + nodeID + ' comClass: ' + JSON.stringify(comClass) + ' instance: ' + instance + ' index: '  + index);
+        var id = calcName(nodeID, comClass);
+        for (var i in objects) {
+            if (!objects.hasOwnProperty(i)) continue;
+            if (i.substring(0, id.length + 1) === id + '.' || i === id) {
+                if (objects[i].native && objects[i].native.instance === instance && objects[i].native.index === index) {
+                    delObjects([objects[i]]);
+                    break;
+                }
+            }
+        }        
     });
 
     zwave.on('value refreshed', function (nodeID, comClass, valueId) {
