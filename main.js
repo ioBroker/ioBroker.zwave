@@ -834,6 +834,20 @@ function extendChannel(nodeID, comClass, valueId) {
 
     // Create channel
     if (objects[channelID]) {
+        // channel exists - make sure we don't have duplicate states
+        if (!nodes[nodeID].ready) {
+            for (var i in objects) {
+                if (!objects.hasOwnProperty(i)) continue;
+                if (i.startsWith(channelID + '.')) {
+                    if (objects[i].native && objects[i].native.instance === valueId.instance && objects[i].native.index === valueId.index &&
+                    objects[i].common.name !== valueId.label) {
+                        adapter.log.info('remove obsolete state:' + objects[i]._id);
+                        delObjects([objects[i]]);
+                    }
+                }
+            }
+        }
+        
         var newNative = objects[channelID].native || {};
         newNative.nodeID = nodeID;
 
