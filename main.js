@@ -826,6 +826,26 @@ function extendNode(nodeID, nodeInfo, callback) {
     if (!count && callback) callback();
 }
 
+/*
+* Verify that we don't have duplicate valueIds (same node, instance and index but different label)
+* Can happen when the ozwave library changes labels for devices between releases
+*/
+function cleanupValueId(nodeID, comClass, valueId) {
+    const channelID = calcName(nodeID, comClass);
+    
+    for (var i in objects) {
+        if (!objects.hasOwnProperty(i)) continue;
+        if (i.startsWith(channelID + '.')) {
+            if (objects[i].native && objects[i].native.instance === valueId.instance && objects[i].native.index === valueId.index &&
+            objects[i].common.name !== valueId.label) {
+                adapter.log.info('remove obsolete state:' + objects[i]._id);
+                delObjects([objects[i]]);
+                break;
+            }
+        }
+    }
+}
+
 function extendChannel(nodeID, comClass, valueId) {
     if (!valueId || !comClass) return;
 
@@ -834,20 +854,6 @@ function extendChannel(nodeID, comClass, valueId) {
 
     // Create channel
     if (objects[channelID]) {
-        // channel exists - make sure we don't have duplicate states
-        if (!nodes[nodeID].ready) {
-            for (var i in objects) {
-                if (!objects.hasOwnProperty(i)) continue;
-                if (i.startsWith(channelID + '.')) {
-                    if (objects[i].native && objects[i].native.instance === valueId.instance && objects[i].native.index === valueId.index &&
-                    objects[i].common.name !== valueId.label) {
-                        adapter.log.info('remove obsolete state:' + objects[i]._id);
-                        delObjects([objects[i]]);
-                    }
-                }
-            }
-        }
-        
         var newNative = objects[channelID].native || {};
         newNative.nodeID = nodeID;
 
@@ -1289,6 +1295,7 @@ function main() {
         extendInclusion();
         adapter.log.debug('value added: nodeID: ' + nodeID + ' comClass: ' + JSON.stringify(comClass) + ' value: '  + JSON.stringify(valueId));
         extendChannel(nodeID, comClass, valueId);
+        cleanupValueId(nodeID, comClass, valueId);
     });
 
     zwave.on('value changed', function (nodeID, comClass, valueId) {
