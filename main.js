@@ -840,7 +840,7 @@ function cleanupValueId(nodeID, comClass, valueId) {
             objects[i].common.name !== valueId.label) {
                 adapter.log.info('remove obsolete state:' + objects[i]._id);
                 delObjects([objects[i]]);
-                break;
+                return;
             }
         }
     }
