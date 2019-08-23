@@ -559,6 +559,12 @@
             $(this).button({
                 icons: {primary: 'ui-icon-custom-' + $(this).data('icon'), secondary: null}
             }).button('disable').click(function () {
+                if ($(this).data('operation') == 'hardReset') {
+                    if (!confirm(_('Are you sure you want to remove all devices?'))) {
+                        $(this).button('enable');
+                        return;
+                    }
+                }                
                 sendTo(null, $(this).data('operation'), null, function (result) {
                     if (result && result.error) {
                         showMessage(result.error, _('Error'), 'alert');
