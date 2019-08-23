@@ -556,6 +556,11 @@
         });
 
         $('.zwave-operations').each(function () {
+            if ($(this).data('operation') == 'hardReset') {
+                if (!confirm(_('Are you sure you want to remove all devices?'))) {
+                    return;
+                }
+            }
             $(this).button({
                 icons: {primary: 'ui-icon-custom-' + $(this).data('icon'), secondary: null}
             }).button('disable').click(function () {
