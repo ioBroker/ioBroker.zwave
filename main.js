@@ -173,7 +173,6 @@ function startAdapter(options) {
                     case 'softReset':
                     case 'hardReset': // destructive! will wipe out all known configuration
                     case 'healNetwork':
-                    case 'getNeighbors':
                         if (zwave) {
                             adapter.log.info('Execute ' + obj.command);
                             if (zwave[obj.command]) {

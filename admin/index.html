@@ -39,10 +39,6 @@
         background-image: url(img/heal.png) !important;
         background-size: 16px 16px !important;
     }
-    .ui-icon-custom-neighbors {
-        background-image: url(img/neighbors.png) !important;
-        background-size: 16px 16px !important;
-    }
     .ui-icon-custom-delete {
         background-image: url(img/delete.png) !important;
         background-size: 16px 16px !important;
@@ -97,7 +93,6 @@
     var nodeCommands = {
         "replaceFailedNode":    {},
         "refreshNodeInfo":      {},
-        "removeFailedNode":     {},
         "requestNodeNeighborUpdate": {},
         "assignReturnRoute":    {},
         "deleteAllReturnRoutes": {},
@@ -685,7 +680,6 @@
                 <button data-operation="addNodeSecure"data-icon="add"        class="translate zwave-operations">Add node secure</button>
                 <button data-operation="removeNode"   data-icon="delete"     class="translate zwave-operations">Remove node</button>
                 <button data-operation="healNetwork"  data-icon="heal"       class="translate zwave-operations">Heal network</button>
-                <button data-operation="getNeighbors" data-icon="neighbors"  class="translate zwave-operations">Get neighbors</button>
                 <button data-operation="softReset"    data-icon="soft-reset" class="translate zwave-operations">Soft reset</button>
                 <button data-operation="hardReset" data-icon="hard-reset" class="translate zwave-operations">Hard reset</button>
                 <button data-operation="stopCommand" data-icon="stop" class="translate zwave-operations zwave-stop">Stop Command</button>
