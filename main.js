@@ -213,8 +213,7 @@ function startAdapter(options) {
                                     "neighbors": edges[nodeID],
                                     "label": objects[channelID].common.name
                                 }
-                                map.push(item);
-                                adapter.log.debug(nodeID+"="+JSON.stringify(item));                                
+                                map.push(item);                          
                             }                            
                             respond(map);
                         } else {
