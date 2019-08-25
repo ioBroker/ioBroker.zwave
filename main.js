@@ -192,6 +192,35 @@ function startAdapter(options) {
                             respond(predefinedResponses.ERROR_NOT_RUNNING);
                         }
                         break;
+                    case 'networkmap':
+                        if (zwave) {
+                            adapter.log.info('Show network map');
+                            var map = [];
+                            var allNodeIDs = Object.keys(nodes);
+                            var edges = {};
+                            for (var i in allNodeIDs) {
+                                const nodeID = allNodeIDs[i];
+                                edges[nodeID] = [];
+                                var neighbors = zwave.getNodeNeighbors(nodeID);
+                                for (var n in neighbors) {
+                                    if (!edges[neighbors[n]]) {
+                                        edges[nodeID].push(neighbors[n]);
+                                    }
+                                }
+                                var channelID = calcName(nodeID);                                
+                                var item = {
+                                    "nodeID": nodeID,
+                                    "neighbors": edges[nodeID],
+                                    "label": objects[channelID].common.name
+                                }
+                                map.push(item);
+                                adapter.log.info(nodeID+"="+JSON.stringify(item));                                
+                            }                            
+                            respond(map);
+                        } else {
+                            respond(predefinedResponses.ERROR_NOT_RUNNING);
+                        }                        
+                        break;
 
                     case 'removeFailedNode':
                     case 'requestNodeNeighborUpdate':

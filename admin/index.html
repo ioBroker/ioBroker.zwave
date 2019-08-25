@@ -3,6 +3,8 @@
 <link rel="stylesheet" type="text/css" href="../../lib/css/themes/jquery-ui/redmond/jquery-ui.min.css"/>
 <link rel="stylesheet" type="text/css" href="../../css/adapter.css"/>
 <link rel="stylesheet" type="text/css" href="../../lib/css/jquery.multiselect-1.13.css"/>
+<link href="https://unpkg.com/vis-network@latest/dist/vis-network.min.css" rel="stylesheet" type="text/css" />
+    
 <script type="text/javascript" src="../../lib/js/jquery-1.11.1.min.js"></script>
 <script type="text/javascript" src="../../lib/js/jquery-ui.min.js"></script>
 <script type="text/javascript" src="../../lib/js/jquery.multiselect-1.13.min.js"></script>
@@ -12,6 +14,8 @@
 <script type="text/javascript" src="../../js/translate.js"></script>
 <script type="text/javascript" src="../../js/adapter-settings.js"></script>
 <script type="text/javascript" src="words.js"></script>
+<script type="text/javascript" src="https://unpkg.com/vis-network@latest/dist/vis-network.min.js"></script>
+
 
 <style>
     table {
@@ -41,6 +45,10 @@
     }
     .ui-icon-custom-delete {
         background-image: url(img/delete.png) !important;
+        background-size: 16px 16px !important;
+    }
+    .ui-icon-custom-networkmap {
+        background-image: url(img/neighbors.png) !important;
         background-size: 16px 16px !important;
     }
 
@@ -84,6 +92,11 @@
         padding: 0;
         vertical-align: top;
     }
+     #mynetwork {
+         width: 100%;
+         height: 100%;
+         border: 1px solid lightgray;
+     }    
 </style>
 
 <script type="text/javascript">
@@ -321,6 +334,38 @@
             }
         }
     }
+    
+    function loadMap(map) {
+        var n = [];
+        var e = [];
+        for (var i in map) {
+            const item = map[i];
+            var node = {
+                "id": item.nodeID,
+                "label": item.label,
+                "color": { background: 'white', border: 'black' }
+            }
+            if (item.nodeID == 1) {
+                node['color'] = { border:'#c28927' };
+            }
+            n.push(node);
+            for (var x in item.neighbors) {
+                e.push({
+                    "from": item.nodeID,
+                    "to": item.neighbors[x]
+                });
+            }
+        }
+        var nodes = new vis.DataSet(n);
+        var edges = new vis.DataSet(e);
+        var container = document.getElementById('mynetwork');
+        var data = {
+            nodes: nodes,
+            edges: edges
+        };
+        var options = {};
+        var network = new vis.Network(container, data, options);        
+    }
 
     // the function loadSettings has to exist ...
     function load(settings, onchange) {
@@ -547,6 +592,11 @@
                         $('#tabs').tabs({active: 0});
                     }
                 }
+                if (ui.newPanel.attr('id') == 'tabs-4') {
+                    sendTo(null, 'networkmap', null, function (result) {
+                        loadMap(result);
+                    });
+                }
             }
         });
 
@@ -624,6 +674,7 @@
             <li><a href="#tabs-1" class="translate">Options</a></li>
             <li><a href="#tabs-2" class="translate">Devices</a></li>
             <li><a href="#tabs-3" class="translate">Associations</a></li>
+            <li><a href="#tabs-4" class="translate">Network map</a></li>
         </ul>
         <div id="tabs-1">
             <table>
@@ -700,7 +751,7 @@
                 <tbody id="devices">
 
                 </tbody>
-            </table>
+            </table>            
         </div>
         <div id="tabs-3" style="width: 100%; height: calc(100% - 40px); overflow-x: hidden; overflow-y: auto; padding: 0; margin: 10px">
             <div>
@@ -711,6 +762,9 @@
                 <select id="assAssNodes" name="assAssNodes" multiple="multiple">
                 </select>
             </div>
+        </div>
+        <div id="tabs-4" style="width: 100%; height: calc(100% - 40px); overflow-x: hidden; overflow-y: auto; padding: 0; margin: 10px">
+            <div id="mynetwork"></div>
         </div>
     </div>
 </div>
