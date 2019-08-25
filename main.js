@@ -194,7 +194,7 @@ function startAdapter(options) {
                         break;
                     case 'networkmap':
                         if (zwave) {
-                            adapter.log.info('Show network map');
+                            adapter.log.debug('Show network map');
                             var map = [];
                             var allNodeIDs = Object.keys(nodes);
                             var edges = {};
@@ -214,7 +214,7 @@ function startAdapter(options) {
                                     "label": objects[channelID].common.name
                                 }
                                 map.push(item);
-                                adapter.log.info(nodeID+"="+JSON.stringify(item));                                
+                                adapter.log.debug(nodeID+"="+JSON.stringify(item));                                
                             }                            
                             respond(map);
                         } else {
