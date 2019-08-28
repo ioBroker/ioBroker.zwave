@@ -387,9 +387,7 @@
         });
         
         socket.emit('getObjectView', 'system', 'device', {startkey: 'zwave.' + instance + '.', endkey: 'zwave.' + instance + '.\u9999', include_docs: true}, function (err, _devices) {
-            _devices.rows.sort((a, b) => {
-                return (a.value.native.nodeID < b.value.native.nodeID ? -1 : 1);
-            });            
+            _devices.rows.sort((a, b) => (a.value.native.nodeID < b.value.native.nodeID ? -1 : 1));            
             socket.emit('getStates', function (err, _values) {
                 var namespace = 'zwave.' + instance + '.';
                 var len = namespace.length;
@@ -430,6 +428,8 @@
                                 }
 
                                 if (obj.result && obj.result !== "no groups") {
+                                    // add a header option entry to clearly show that a group needs to be selected to enable the next selection
+                                    // otherwise the first group entry would be selected but the next selection list disabled which is confusing
                                     $('#assGroups').append($("<option>").attr("disabled", "disabled").text(_('Select group'))).selectmenu('refresh');
                                     const numGroups = Object.keys(obj.result).length;
                                     console.log('node has: ' + numGroups + ' association groups');
@@ -519,7 +519,8 @@
                             sendTo(null, "addAssociation", {nodeID: $('#assNodeIds').val(), group: currentGroup, target_nodeid: ui.value}, function (obj) {
                                 $('#assAssNodes').multiselect('disable');
                                 if (obj.error || obj.result !== 'ok') {
-                                    console.log('error: getMaxAssociations');
+                                    console.log('error: addAssociation');
+                                    showMessage(obj.result, _('Error'), 'alert');
                                 } else {
                                     console.log('added association');
                                     setTimeout(function(){
@@ -533,6 +534,7 @@
                                 $('#assAssNodes').multiselect('disable');
                                 if (obj.error || obj.result !== 'ok') {
                                     console.log('error: removeAssociation');
+                                    showMessage(obj.result, _('Error'), 'alert');
                                 } else {
                                     console.log('removed association');
                                     setTimeout(function(){
