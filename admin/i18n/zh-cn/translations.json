@@ -1,4 +1,5 @@
 {
+    "# nodes selected": "选择了＃个设备",
     "Add node": "添加节点",
     "Add node secure": "添加安全节点",
     "Are you sure you want to remove all devices?": "您确定要删除所有设备吗？",
@@ -22,6 +23,7 @@
     "Product": "产品",
     "Remove node": "删除节点",
     "Save Config:": "保存配置：",
+    "Select group": "选择组",
     "Select operation": "选择操作",
     "Select port": "选择端口",
     "Soft reset": "软复位",
@@ -44,6 +46,7 @@
     "replicationSend": "复制",
     "requestNetworkUpdate": "网络更新",
     "requestNodeNeighborUpdate": "邻居更新",
+    "select nodes": "选择设备",
     "setNodeLocation": "设置位置",
     "setNodeName": "设置名称",
     "sleep": "睡觉"

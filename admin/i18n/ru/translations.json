@@ -1,4 +1,5 @@
 {
+    "# nodes selected": "# выбранных устройств",
     "Add node": "Добавить устройство",
     "Add node secure": "Добавить устройство",
     "Are you sure you want to remove all devices?": "Вы уверены, что хотите удалить все устройства?",
@@ -22,6 +23,7 @@
     "Product": "Продукт",
     "Remove node": "Удалить устройство",
     "Save Config:": "Сохранить конфигурацию:",
+    "Select group": "Выберите группу",
     "Select operation": "выберите",
     "Select port": "выбрать порт",
     "Soft reset": "Soft reset",
@@ -44,6 +46,7 @@
     "replicationSend": "Копирование",
     "requestNetworkUpdate": "Сетевое обновление",
     "requestNodeNeighborUpdate": "Обновление соединений",
+    "select nodes": "Выберите устройства",
     "setNodeLocation": "Задать локацию",
     "setNodeName": "Задать имя",
     "sleep": "спит"

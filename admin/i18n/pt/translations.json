@@ -1,4 +1,5 @@
 {
+    "# nodes selected": "# dispositivos selecionados",
     "Add node": "Adicionar nó",
     "Add node secure": "Adicionar nó seguro",
     "Are you sure you want to remove all devices?": "Tem certeza de que deseja remover todos os dispositivos?",
@@ -22,6 +23,7 @@
     "Product": "produtos",
     "Remove node": "Remover nó",
     "Save Config:": "Salvar configuração:",
+    "Select group": "Selecione o grupo",
     "Select operation": "Selecione a operação",
     "Select port": "Selecione a porta",
     "Soft reset": "Reinicialização suave",
@@ -44,6 +46,7 @@
     "replicationSend": "Replicação",
     "requestNetworkUpdate": "Atualização de rede",
     "requestNodeNeighborUpdate": "Atualização vizinha",
+    "select nodes": "Selecione dispositivos",
     "setNodeLocation": "Defina localização",
     "setNodeName": "Nome do conjunto",
     "sleep": "dormir"
