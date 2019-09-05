@@ -1,4 +1,5 @@
 {
+    "# nodes selected": "# apparaten geselecteerd",
     "Add node": "Voeg knoop toe",
     "Add node secure": "Voeg beveiligde knoop toe",
     "Are you sure you want to remove all devices?": "Weet je zeker dat je alle apparaten wilt verwijderen?",
@@ -22,6 +23,7 @@
     "Product": "Artikel",
     "Remove node": "Verwijder het knooppunt",
     "Save Config:": "Config opslaan:",
+    "Select group": "Selecteer groep",
     "Select operation": "Selecteer bewerking",
     "Select port": "Selecteer poort",
     "Soft reset": "Zachte reset",
@@ -44,6 +46,7 @@
     "replicationSend": "kopiëren",
     "requestNetworkUpdate": "Netwerk update",
     "requestNodeNeighborUpdate": "Buurman update",
+    "select nodes": "Selecteer apparaten",
     "setNodeLocation": "Locatie instellen",
     "setNodeName": "Stel naam in",
     "sleep": "slaap"

@@ -1,4 +1,5 @@
 {
+    "# nodes selected": "# devices selected",
     "Add node": "Add node",
     "Add node secure": "Add secure node",
     "Are you sure you want to remove all devices?": "Are you sure you want to remove all devices?",
@@ -22,6 +23,7 @@
     "Product": "Product",
     "Remove node": "Remove node",
     "Save Config:": "Save Config:",
+    "Select group": "Select group",
     "Select operation": "Select operation",
     "Select port": "Select port",
     "Soft reset": "Soft reset",
@@ -44,6 +46,7 @@
     "replicationSend": "Replication",
     "requestNetworkUpdate": "Network update",
     "requestNodeNeighborUpdate": "Neighbor update",
+    "select nodes": "Select devices",
     "setNodeLocation": "Set location",
     "setNodeName": "Set name",
     "sleep": "sleep"
