@@ -120,9 +120,9 @@
     var initialCom;
     var messageTimeout = null;
 
-    function getComPorts(actualValue) {
+    function getComPorts() {
         timeout = setTimeout(function () {
-            getComPorts(actualValue);
+            getComPorts();
         }, 2000);
 
         sendTo(null, 'listUart', null, function (list) {
@@ -132,21 +132,21 @@
             }
             if (!list || !list.length) {
                 setTimeout(function () {
-                    getComPorts(actualValue);
+                    getComPorts();
                 }, 1000);
                 return;
             }
-            var text = '<option value="">' + _('Select port') + '</option>';
+            var text = '';
             for (var j = 0; j < list.length; j++) {
                 if (list[j].comName === 'Not available') {
-                    text += '<option value="" selected>' + _('Not available') + '</option>';
+                    text += '<option value="">' + _('Not available') + '</option>';
                     $('#usb').prop('disabled', true);
                     break;
                 } else {
-                    text += '<option value="' + list[j].comName + '" ' + ((actualValue === list[j].comName) ? 'selected' : '') + '>' + list[j].comName + '</option>';
+                    text += '<option value="' + list[j].comName + '" ' + '>' + list[j].comName + '</option>';
                 }
             }
-            $('#usb').html(text);
+            $('#ports').html(text);
         });
     }
 
@@ -379,10 +379,8 @@
             isAlive = _isAlive;
             if (isAlive || common.enabled) {
                 $('.zwave-operations').button().button('enable');
-                getComPorts(settings.usb);
-            } else {
-                $('#_usb').html('<input id="usb" class="value" value="' + settings.usb + '"/>');
-                $('#usb').change(onChange).keyup(onChange);
+                getComPorts();
+                $('#usb').val(settings.usb);
             }
         });
         
@@ -695,7 +693,7 @@
                 <tr>
                     <td><label  class="translate" for="usb">USB name:</label></td>
                     <td class="admin-icon"></td>
-                    <td id="_usb"><select class="value" id="usb"></select></td>
+                    <td id="_usb"><input class="value" list="ports" id="usb"><datalist id="ports"></datalist></td>
                 </tr>
                 <tr><td class="line" colspan="2"> </td></tr>
                 <tr>
