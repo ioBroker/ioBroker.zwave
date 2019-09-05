@@ -14,8 +14,20 @@
             "pl": "ZWave wsparcie oparte na pakiecie openzwave",
             "zh-cn": "ZWave支持基于openzwave数据包"
         },
-        "version": "1.5.1",
+        "version": "1.6.0",
         "news": {
+            "1.6.0": {
+                "en": "* Cleanup obsolete states on startup\n* Added confirmation dialog for hard reset\n* Translation fixes\n* Removed non-existing getNeighbors function\n* Display network map\n* Allow manual input of a serial port together with the selection\n* Suppress permission denied warnings during installation",
+                "de": "* Cleanup veraltete Zustände beim Start\n* Bestätigungsdialog für Hard-Reset hinzugefügt\n* Übersetzungskorrekturen\n* Nicht existierende getNeighbors-Funktion entfernt\n* Netzwerkkarte anzeigen\n* Ermöglichen die manuelle Eingabe einer seriellen Schnittstelle zusammen mit der Auswahl\n* Unterdrückung von Warnungen, denen die Erlaubnis verweigert wurde, während der Installation",
+                "ru": "* Очистка устаревших состояний при запуске\n* Добавлен диалог подтверждения для жесткого сброса\n* Исправления перевода\n* Удалена несуществующая функция getNeighbors\n* Показать карту сети\n* Разрешить ручной ввод последовательного порта вместе с выбором\n* Подавлять предупреждения об отказе в разрешении во время установки",
+                "pt": "* Limpeza de estados obsoletos na inicialização\n* Adicionado caixa de diálogo de confirmação para reinicialização completa\n* Correções de tradução\n* Função getNeighbors inexistente removida\n* Exibir mapa de rede\n* Permitir entrada manual de uma porta serial junto com a seleção\n* Suprimir avisos de permissão negada durante a instalação",
+                "nl": "* Verouderde staten opschonen bij opstarten\n* Bevestigingsdialoogvenster toegevoegd voor harde reset\n* Vertaalfixes\n* Niet-bestaande functie getNebors verwijderd\n* Display netwerkkaart\n* Handmatige invoer van een seriële poort samen met de selectie toestaan\n* Onderdruk toestemming geweigerde waarschuwingen tijdens installatie",
+                "fr": "* Nettoyage des états obsolètes au démarrage\n* Ajout du dialogue de confirmation pour la réinitialisation matérielle\n* Corrections de traduction\n* Suppression de la fonction getNeighbors non existante\n* Afficher la carte du réseau\n* Autoriser la saisie manuelle d'un port série avec la sélection\n* Suppression des autorisations refusées lors de l'installation",
+                "it": "* Pulizia degli stati obsoleti all'avvio\n* Aggiunta finestra di dialogo di conferma per hard reset\n* Correzioni di traduzione\n* Rimossa la funzione getNeighbors inesistente\n* Visualizza la mappa della rete\n* Consenti inserimento manuale di una porta seriale insieme alla selezione\n* Sopprimere gli avvisi di autorizzazione negata durante l'installazione",
+                "es": "* Limpieza de estados obsoletos al inicio\n* Diálogo de confirmación agregado para restablecimiento completo\n* Correcciones de traducción\n* Se eliminó la función getNeighns no existente\n* Mostrar mapa de red\n* Permitir la entrada manual de un puerto serie junto con la selección\n* Suprimir permisos denegados advertencias durante la instalación",
+                "pl": "* Oczyszczanie przestarzałych stanów podczas uruchamiania\n* Dodano okno dialogowe potwierdzenia twardego resetu\n* Poprawki tłumaczeniowe\n* Usunięto nieistniejącą funkcję getNeighbors\n* Wyświetl mapę sieci\n* Zezwól na ręczne wprowadzenie portu szeregowego wraz z wyborem\n* Pomiń ostrzeżenia o odmowie dostępu podczas instalacji",
+                "zh-cn": "*启动时清理过时的状态\n*添加了硬重置的确认对话框\n*翻译修复\n*删除了不存在的getNeighbors函数\n*显示网络地图\n*允许手动输入串行端口和选择\n*在安装过程中禁止拒绝权限警告"
+            },
             "1.5.1": {
                 "en": "The refresh node command no longer excludes the node",
                 "de": "Der Befehl zum Aktualisieren des Knotens schließt den Knoten nicht mehr aus",
@@ -284,11 +296,7 @@
         "mode": "daemon",
         "platform": "javascript/Node.js",
         "loglevel": "info",
-        "keywords": [
-            "zwave",
-            "control",
-            "openzwave"
-        ],
+        "keywords": ["zwave", "control", "openzwave"],
         "main": "main.js",
         "authors": [
             "bluefox <dogafox@gmail.com>",
