@@ -1322,7 +1322,6 @@ function main() {
         extendInclusion();
         adapter.log.debug('value added: nodeID: ' + nodeID + ' comClass: ' + JSON.stringify(comClass) + ' value: '  + JSON.stringify(valueId));
         extendChannel(nodeID, comClass, valueId);
-        cleanupValueId(nodeID, comClass, valueId);
     });
 
     zwave.on('value changed', function (nodeID, comClass, valueId) {
