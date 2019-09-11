@@ -362,9 +362,13 @@
         var options = {
             edges: {
                 arrows: 'to'
+            },
+            physics: { 
+                enabled: false
             }
         };
-        var network = new vis.Network(container, data, options);        
+        var network = new vis.Network(container, data, options);  
+        network.stabilize(100);
     }
 
     // the function loadSettings has to exist ...
