@@ -14,8 +14,20 @@
             "pl": "ZWave wsparcie oparte na pakiecie openzwave",
             "zh-cn": "ZWave支持基于openzwave数据包"
         },
-        "version": "1.6.0",
+        "version": "1.6.1",
         "news": {
+            "1.6.1": {
+                "en": "Issues #75 and #76 have been fixed",
+                "de": "Die Probleme Nr. 75 und Nr. 76 wurden behoben",
+                "ru": "Проблемы № 75 и № 76 были исправлены",
+                "pt": "Os problemas 75 e 76 foram corrigidos",
+                "nl": "Kwesties # 75 en # 76 zijn opgelost",
+                "fr": "Les problèmes # 75 et # 76 ont été corrigés",
+                "it": "I problemi # 75 e # 76 sono stati risolti",
+                "es": "Se han solucionado los problemas 75 y 76.",
+                "pl": "Rozwiązano problemy nr 75 i 76",
+                "zh-cn": "问题＃75和＃76已得到修复"
+            },
             "1.6.0": {
                 "en": "* Cleanup obsolete states on startup\n* Added confirmation dialog for hard reset\n* Translation fixes\n* Removed non-existing getNeighbors function\n* Display network map\n* Allow manual input of a serial port together with the selection\n* Suppress permission denied warnings during installation",
                 "de": "* Cleanup veraltete Zustände beim Start\n* Bestätigungsdialog für Hard-Reset hinzugefügt\n* Übersetzungskorrekturen\n* Nicht existierende getNeighbors-Funktion entfernt\n* Netzwerkkarte anzeigen\n* Ermöglichen die manuelle Eingabe einer seriellen Schnittstelle zusammen mit der Auswahl\n* Unterdrückung von Warnungen, denen die Erlaubnis verweigert wurde, während der Installation",
@@ -296,7 +308,11 @@
         "mode": "daemon",
         "platform": "javascript/Node.js",
         "loglevel": "info",
-        "keywords": ["zwave", "control", "openzwave"],
+        "keywords": [
+            "zwave",
+            "control",
+            "openzwave"
+        ],
         "main": "main.js",
         "authors": [
             "bluefox <dogafox@gmail.com>",

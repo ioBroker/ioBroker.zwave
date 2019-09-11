@@ -339,17 +339,23 @@
             var node = {
                 "id": item.nodeID,
                 "label": item.label,
-                "color": { background: 'white', border: 'black' }
+                "color": { background: 'white', border: 'black' },
+                "shape": 'box'
             }
             if (item.nodeID == 1) {
                 node['color'] = { border:'#c28927' };
+                node['shape'] = 'star';
             }
             n.push(node);
             for (var x in item.neighbors) {
-                e.push({
+                var edge = {
                     "from": item.nodeID,
                     "to": item.neighbors[x]
-                });
+                }
+                if (item.nodeID == 1) {
+                    edge['color']= { color:'#19d156' };
+                }
+                e.push(edge);
             }
         }
         var nodes = new vis.DataSet(n);
@@ -361,7 +367,12 @@
         };
         var options = {
             edges: {
-                arrows: 'to'
+                arrows: {
+                    to: {
+                        enabled: true,
+                        scaleFactor: 0.5
+                    }
+                }
             },
             physics: { 
                 enabled: false
