@@ -217,7 +217,8 @@ var comclasses = {
     0x2F: {name: 'ZIP_ADV_SERVICES',                       role: ''},
     0x2e: {name: 'ZIP_CLIENT',                             role: ''},
     0x24: {name: 'ZIP_SERVER',                             role: ''},
-    0x23: {name: 'ZIP_SERVICES',                           role: ''}
+    0x23: {name: 'ZIP_SERVICES',                           role: ''},
+    0x5B: {name: 'CENTRAL_SCENE',                          role: ''}
 };
 if (typeof module !== 'undefined' && module.parent) {
     module.exports = comclasses;
