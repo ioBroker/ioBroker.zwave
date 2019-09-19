@@ -155,6 +155,9 @@ Following global Actions are current supported:
 
 ## Changelog
 
+### 1.6.1
+* (cburghardt) Fix issues 75 and 76
+
 ### 1.6.0
 * (cburghardt) Cleanup obsolete states on startup
 * (cburghardt) Added confirmation dialog for hard reset
