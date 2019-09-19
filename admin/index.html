@@ -334,26 +334,51 @@
     function loadMap(map) {
         var n = [];
         var e = [];
+        // calculate hops
+        var hops = {};
         for (var i in map) {
             const item = map[i];
+            for (var x in item.neighbors) {
+                if (!hops[item.nodeID]) {
+                    if (item.nodeID == 1) {
+                        hops[item.nodeID] = 0;
+                    } else if (hops[item.neighbors[x]]) {
+                        hops[item.nodeID] = hops[item.neighbors[x]] + 1;
+                    } else {
+                        hops[item.nodeID] = 1;
+                    }
+                }
+                if (!hops[item.neighbors[x]]) {
+                    hops[item.neighbors[x]] = hops[item.nodeID] + 1;
+                }
+            }
+        }
+        for (var i in map) {
+            const item = map[i];
+            var shape = item.nodeID == 1 ? "star" : "box";
+            var background = item.nodeID == 1 ? "#615d5d" : "white";
+            var border;
+            if (hops[item.nodeID] == 1) {
+                border = "#19d156";
+            } else if (hops[item.nodeID] == 2) {
+                border = "#e0dd12";
+            } else if (hops[item.nodeID] == 3) {
+                border = "#e39c22";
+            } else {
+                border = "#615d5d";
+            }
             var node = {
                 "id": item.nodeID,
                 "label": item.label,
-                "color": { background: 'white', border: 'black' },
-                "shape": 'box'
-            }
-            if (item.nodeID == 1) {
-                node['color'] = { border:'#c28927' };
-                node['shape'] = 'star';
+                "color": { "background": background, "border": border },
+                "shape": shape
             }
             n.push(node);
             for (var x in item.neighbors) {
                 var edge = {
                     "from": item.nodeID,
-                    "to": item.neighbors[x]
-                }
-                if (item.nodeID == 1) {
-                    edge['color']= { color:'#19d156' };
+                    "to": item.neighbors[x],
+                    "color": { "color": '#615d5d' }
                 }
                 e.push(edge);
             }
@@ -375,11 +400,19 @@
                 }
             },
             physics: { 
-                enabled: false
+                enabled: false,
+                "forceAtlas2Based": {
+                    "gravitationalConstant": -168,
+                    "centralGravity": 0.1,
+                    "springLength": 85,
+                    "springConstant": 0.795,
+                    "avoidOverlap": 0.75
+                },
+                "solver": "forceAtlas2Based"
             }
         };
         var network = new vis.Network(container, data, options);  
-        network.stabilize(100);
+        network.stabilize();
     }
 
     // the function loadSettings has to exist ...
