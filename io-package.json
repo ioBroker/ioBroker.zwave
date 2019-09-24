@@ -16,6 +16,18 @@
         },
         "version": "1.6.1",
         "news": {
+            "1.6.2": {
+                "en": "Improvements of network map and central scene",
+                "de": "Verbesserungen der Netzwerkkarte und der zentralen Szene",
+                "ru": "Улучшения сетевой карты и центральной сцены",
+                "pt": "Melhorias no mapa de rede e cenário central",
+                "nl": "Verbeteringen van netwerkkaart en centrale scène",
+                "fr": "Améliorations de la carte du réseau et de la scène centrale",
+                "it": "Miglioramenti della mappa della rete e della scena centrale",
+                "es": "Mejoras en el mapa de red y en la escena central.",
+                "pl": "Ulepszenia mapy sieci i sceny centralnej",
+                "zh-cn": "网络地图和中心场景的改进"
+            },
             "1.6.1": {
                 "en": "Issues #75 and #76 have been fixed",
                 "de": "Die Probleme Nr. 75 und Nr. 76 wurden behoben",
