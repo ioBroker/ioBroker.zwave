@@ -569,9 +569,12 @@
                                     showMessage(obj.result, _('Error'), 'alert');
                                 } else {
                                     console.log('added association');
-                                    setTimeout(function(){
-                                        $('#assGroups').val(1).selectmenu('refresh').val(currentGroup).selectmenu('refresh')
-                                    }, 1000);
+                                    if (!values[$('#assNodeIds').val() + '.sleep'].val) {
+                                        // don't refresh when the node is asleep as getAssociations is not updated
+                                        setTimeout(function(){
+                                            $('#assGroups').val(1).selectmenu('refresh').val(currentGroup).selectmenu('refresh')
+                                        }, 1000);
+                                    }
                                 }
                             });
                         } else {
@@ -583,9 +586,12 @@
                                     showMessage(obj.result, _('Error'), 'alert');
                                 } else {
                                     console.log('removed association');
-                                    setTimeout(function(){
-                                        $('#assGroups').val(1).selectmenu('refresh').val(currentGroup).selectmenu('refresh')
-                                    }, 1000);
+                                    if (!values[$('#assNodeIds').val() + '.sleep'].val) {
+                                        // don't refresh when the node is asleep as getAssociations is not updated
+                                        setTimeout(function(){
+                                            $('#assGroups').val(1).selectmenu('refresh').val(currentGroup).selectmenu('refresh')
+                                        }, 1000);
+                                    }
                                 }
                             });
                         }

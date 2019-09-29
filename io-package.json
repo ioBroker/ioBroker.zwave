@@ -14,8 +14,20 @@
             "pl": "ZWave wsparcie oparte na pakiecie openzwave",
             "zh-cn": "ZWave支持基于openzwave数据包"
         },
-        "version": "1.6.1",
+        "version": "1.6.3",
         "news": {
+            "1.6.3": {
+                "en": "Updated openzwave and small fixes",
+                "de": "Openzwave und kleine Fehlerbehebungen aktualisiert",
+                "ru": "Обновлены openzwave и небольшие исправления",
+                "pt": "Openzwave atualizado e pequenas correções",
+                "nl": "Bijgewerkte openzwave en kleine fixes",
+                "fr": "Openzwave mis à jour et petites corrections",
+                "it": "Openzwave aggiornato e piccole correzioni",
+                "es": "Openzwave actualizado y pequeñas correcciones",
+                "pl": "Zaktualizowano openzwave i małe poprawki",
+                "zh-cn": "更新了openzwave和小补丁"
+            },
             "1.6.2": {
                 "en": "Improvements of network map and central scene",
                 "de": "Verbesserungen der Netzwerkkarte und der zentralen Szene",
