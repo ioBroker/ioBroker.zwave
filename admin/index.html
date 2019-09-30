@@ -280,8 +280,18 @@
 
         updateStates(obj._id);
 
-        $('#assNodeIds').append($("<option>").attr("value", obj.native.nodeID).text('NODE' + obj.native.nodeID));
-        $('#assAssNodes').append($("<option>").attr("value", obj.native.nodeID).text('NODE' + obj.native.nodeID));
+        $('#assNodeIds').append($("<option>").attr("value", obj.native.nodeID).text('NODE' + obj.native.nodeID));        
+        // check if device has multiple endpoints
+        sendTo(null, "getNumberOfInstances", {nodeID: obj.native.nodeID}, function (instances) {
+            if (instances > 1) {
+                for (var i = 1; i <= instances; ++i) {
+                    const label = "NODE" + obj.native.nodeID + " - " + _('Instance') + " " + i;
+                    $('#assAssNodes').append($("<option>").attr("value", obj.native.nodeID+"."+i).text(label));
+                }
+            } else {
+                $('#assAssNodes').append($("<option>").attr("value", obj.native.nodeID).text('NODE' + obj.native.nodeID));
+            }
+        });
     }
     
     function setValue(id, value) {
@@ -571,8 +581,12 @@
                                 } else {
                                     console.log('added association');
                                     var id = 'zwave.' + instance + '.NODE' + $('#assNodeIds').val() + '.sleep';
-                                    if (values[id] && !values[id].val) {
+                                    if (values[id] && values[id].val) {
                                         // don't refresh when the node is asleep as getAssociations is not updated
+                                        setTimeout(function(){
+                                            showMessage(_('Your selection will be saved once the device wakes up'), _('Important'), 'alert');
+                                        }, 1000);
+                                    } else {
                                         setTimeout(function(){
                                             $('#assGroups').val(1).selectmenu('refresh').val(currentGroup).selectmenu('refresh')
                                         }, 1000);
@@ -589,11 +603,15 @@
                                 } else {
                                     console.log('removed association');
                                     var id = 'zwave.' + instance + '.NODE' + $('#assNodeIds').val() + '.sleep';
-                                    if (values[id] && !values[id].val) {
+                                    if (values[id] && values[id].val) {
                                         // don't refresh when the node is asleep as getAssociations is not updated
                                         setTimeout(function(){
+                                            showMessage(_('Your selection will be saved once the device wakes up'), _('Important'), 'alert');
+                                        }, 1000);    
+                                    } else {
+                                        setTimeout(function(){
                                             $('#assGroups').val(1).selectmenu('refresh').val(currentGroup).selectmenu('refresh')
-                                        }, 1000);
+                                        }, 1000);                                        
                                     }
                                 }
                             });

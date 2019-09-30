@@ -433,10 +433,16 @@ function startAdapter(options) {
 
                     case 'addAssociation': // zwave.addAssociation(nodeid, group, target_nodeid);
                         if (zwave && obj.message) {
-                            if (!requireParams(["nodeID", "group", "target_nodeid"])) break;
-                            adapter.log.info('Adding association with node ' + obj.message.target_nodeid + ' to group ' + obj.message.group + ' of node ' + obj.message.nodeID);
+                            if (!requireParams(["nodeID", "group", "target_nodeid"])) break;                            
                             if (zwave[obj.command]) {
-                                zwave[obj.command](obj.message.nodeID, obj.message.group, obj.message.target_nodeid);
+                                if (typeof obj.message.target_nodeid === 'string' && obj.message.target_nodeid.indexOf('.') != -1) {
+                                    var parts = obj.message.target_nodeid.split('.');
+                                    adapter.log.info('Adding association with node ' + parts[0] + ' and instance ' + parts[1] + ' to group ' + obj.message.group + ' of node ' + obj.message.nodeID);
+                                    zwave.addAssociation(obj.message.nodeID, obj.message.group, parts[0], parts[1]);
+                                } else {
+                                    adapter.log.info('Adding association with node ' + obj.message.target_nodeid + ' to group ' + obj.message.group + ' of node ' + obj.message.nodeID);
+                                    zwave.addAssociation(obj.message.nodeID, obj.message.group, obj.message.target_nodeid);
+                                }
                                 respond(predefinedResponses.OK);
                             } else {
                                 adapter.log.error('Unknown command!');
@@ -450,10 +456,15 @@ function startAdapter(options) {
                     case 'removeAssociation': // zwave.removeAssociation(nodeid, group, target_nodeid);
                         if (zwave && obj.message) {
                             if (!requireParams(["nodeID", "group", "target_nodeid"])) break;
-                            adapter.log.info('Removing association with node ' + obj.message.target_nodeid + ' from group ' + obj.message.group + ' of node ' + obj.message.nodeID);
                             if (zwave[obj.command]) {
-                                zwave[obj.command](obj.message.nodeID, obj.message.group, obj.message.target_nodeid);
-                                respond(predefinedResponses.OK);
+                                if (typeof obj.message.target_nodeid === 'string' && obj.message.target_nodeid.indexOf('.') != -1) {
+                                    var parts = obj.message.target_nodeid.split('.');
+                                    adapter.log.info('Removing association with node ' + parts[0] + ' and instance ' + parts[1] + ' from group ' + obj.message.group + ' of node ' + obj.message.nodeID);
+                                    zwave.removeAssociation(obj.message.nodeID, obj.message.group, parts[0], parts[1]);
+                                } else {
+                                    adapter.log.info('Removing association with node ' + obj.message.target_nodeid + ' from group ' + obj.message.group + ' of node ' + obj.message.nodeID);
+                                    zwave.removeAssociation(obj.message.nodeID, obj.message.group, obj.message.target_nodeid);
+                                }
                             } else {
                                 adapter.log.error('Unknown command!');
                                 respond(predefinedResponses.ERROR_UNKNOWN_COMMAND);
@@ -462,7 +473,25 @@ function startAdapter(options) {
                             respond(predefinedResponses.ERROR_NOT_RUNNING);
                         }
                         break;
-
+                        
+                    case 'getNumberOfInstances': // get the number of instances that are supported by the node
+                        if (zwave && obj.message) {
+                            if (!requireParams(["nodeID"])) break;
+                            var instances = 1;
+                            const id = calcName(obj.message.nodeID);
+                            for (var i in objects) {
+                                if (!objects.hasOwnProperty(i)) continue;
+                                if (i.startsWith(id + '.')) {                                    
+                                    if (objects[i].native && objects[i].native.value_id && objects[i].native.instance > instances) {
+                                        instances = objects[i].native.instance;
+                                    }
+                                }
+                            }
+                            respond(instances);
+                        } else {
+                            respond(predefinedResponses.ERROR_NOT_RUNNING);
+                        }
+                        break;
                     default:
                         adapter.log.error('Unknown command: ' + obj.command);
                         break;
@@ -851,26 +880,6 @@ function extendNode(nodeID, nodeInfo, callback) {
     }
 
     if (!count && callback) callback();
-}
-
-/*
-* Verify that we don't have duplicate valueIds (same node, instance and index but different label)
-* Can happen when the ozwave library changes labels for devices between releases
-*/
-function cleanupValueId(nodeID, comClass, valueId) {
-    const channelID = calcName(nodeID, comClass);
-    
-    for (var i in objects) {
-        if (!objects.hasOwnProperty(i)) continue;
-        if (i.startsWith(channelID + '.')) {
-            if (objects[i].native && objects[i].native.instance === valueId.instance && objects[i].native.index === valueId.index &&
-            objects[i].common.name !== valueId.label) {
-                adapter.log.info('remove obsolete state:' + objects[i]._id);
-                delObjects([objects[i]]);
-                return;
-            }
-        }
-    }
 }
 
 function extendChannel(nodeID, comClass, valueId) {
