@@ -569,7 +569,8 @@
                                     showMessage(obj.result, _('Error'), 'alert');
                                 } else {
                                     console.log('added association');
-                                    if (!values[$('#assNodeIds').val() + '.sleep'].val) {
+                                    var id = 'zwave.' + instance + '.NODE' + $('#assNodeIds').val() + '.sleep';
+                                    if (values[id] && !values[id].val) {
                                         // don't refresh when the node is asleep as getAssociations is not updated
                                         setTimeout(function(){
                                             $('#assGroups').val(1).selectmenu('refresh').val(currentGroup).selectmenu('refresh')
@@ -586,7 +587,8 @@
                                     showMessage(obj.result, _('Error'), 'alert');
                                 } else {
                                     console.log('removed association');
-                                    if (!values[$('#assNodeIds').val() + '.sleep'].val) {
+                                    var id = 'zwave.' + instance + '.NODE' + $('#assNodeIds').val() + '.sleep';
+                                    if (values[id] && !values[id].val) {
                                         // don't refresh when the node is asleep as getAssociations is not updated
                                         setTimeout(function(){
                                             $('#assGroups').val(1).selectmenu('refresh').val(currentGroup).selectmenu('refresh')
