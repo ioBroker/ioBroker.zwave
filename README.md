@@ -155,6 +155,12 @@ Following global Actions are current supported:
 
 ## Changelog
 
+### 1.6.3
+* (cburghardt) Update openzwave version
+* (cburghardt) Verify that the correct version of openzwave is installed by checking the manufacturer revision
+* (cburghardt) Don't refresh the association menu directly after adding or removing for sleeping devices as it is not updated
+* (cburghardt) Add `removeFailedNode` command
+
 ### 1.6.1
 * (cburghardt) Fix issues 75 and 76
 
