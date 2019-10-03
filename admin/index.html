@@ -523,6 +523,13 @@
                             console.log('selected association group ' + ui.item.value);
                             // disable nodeId which matches the source id
                             $("#assAssNodes option[value='"+$('#assNodeIds').val()+"']").attr('disabled', 'disabled');
+                            sendTo(null, "getNumberOfInstances", {nodeID: $('#assNodeIds').val()}, function (instances) {
+                                if (instances > 1) {
+                                    for (var i = 1; i <= instances; ++i) {
+                                        $("#assAssNodes option[value='"+$('#assNodeIds').val()+'.'+i+"']").attr('disabled', 'disabled');
+                                    }
+                                }
+                            });
 
                             sendTo(null, "getAssociations", {nodeID: $('#assNodeIds').val(), group: ui.item.value}, function (obj) {
                                 $("#assAssNodes option:selected").prop('selected', false);
@@ -573,8 +580,8 @@
                             }
                             let currentGroup = $('#assGroups').val();
                             console.log('adding association: ' + JSON.stringify({nodeID: $('#assNodeIds').val(), group: currentGroup, target_nodeid: ui.value}));
+                            $('#assAssNodes').multiselect('disable');
                             sendTo(null, "addAssociation", {nodeID: $('#assNodeIds').val(), group: currentGroup, target_nodeid: ui.value}, function (obj) {
-                                $('#assAssNodes').multiselect('disable');
                                 if (obj.error || obj.result !== 'ok') {
                                     console.log('error: addAssociation');
                                     showMessage(obj.result, _('Error'), 'alert');
@@ -583,9 +590,7 @@
                                     var id = 'zwave.' + instance + '.NODE' + $('#assNodeIds').val() + '.sleep';
                                     if (values[id] && values[id].val) {
                                         // don't refresh when the node is asleep as getAssociations is not updated
-                                        setTimeout(function(){
-                                            showMessage(_('Your selection will be saved once the device wakes up'), _('Important'), 'alert');
-                                        }, 1000);
+                                        showMessage(_('Your selection will be saved once the device wakes up'), _('Important'), 'alert');
                                     } else {
                                         setTimeout(function(){
                                             $('#assGroups').val(1).selectmenu('refresh').val(currentGroup).selectmenu('refresh')
@@ -594,9 +599,9 @@
                                 }
                             });
                         } else {
+                            $('#assAssNodes').multiselect('disable');
                             let currentGroup = $('#assGroups').val();
                             sendTo(null, "removeAssociation", {nodeID: $('#assNodeIds').val(), group: currentGroup, target_nodeid: ui.value}, function (obj) {
-                                $('#assAssNodes').multiselect('disable');
                                 if (obj.error || obj.result !== 'ok') {
                                     console.log('error: removeAssociation');
                                     showMessage(obj.result, _('Error'), 'alert');
@@ -605,9 +610,7 @@
                                     var id = 'zwave.' + instance + '.NODE' + $('#assNodeIds').val() + '.sleep';
                                     if (values[id] && values[id].val) {
                                         // don't refresh when the node is asleep as getAssociations is not updated
-                                        setTimeout(function(){
-                                            showMessage(_('Your selection will be saved once the device wakes up'), _('Important'), 'alert');
-                                        }, 1000);    
+                                        showMessage(_('Your selection will be saved once the device wakes up'), _('Important'), 'alert');
                                     } else {
                                         setTimeout(function(){
                                             $('#assGroups').val(1).selectmenu('refresh').val(currentGroup).selectmenu('refresh')

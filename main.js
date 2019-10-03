@@ -403,12 +403,22 @@ function startAdapter(options) {
                         if (zwave && obj.message) {
                             if (!requireParams(["nodeID", "group"])) break;
                             adapter.log.info('Requesting associations in group ' + obj.message.group + ' from node ' + obj.message.nodeID);
-                            if (zwave[obj.command]) {
-                                let result = zwave[obj.command](obj.message.nodeID, obj.message.group);
-                                respond({ error: null, result: result });
+                            if (zwave.isMultiInstance(obj.message.nodeID, obj.message.group)) {
+                                let result = zwave.getAssociationsInstances(obj.message.nodeID, obj.message.group);
+                                var response = [];
+                                if (result.length > 0) {
+                                    for (var i = 0; i < result.length; ++i) {
+                                        if (result[i].instance > 0) {
+                                            response.push(result[i].nodeid+"."+result[i].instance);
+                                        } else {
+                                            response.push(result[i].nodeid);
+                                        }
+                                    }
+                                }
+                                respond({ error: null, result: response });
                             } else {
-                                adapter.log.error('Unknown command!');
-                                respond(predefinedResponses.ERROR_UNKNOWN_COMMAND);
+                                let result = zwave.getAssociations(obj.message.nodeID, obj.message.group);
+                                respond({ error: null, result: result });
                             }
                         } else {
                             respond(predefinedResponses.ERROR_NOT_RUNNING);
@@ -487,6 +497,7 @@ function startAdapter(options) {
                                     }
                                 }
                             }
+                            adapter.log.debug("getNumberOfInstances for "+obj.message.nodeID + "=" + instances);
                             respond(instances);
                         } else {
                             respond(predefinedResponses.ERROR_NOT_RUNNING);
