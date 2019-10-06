@@ -1,11 +1,14 @@
 {
     "# nodes selected": "# dispositivi selezionati",
+    "0_hops": "A portata diretta dal controller",
     "Add node": "Aggiungi nodo",
     "Add node secure": "Aggiungi nodo sicuro",
     "Are you sure you want to remove all devices?": "Sei sicuro di voler rimuovere tutti i dispositivi?",
     "Associations": "associazioni",
+    "Console Output": "Uscita console",
     "Console Output:": "Uscita console:",
     "Devices": "dispositivi",
+    "Driver Attempts": "Tentativi di guida",
     "Driver Attempts:": "Tentativi di autista:",
     "First save settings": "Prima salva le impostazioni",
     "Force objects re-init:": "Sincronizza oggetti (una volta):",
@@ -20,6 +23,7 @@
     "Ok": "Ok",
     "OpenZWave adapter settings": "Impostazioni dell'adattatore OpenZWave",
     "Options": "Opzioni",
+    "Poll Interval": "Intervallo di polling",
     "Poll Interval:": "Intervallo di polling:",
     "Product": "Prodotto",
     "Remove node": "Rimuovi nodo",
@@ -29,8 +33,10 @@
     "Select port": "Seleziona porta",
     "Soft reset": "Soft reset",
     "Status": "Stato",
+    "Suppress Refresh": "Elimina aggiornamento",
     "Suppress Refresh:": "Elimina aggiornamento:",
     "Type": "genere",
+    "USB name": "Nome USB",
     "USB name:": "Nome USB:",
     "Your selection will be saved once the device wakes up": "La selezione verrà salvata quando il dispositivo si riattiva",
     "alive": "vivo",
@@ -51,5 +57,6 @@
     "select nodes": "Seleziona i dispositivi",
     "setNodeLocation": "Imposta la posizione",
     "setNodeName": "Imposta nome",
-    "sleep": "dormire"
+    "sleep": "dormire",
+    "x_hops": "% s dal controller"
 }

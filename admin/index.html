@@ -15,6 +15,7 @@
 <script type="text/javascript" src="../../js/adapter-settings.js"></script>
 <script type="text/javascript" src="words.js"></script>
 <script type="text/javascript" src="js/vis-network.min.js"></script>
+<script type="text/javascript" src="js/comClasses.js"></script>
 
 
 <style>
@@ -189,8 +190,6 @@
                     if ($.ui.selectmenu) $this.selectmenu('refresh');
                     if (result && result.error) {
                         showMessage(result.error, _('Error'), 'alert');
-                    } else if (result && result.result) {
-                        showMessage(_(result.result), _('Success'), 'check');
                     }
                 });
             }
@@ -200,8 +199,6 @@
                 if ($.ui.selectmenu) $this.selectmenu('refresh');
                 if (result && result.error) {
                     showMessage(result.error, _('Error'), 'alert');
-                } else if (result && result.result) {
-                    showMessage(_(result.result), _('Success'), 'check');
                 }
             });
         }
@@ -245,34 +242,13 @@
         var $op = $('.node-operations[data-id="' + obj.native.nodeID + '"]');
 
         $op.unbind('change').change(onSelect);
-
+        
         if ($.ui.selectmenu) {
             $op.selectmenu({
                 width: 250,
-                open: function (event, ui) {
-                    $('#' + $(this).attr('id') + '-menu li')
-                        .unbind('mouseenter')
-                        .unbind('mouseleave')
-                        .mouseenter(function (handler) {
-                            var text = $(handler.currentTarget).text();
-                            if (!text) return;
-                            $($('.node-operations')[0]).find('option').each(function () {
-                                if (text === $(this).text()) {
-                                    var val = $(this).attr('value');
-                                    if (commands[val]) {
-                                        $('#helper').html(commands[val][systemLang] || commands[val].en);
-                                    }
-                                    return false;
-                                }
-                            });
-                        })
-                        .mouseleave(function (handler) {
-                            $('#helper').html('');
-                        });
-                },
                 select: onSelect
             }).selectmenu('menuWidget').addClass('overflow');
-    }
+        }        
 
         if (!isAlive && !common.enabled) {
             $op.prop('disabled', true);
@@ -368,21 +344,26 @@
             const item = map[i];
             var shape = item.nodeID == 1 ? "star" : "box";
             var background = item.nodeID == 1 ? "#615d5d" : "white";
-            var border;
+            var border, title;
             if (hops[item.nodeID] == 1) {
                 border = "#19d156";
+                title = _('0_hops');
             } else if (hops[item.nodeID] == 2) {
                 border = "#e0dd12";
+                title = _('x_hops', 1);
             } else if (hops[item.nodeID] == 3) {
                 border = "#e39c22";
+                title = _('x_hops', 2);
             } else {
                 border = "#615d5d";
+                title = '';
             }
             var node = {
                 "id": item.nodeID,
                 "label": item.label,
                 "color": { "background": background, "border": border },
-                "shape": shape
+                "shape": shape,
+                "title": title
             }
             n.push(node);
             for (var x in item.neighbors) {
@@ -662,13 +643,16 @@
                 updateInclusion();
             } else
             if (id.match(/\.info.controllerMessage$/)) {
-                var data = JSON.parse(state.val);
                 if (messageTimeout) clearTimeout(messageTimeout);
-                $('#message').html('<span class="highlight ' + (data.error ? 'message-error' : '')+ '">' + ctrlState[data.state][systemLang] + (data.error ? ' - ' + ctrlError[data.error][systemLang] : '') + '</span>');
-                messageTimeout = setTimeout(function () {
-                    messageTimeout = null;
-                    $('#message').html('');
-                }, 10000);
+                sendTo(null, 'getControllerState', null, function (result) {
+                    if (result) {
+                        $('#message').html('<span class="highlight ' + (result.error ? 'message-error' : '') + '">' + result.state + (result.error ? ' - ' + result.helpMsg : '') + '</span>');
+                        messageTimeout = setTimeout(function () {
+                            messageTimeout = null;
+                            $('#message').html('');
+                        }, 10000);
+                    }
+                });                
             }
         });
 
@@ -701,8 +685,6 @@
                 sendTo(null, $(this).data('operation'), null, function (result) {
                     if (result && result.error) {
                         showMessage(result.error, _('Error'), 'alert');
-                    } else if (result && result.result) {
-                        showMessage(_(result.result), _('Success'), 'check');
                     }
                 });
             });
@@ -769,44 +751,44 @@
                 <tbody>
                 <tr><td class="line" colspan="2"> </td></tr>
                 <tr>
-                    <td><label  class="translate" for="usb">USB name:</label></td>
+                    <td><label  class="translate" for="usb">USB name</label></td>
                     <td class="admin-icon"></td>
                     <td id="_usb"><input class="value" list="ports" id="usb"><datalist id="ports"></datalist></td>
                 </tr>
                 <tr><td class="line" colspan="2"> </td></tr>
                 <tr>
-                    <td class="translate"><label  class="translate" for="logging">Logging:</label></td>
+                    <td class="translate"><label  class="translate" for="logging">Logging</label></td>
                     <td class="admin-icon"></td>
                     <td><input class="value" id="logging" type="checkbox"/></td>
                 </tr>
                 <tr>
-                    <td class="translate"><label  class="translate" for="consoleoutput">Console Output:</label></td>
+                    <td class="translate"><label  class="translate" for="consoleoutput">Console Output</label></td>
                     <td class="admin-icon"></td>
                     <td><input class="value" id="consoleoutput" type="checkbox"/></td>
                 </tr>
                 <tr>
-                    <td class="translate"><label  class="translate" for="saveconfig">Save Config:</label></td>
+                    <td class="translate"><label  class="translate" for="saveconfig">Save Config</label></td>
                     <td class="admin-icon"></td>
                     <td><input class="value" id="saveconfig" type="checkbox"/></td>
                 </tr>
                 <tr><td class="line" colspan="2"> </td></tr>
                 <tr>
-                    <td class="translate"><label  class="translate" for="driverattempts">Driver Attempts:</label></td>
+                    <td class="translate"><label  class="translate" for="driverattempts">Driver Attempts</label></td>
                     <td class="admin-icon"></td>
                     <td><input class="value" id="driverattempts"/></td>
                 </tr>
                 <tr>
-                    <td class="translate"><label  class="translate" for="pollinterval">Poll Interval:</label></td>
+                    <td class="translate"><label  class="translate" for="pollinterval">Poll Interval</label></td>
                     <td class="admin-icon"></td>
                     <td><input class="value" id="pollinterval"/></td>
                 </tr>
                 <tr>
-                    <td class="translate"><label  class="translate" for="suppressrefresh">Suppress Refresh:</label></td>
+                    <td class="translate"><label  class="translate" for="suppressrefresh">Suppress Refresh</label></td>
                     <td class="admin-icon"></td>
                     <td><input class="value" id="suppressrefresh" type="checkbox"/></td>
                 </tr>
                 <tr>
-                    <td class=""><label  class="translate" for="networkkey">Network key:</label></td>
+                    <td class=""><label  class="translate" for="networkkey">Network key</label></td>
                     <td class="admin-icon"></td>
                     <td><input class="value" id="networkkey"/></td>
                 </tr>
@@ -823,8 +805,7 @@
                 <button data-operation="hardReset" data-icon="hard-reset" class="translate zwave-operations">Hard reset</button>
                 <button data-operation="stopCommand" data-icon="stop" class="translate zwave-operations zwave-stop">Stop Command</button>
             </p>
-            <div id="message" style="height: 20px;"></div>
-            <div id="helper" style="height: 20px; width: calc(100% - 40px); text-align: right"></div>
+            <div id="message" style="height: 20px; padding-bottom: 10px"></div>
             <table style="width: calc(100% - 20px); padding-left: 10px">
                 <thead>
                 <tr class="ui-widget-header">

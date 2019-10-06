@@ -503,6 +503,20 @@ function startAdapter(options) {
                             respond(predefinedResponses.ERROR_NOT_RUNNING);
                         }
                         break;
+
+                    case 'getControllerState':
+                        adapter.getState('info.controllerMessage', function (err, result) {
+                            if (!err) {
+                                const data = JSON.parse(result.val);
+                                var response = {
+                                    "state": ctrlState[data.state],
+                                    "error": ((data.error && data.error !== 0) || data.state == 8) ? true : false,
+                                    "helpMsg": data.helpMsg + " (" + ctrlError[data.error] + ")"
+                                }
+                                respond(response);
+                            }
+                        });
+                        break;
                     default:
                         adapter.log.error('Unknown command: ' + obj.command);
                         break;
@@ -1105,6 +1119,7 @@ function resetInstanceStatusInfo() {
     adapter.setState('info.libraryTypeName', '', true);
     adapter.setState('inclusionOn', false, true);
     adapter.setState('exclusionOn', false, true);
+    adapter.setState('info.controllerMessage', '', true);
 }
 
 function main() {

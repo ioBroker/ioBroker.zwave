@@ -1,11 +1,14 @@
 {
     "# nodes selected": "# выбранных устройств",
+    "0_hops": "В непосредственной близости от контроллера",
     "Add node": "Добавить устройство",
     "Add node secure": "Добавить устройство",
     "Are you sure you want to remove all devices?": "Вы уверены, что хотите удалить все устройства?",
     "Associations": "ассоциации",
+    "Console Output": "Консольный выход",
     "Console Output:": "Вывод в iobroker.log:",
     "Devices": "Устройства",
+    "Driver Attempts": "Попытки водителя",
     "Driver Attempts:": "Количество попыток:",
     "First save settings": "Сначала сохраните настройки",
     "Force objects re-init:": "Синхронизировать объекты (один раз):",
@@ -20,6 +23,7 @@
     "Ok": "Ok",
     "OpenZWave adapter settings": "Настройки драйвера OpenZWave",
     "Options": "Настройки",
+    "Poll Interval": "Интервал опроса",
     "Poll Interval:": "Интервал опроса:",
     "Product": "Продукт",
     "Remove node": "Удалить устройство",
@@ -29,8 +33,10 @@
     "Select port": "выбрать порт",
     "Soft reset": "Soft reset",
     "Status": "Состояние",
+    "Suppress Refresh": "Подавить Обновить",
     "Suppress Refresh:": "Не обновлять:",
     "Type": "Тип",
+    "USB name": "Имя USB",
     "USB name:": "Название USB устройства:",
     "Your selection will be saved once the device wakes up": "Ваш выбор будет сохранен после пробуждения устройства",
     "alive": "живой",
@@ -51,5 +57,6 @@
     "select nodes": "Выберите устройства",
     "setNodeLocation": "Задать локацию",
     "setNodeName": "Задать имя",
-    "sleep": "спит"
+    "sleep": "спит",
+    "x_hops": "% s от контроллера"
 }

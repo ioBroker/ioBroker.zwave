@@ -1,11 +1,14 @@
 {
     "# nodes selected": "# apparaten geselecteerd",
+    "0_hops": "In direct bereik van de controller",
     "Add node": "Voeg knoop toe",
     "Add node secure": "Voeg beveiligde knoop toe",
     "Are you sure you want to remove all devices?": "Weet je zeker dat je alle apparaten wilt verwijderen?",
     "Associations": "verenigingen",
+    "Console Output": "Console-uitgang",
     "Console Output:": "Console uitvoer:",
     "Devices": "apparaten",
+    "Driver Attempts": "Poging tot stuurprogramma",
     "Driver Attempts:": "Driverpogingen:",
     "First save settings": "Eerste instellingen opslaan",
     "Force objects re-init:": "Synchroniseer objecten (één keer):",
@@ -20,6 +23,7 @@
     "Ok": "OK",
     "OpenZWave adapter settings": "OpenZWave-adapterinstellingen",
     "Options": "opties",
+    "Poll Interval": "Poll Interval",
     "Poll Interval:": "Pollinterval:",
     "Product": "Artikel",
     "Remove node": "Verwijder het knooppunt",
@@ -29,8 +33,10 @@
     "Select port": "Selecteer poort",
     "Soft reset": "Zachte reset",
     "Status": "staat",
+    "Suppress Refresh": "Vernieuwen onderdrukken",
     "Suppress Refresh:": "Onderdruk Refresh:",
     "Type": "Type",
+    "USB name": "USB-naam",
     "USB name:": "USB-naam:",
     "Your selection will be saved once the device wakes up": "Uw selectie wordt opgeslagen zodra het apparaat wordt geactiveerd",
     "alive": "levend",
@@ -51,5 +57,6 @@
     "select nodes": "Selecteer apparaten",
     "setNodeLocation": "Locatie instellen",
     "setNodeName": "Stel naam in",
-    "sleep": "slaap"
+    "sleep": "slaap",
+    "x_hops": "% s van de controller"
 }
