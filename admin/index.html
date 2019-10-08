@@ -15,7 +15,6 @@
 <script type="text/javascript" src="../../js/adapter-settings.js"></script>
 <script type="text/javascript" src="words.js"></script>
 <script type="text/javascript" src="js/vis-network.min.js"></script>
-<script type="text/javascript" src="js/comClasses.js"></script>
 
 
 <style>
@@ -645,7 +644,7 @@
             if (id.match(/\.info.controllerMessage$/)) {
                 if (messageTimeout) clearTimeout(messageTimeout);
                 sendTo(null, 'getControllerState', null, function (result) {
-                    if (result) {
+                    if (result && result.state) {
                         $('#message').html('<span class="highlight ' + (result.error ? 'message-error' : '') + '">' + result.state + (result.error ? ' - ' + result.helpMsg : '') + '</span>');
                         messageTimeout = setTimeout(function () {
                             messageTimeout = null;
