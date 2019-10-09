@@ -409,6 +409,7 @@ function startAdapter(options) {
                                 if (result.length > 0) {
                                     for (var i = 0; i < result.length; ++i) {
                                         if (result[i].instance > 0) {
+                                            // <node id>.<instance id>
                                             response.push(result[i].nodeid+"."+result[i].instance);
                                         } else {
                                             response.push(result[i].nodeid);
@@ -504,7 +505,7 @@ function startAdapter(options) {
                         }
                         break;
 
-                    case 'getControllerState':
+                    case 'getControllerState': // used by the message view of the admin
                         adapter.getState('info.controllerMessage', function (err, result) {
                             if (!err) {
                                 const data = JSON.parse(result.val);
@@ -517,6 +518,7 @@ function startAdapter(options) {
                             }
                         });
                         break;
+
                     default:
                         adapter.log.error('Unknown command: ' + obj.command);
                         break;
@@ -1139,7 +1141,8 @@ function main() {
         DriverMaxAttempts:    adapter.config.driverattempts,     // 3     - try this many times before giving up
         PollInterval:         adapter.config.pollinterval,       // 500   - interval between polls in milliseconds
         SuppressValueRefresh: adapter.config.suppressrefresh,    // false - do not send updates if nothing changed
-        NetworkKey:           adapter.config.networkkey          // 0102..- use for secure connections
+        NetworkKey:           adapter.config.networkkey,          // 0102..- use for secure connections
+        AssumeAwake:          false         // faster start as sleeping devices are not queries on startup
     });
 
     // ------------- controller events ---------------------------
@@ -1151,7 +1154,7 @@ function main() {
     zwave.on('driver ready', function (homeid) {
         adapter.log.info('scanning homeid=0x' + homeid.toString(16) + '...');
         adapter.setState('info.homeId', homeid.toString(16), true);
-        adapter.log.info('driver ready: homeid = ' + homeid);
+        adapter.log.info('driver ready: homeid = ' + homeid.toString(16));
         adapter.setState('info.driverReady', true, true);
     });
 
@@ -1202,7 +1205,9 @@ function main() {
 
         // Just remember, that such a nodeID created
         nodes[nodeID] = {id: calcName(nodeID), ready: false, native: null};
-        extendNode(nodeID, {});
+        if (inclusion) {
+            extendNode(nodeID, {});
+        }
     });
 
     zwave.on('node removed', function (nodeID) {
@@ -1233,7 +1238,6 @@ function main() {
         extendNode(nodeID, nodeInfo, function (err) {
             if (!err) nodes[nodeID].ready = true;
             adapter.setForeignState(nodes[nodeID].id + '.ready', true, true);
-
             adapter.setForeignState(nodes[nodeID].id + '.alive', true, true);
             adapter.setForeignState(nodes[nodeID].id + '.awake', true, true);
         });
@@ -1251,37 +1255,10 @@ function main() {
     });
 
     zwave.on('scene event', function (nodeID, sceneid) {
-        // adapter.log.debug('node' + nodeID + ': scene event for ' + sceneid + ', currently not implemented');
         adapter.log.debug('node' + nodeID + ': scene event for ' + sceneid + ', currently only partially implemented');
 
-        /*
-         For example when you have your Aeon Labs Minimote setup with the following configuration:
-
-         - zwave.setConfigParam(nodeID, 241, 1, 1);
-         - zwave.setConfigParam(nodeID, 242, 1, 1);
-         - zwave.setConfigParam(nodeID, 243, 1, 1);
-         - zwave.setConfigParam(nodeID, 244, 1, 1);
-         - zwave.setConfigParam(nodeID, 250, 1, 1);
-
-         It would send:
-
-         - sceneid of 1 when (1) is Pressed
-         - sceneid of 2 when (1) is Held
-         - sceneid of 3 when (2) is Pressed
-         - etc.
-         */
-        
-        // Workaround for Popp / ZME_WALLC_S for example 
         // We save the scene id direct into a state (e.g. zwave.0.NODE3.scene)
         // if Configuration (e.g. zwave.0.NODE3.CONFIGURATION.Command_to_Control_Group_A) is set to "Send Scenes(4)"
-        // Examples:
-        // First Button (top, left) Pressed 1 Time: 11
-        // First Button (top, left) Pressed 2 Times: 12
-        // First Button (top, left) Key Held down: 13
-        // First Button (top, left) Key Released: 15
-        // Second Button (top, right): Pressed 1 Time: 21
-        // Second Button (top, right) Pressed 2 Times: 22
-        // and so on...
         
         if (nodes[nodeID]) {
             adapter.log.debug(JSON.stringify(nodes[nodeID]));

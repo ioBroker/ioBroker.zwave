@@ -28,6 +28,7 @@
     "Product": "Produit",
     "Remove node": "Supprimer le noeud",
     "Save Config:": "Enregistrer la configuration:",
+    "Select device": "Choisir un appareil",
     "Select group": "Sélectionner un groupe",
     "Select operation": "Sélectionnez une opération",
     "Select port": "Sélectionnez un port",
@@ -58,5 +59,5 @@
     "setNodeLocation": "Définir l'emplacement",
     "setNodeName": "Définir le nom",
     "sleep": "dormir",
-    "x_hops": "% s du contrôleur"
+    "x_hops": "%s du contrôleur"
 }

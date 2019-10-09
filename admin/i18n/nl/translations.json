@@ -28,6 +28,7 @@
     "Product": "Artikel",
     "Remove node": "Verwijder het knooppunt",
     "Save Config:": "Config opslaan:",
+    "Select device": "Selecteer apparaat",
     "Select group": "Selecteer groep",
     "Select operation": "Selecteer bewerking",
     "Select port": "Selecteer poort",
@@ -58,5 +59,5 @@
     "setNodeLocation": "Locatie instellen",
     "setNodeName": "Stel naam in",
     "sleep": "slaap",
-    "x_hops": "% s van de controller"
+    "x_hops": "%s van de controller"
 }

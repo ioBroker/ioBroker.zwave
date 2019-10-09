@@ -28,6 +28,7 @@
     "Product": "Prodotto",
     "Remove node": "Rimuovi nodo",
     "Save Config:": "Salva config:",
+    "Select device": "Seleziona dispositivo",
     "Select group": "Seleziona gruppo",
     "Select operation": "Seleziona operazione",
     "Select port": "Seleziona porta",
@@ -58,5 +59,5 @@
     "setNodeLocation": "Imposta la posizione",
     "setNodeName": "Imposta nome",
     "sleep": "dormire",
-    "x_hops": "% s dal controller"
+    "x_hops": "%s dal controller"
 }
