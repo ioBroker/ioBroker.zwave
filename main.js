@@ -1262,7 +1262,7 @@ function main() {
         
         if (nodes[nodeID]) {
             adapter.log.debug(JSON.stringify(nodes[nodeID]));
-            var id = "zwave.0.NODE" + nodeID + ".scene";
+            var id = adapter.namespace + ".NODE" + nodeID + ".scene";
             var object = objects[id];
             if (object === undefined || object === null) {
                 adapter.log.warn("object + " + id  + " does not exist yet");
@@ -1278,11 +1278,9 @@ function main() {
                     "native": {},
                     "type": "state"
                 };
-
-                obj.common.role = "state";
                 adapter.setObject(id, obj);
             }
-            adapter.log.debug("Put scene " + sceneid + " from node " + nodeID + " into database");
+            adapter.log.debug("Put scene " + sceneid + " from node " + nodeID);
             adapter.setState(id, sceneid)
         }
     });
