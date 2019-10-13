@@ -241,13 +241,13 @@
         var $op = $('.node-operations[data-id="' + obj.native.nodeID + '"]');
 
         $op.unbind('change').change(onSelect);
-        
+
         if ($.ui.selectmenu) {
             $op.selectmenu({
                 width: 250,
                 select: onSelect
             }).selectmenu('menuWidget').addClass('overflow');
-        }        
+        }
 
         if (!isAlive && !common.enabled) {
             $op.prop('disabled', true);
@@ -594,7 +594,7 @@
                                     } else {
                                         setTimeout(function(){
                                             $('#assGroups').val(1).selectmenu('refresh').val(currentGroup).selectmenu('refresh')
-                                        }, 1000);                                        
+                                        }, 1000);
                                     }
                                 }
                             });
