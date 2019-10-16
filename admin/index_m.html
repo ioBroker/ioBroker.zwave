@@ -330,6 +330,10 @@
                 "shape": shape,
                 "title": title
             }
+            if (item['x'] && item['y']) {
+                node['x'] = item.x;
+                node['y'] = item.y;
+            }
             n.push(node);
             for (var x in item.neighbors) {
                 var edge = {
@@ -370,6 +374,11 @@
         };
         var network = new vis.Network(container, data, options);  
         network.stabilize();
+        network.on("dragEnd", function() {
+            sendTo(null, 'storeNetworkLayout', network.getPositions(), function (result) {
+                // ignore
+            });             
+        });        
         mapLoaded = true;
     }
 

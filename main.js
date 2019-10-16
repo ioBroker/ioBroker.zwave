@@ -214,11 +214,35 @@ function startAdapter(options) {
                                     "label": objects[channelID].common.name
                                 }
                                 map.push(item);                          
-                            }                            
-                            respond(map);
+                            }
+                            adapter.getState('info.networkLayout', function (err, result) {
+                                if (!err && result.val) {                                    
+                                    const layout = JSON.parse(result.val);
+                                    for (var e in map) {
+                                        var item = map[e];
+                                        if (layout[item.nodeID]) {
+                                            item['x'] = layout[item.nodeID].x;
+                                            item['y'] = layout[item.nodeID].y;
+                                        }
+                                    }
+                                    respond(map);
+                                } else {
+                                    respond(map);
+                                }
+                            });                                                        
                         } else {
                             respond(predefinedResponses.ERROR_NOT_RUNNING);
                         }                        
+                        break;
+                        
+                    case 'storeNetworkLayout':
+                        if (obj.message) {
+                            adapter.log.debug("saving layout");
+                            adapter.setState('info.networkLayout', JSON.stringify(obj.message), true);
+                            respond(predefinedResponses.OK);
+                        } else {
+                            respond(predefinedResponses.ERROR_UNKNOWN_COMMAND);
+                        }
                         break;
 
                     case 'removeFailedNode':
@@ -1122,6 +1146,17 @@ function resetInstanceStatusInfo() {
     adapter.setState('inclusionOn', false, true);
     adapter.setState('exclusionOn', false, true);
     adapter.setState('info.controllerMessage', '', true);
+    adapter.setObjectNotExists('info.networkLayout', {
+        type: 'state',        
+        common: {
+            name: 'Network layout',
+            type: 'string',
+            role: 'state',
+            read: true,
+            write: false
+        },
+        native: {}
+    });
 }
 
 function main() {
