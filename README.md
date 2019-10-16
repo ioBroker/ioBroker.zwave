@@ -154,7 +154,7 @@ Following global Actions are current supported:
 
 ## Changelog
 
-### 1.6.4
+### 1.7.0
 * (cburghardt) Added multi-instance associations
 
 ### 1.6.3

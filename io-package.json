@@ -14,9 +14,9 @@
             "pl": "ZWave wsparcie oparte na pakiecie openzwave",
             "zh-cn": "ZWave支持基于openzwave数据包"
         },
-        "version": "1.6.4",
+        "version": "1.7.0",
         "news": {
-            "1.6.4": {
+            "1.7.0": {
                 "en": "Added multi-instance associations",
                 "de": "Assoziationen mit mehreren Instanzen hinzugefügt",
                 "ru": "Добавлены многоэкземплярные ассоциации",
