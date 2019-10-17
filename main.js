@@ -216,7 +216,7 @@ function startAdapter(options) {
                                 map.push(item);                          
                             }
                             adapter.getState('info.networkLayout', function (err, result) {
-                                if (!err && result.val) {                                    
+                                if (!err && result && result.val) {                                    
                                     const layout = JSON.parse(result.val);
                                     for (var e in map) {
                                         var item = map[e];

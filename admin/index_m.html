@@ -305,6 +305,7 @@
                 }
             }
         }
+        var layoutpredefined = false;
         for (var i in map) {
             const item = map[i];
             var shape = item.nodeID == 1 ? "star" : "box";
@@ -333,6 +334,7 @@
             if (item['x'] && item['y']) {
                 node['x'] = item.x;
                 node['y'] = item.y;
+                layoutpredefined = true;
             }
             n.push(node);
             for (var x in item.neighbors) {
@@ -373,7 +375,9 @@
             }
         };
         var network = new vis.Network(container, data, options);  
-        network.stabilize();
+        if (!layoutpredefined) {
+            network.stabilize();
+        }
         network.on("dragEnd", function() {
             sendTo(null, 'storeNetworkLayout', network.getPositions(), function (result) {
                 // ignore
