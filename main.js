@@ -207,11 +207,12 @@ function startAdapter(options) {
                                         edges[nodeID].push(neighbors[n]);
                                     }
                                 }
-                                var channelID = calcName(nodeID);                                
+                                var channelID = calcName(nodeID);
+                                let label = objects[channelID] ? objects[channelID].common.name : "Node" + nodeID;
                                 var item = {
                                     "nodeID": nodeID,
                                     "neighbors": edges[nodeID],
-                                    "label": objects[channelID].common.name
+                                    "label": label
                                 }
                                 map.push(item);                          
                             }
