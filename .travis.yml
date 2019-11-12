@@ -17,9 +17,10 @@ addons:
 before_install:
   - 'if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo ln -s `which node` `which node`js; fi'
   - 'if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then which nodejs || which node; fi'
+  - 'if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then export CXX=g++-6; CC=gcc-6; fi'
+  - 'if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi'
   - 'if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then export CC=clang++; export CXX=clang++; export CXXFLAGS=-std=c++11; fi'
   - 'if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew unlink pkg-config; fi'
-  - 'if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then export CXX=g++-6; CC=gcc-6; fi'
   - npm install -g node-gyp
 install:
   - npm install --unsafe-perm
