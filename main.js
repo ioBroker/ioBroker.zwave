@@ -201,17 +201,18 @@ function startAdapter(options) {
                             for (var i in allNodeIDs) {
                                 const nodeID = allNodeIDs[i];
                                 edges[nodeID] = [];
-                                var neighbors = zwave.getNodeNeighbors(nodeID);
+                                const neighbors = zwave.getNodeNeighbors(nodeID);
                                 for (var n in neighbors) {
                                     if (!edges[neighbors[n]]) {
                                         edges[nodeID].push(neighbors[n]);
                                     }
                                 }
-                                var channelID = calcName(nodeID);                                
-                                var item = {
+                                const channelID = calcName(nodeID);
+                                const label = objects[channelID] ? objects[channelID].common.name : "Node" + nodeID;
+                                const item = {
                                     "nodeID": nodeID,
                                     "neighbors": edges[nodeID],
-                                    "label": objects[channelID].common.name
+                                    "label": label
                                 }
                                 map.push(item);                          
                             }
