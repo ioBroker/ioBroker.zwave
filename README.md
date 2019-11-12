@@ -154,6 +154,9 @@ Following global Actions are current supported:
 
 ## Changelog
 
+### 1.7.1
+* (cburghardt) Added ldconfig call to installation. Please execute the installation fixer before updating.
+
 ### 1.7.0
 * (cburghardt) Added multi-instance associations
 
