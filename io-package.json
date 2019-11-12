@@ -16,6 +16,18 @@
         },
         "version": "1.7.0",
         "news": {
+            "1.7.1": {
+                "en": "Added ldconfig call to installation. Please execute the installation fixer before updating.",
+                "de": "Ldconfig-Aufruf zur Installation hinzugefügt. Bitte den Installations Fixer vor dem Update ausführen.",
+                "ru": "Добавлен вызов ldconfig для установки. ",
+                "pt": "Adicionada chamada ldconfig à instalação. ",
+                "nl": "Ldconfig-oproep voor installatie toegevoegd. ",
+                "fr": "Ajout de l'appel ldconfig à l'installation. ",
+                "it": "Aggiunta chiamata ldconfig all'installazione. ",
+                "es": "Llamada ldconfig agregada a la instalación. ",
+                "pl": "Dodano wywołanie ldconfig do instalacji. ",
+                "zh-cn": "在安装中添加了ldconfig调用。"
+            },
             "1.7.0": {
                 "en": "Added multi-instance associations",
                 "de": "Assoziationen mit mehreren Instanzen hinzugefügt",
