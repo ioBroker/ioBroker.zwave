@@ -208,8 +208,8 @@ function startAdapter(options) {
                                     }
                                 }
                                 const channelID = calcName(nodeID);
-                                let label = objects[channelID] ? objects[channelID].common.name : "Node" + nodeID;
-                                let item = {
+                                const label = objects[channelID] ? objects[channelID].common.name : "Node" + nodeID;
+                                const item = {
                                     "nodeID": nodeID,
                                     "neighbors": edges[nodeID],
                                     "label": label
