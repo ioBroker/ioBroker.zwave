@@ -201,15 +201,15 @@ function startAdapter(options) {
                             for (var i in allNodeIDs) {
                                 const nodeID = allNodeIDs[i];
                                 edges[nodeID] = [];
-                                var neighbors = zwave.getNodeNeighbors(nodeID);
+                                const neighbors = zwave.getNodeNeighbors(nodeID);
                                 for (var n in neighbors) {
                                     if (!edges[neighbors[n]]) {
                                         edges[nodeID].push(neighbors[n]);
                                     }
                                 }
-                                var channelID = calcName(nodeID);
+                                const channelID = calcName(nodeID);
                                 let label = objects[channelID] ? objects[channelID].common.name : "Node" + nodeID;
-                                var item = {
+                                let item = {
                                     "nodeID": nodeID,
                                     "neighbors": edges[nodeID],
                                     "label": label
