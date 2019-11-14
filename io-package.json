@@ -14,8 +14,20 @@
             "pl": "ZWave wsparcie oparte na pakiecie openzwave",
             "zh-cn": "ZWave支持基于openzwave数据包"
         },
-        "version": "1.7.0",
+        "version": "1.7.1",
         "news": {
+            "1.7.1": {
+                "en": "Updated openzwave",
+                "de": "Openzwave aktualisiert",
+                "ru": "Обновлено openzwave",
+                "pt": "Openzwave atualizado",
+                "nl": "Bijgewerkt openzwave",
+                "fr": "Openzwave mis à jour",
+                "it": "Openzwave aggiornato",
+                "es": "Openzwave actualizado",
+                "pl": "Zaktualizowano openzwave",
+                "zh-cn": "更新了openzwave"
+            },
             "1.7.0": {
                 "en": "Added multi-instance associations",
                 "de": "Assoziationen mit mehreren Instanzen hinzugefügt",
