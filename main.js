@@ -532,7 +532,7 @@ function startAdapter(options) {
 
                     case 'getControllerState': // used by the message view of the admin
                         adapter.getState('info.controllerMessage', function (err, result) {
-                            if (!err) {
+                            if (!err && result && result.val) {
                                 const data = JSON.parse(result.val);
                                 var response = {
                                     "state": ctrlState[data.state],
