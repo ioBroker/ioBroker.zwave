@@ -14,8 +14,20 @@
             "pl": "ZWave wsparcie oparte na pakiecie openzwave",
             "zh-cn": "ZWave支持基于openzwave数据包"
         },
-        "version": "1.7.1",
+        "version": "1.7.2",
         "news": {
+            "1.7.2": {
+                "en": "fixed a crash",
+                "de": "Absturz behoben",
+                "ru": "исправлено падение",
+                "pt": "corrigiu uma falha",
+                "nl": "een crash opgelost",
+                "fr": "correction d'un crash",
+                "it": "risolto un crash",
+                "es": "reparó un accidente",
+                "pl": "naprawiono awarię",
+                "zh-cn": "修复了崩溃"
+            },
             "1.7.1": {
                 "en": "Updated openzwave",
                 "de": "Openzwave aktualisiert",
