@@ -154,6 +154,9 @@ Following global Actions are current supported:
 
 ## Changelog
 
+### 1.8.0
+* (cburghardt) Added ldconfig to installation. Please run the permission fixer first.
+
 ### 1.7.2
 * (cburghardt) Fixed a crash
 

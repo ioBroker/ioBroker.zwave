@@ -14,8 +14,11 @@
             "pl": "ZWave wsparcie oparte na pakiecie openzwave",
             "zh-cn": "ZWave支持基于openzwave数据包"
         },
-        "version": "1.7.2",
+        "version": "1.8.0",
         "news": {
+            "1.8.0": {
+                "en": "Added ldconfig to installation. Please run the permission fixer first."
+            },
             "1.7.2": {
                 "en": "fixed a crash",
                 "de": "Absturz behoben",
