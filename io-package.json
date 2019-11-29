@@ -17,7 +17,16 @@
         "version": "1.8.0",
         "news": {
             "1.8.0": {
-                "en": "Added ldconfig to installation. Please run the permission fixer first."
+                "en": "Added ldconfig to installation. Please run the permission fixer first.",
+                "de": "Ldconfig zur Installation hinzugefügt. ",
+                "ru": "Добавлен ldconfig для установки. ",
+                "pt": "Adicionado ldconfig à instalação. ",
+                "nl": "Ldconfig toegevoegd aan installatie. ",
+                "fr": "Ajout de ldconfig à l’installation. ",
+                "it": "Aggiunto ldconfig all'installazione. ",
+                "es": "Se agregó ldconfig a la instalación. ",
+                "pl": "Dodano ldconfig do instalacji. ",
+                "zh-cn": "在安装中添加了ldconfig。"
             },
             "1.7.2": {
                 "en": "fixed a crash",
