@@ -14,8 +14,20 @@
             "pl": "ZWave wsparcie oparte na pakiecie openzwave",
             "zh-cn": "ZWave支持基于openzwave数据包"
         },
-        "version": "1.7.2",
+        "version": "2.0.0",
         "news": {
+            "2.0.0": {
+                "en": "Added ldconfig to installation. Please run the permission fixer first.",
+                "de": "Ldconfig zur Installation hinzugefügt. ",
+                "ru": "Добавлен ldconfig для установки. ",
+                "pt": "Adicionado ldconfig à instalação. ",
+                "nl": "Ldconfig toegevoegd aan installatie. ",
+                "fr": "Ajout de ldconfig à l’installation. ",
+                "it": "Aggiunto ldconfig all'installazione. ",
+                "es": "Se agregó ldconfig a la instalación. ",
+                "pl": "Dodano ldconfig do instalacji. ",
+                "zh-cn": "在安装中添加了ldconfig。"
+            },
             "1.7.2": {
                 "en": "fixed a crash",
                 "de": "Absturz behoben",
