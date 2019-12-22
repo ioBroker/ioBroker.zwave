@@ -17,16 +17,16 @@
         "version": "2.0.0",
         "news": {
             "2.0.0": {
-                "en": "Added ldconfig to installation. Please run the permission fixer first.",
-                "de": "Ldconfig zur Installation hinzugefügt. ",
-                "ru": "Добавлен ldconfig для установки. ",
-                "pt": "Adicionado ldconfig à instalação. ",
-                "nl": "Ldconfig toegevoegd aan installatie. ",
-                "fr": "Ajout de ldconfig à l’installation. ",
-                "it": "Aggiunto ldconfig all'installazione. ",
-                "es": "Se agregó ldconfig a la instalación. ",
-                "pl": "Dodano ldconfig do instalacji. ",
-                "zh-cn": "在安装中添加了ldconfig。"
+                "en": "Automatically run ldconfig during installation. If this causes issues, please run the ioBroker fixer first!",
+                "de": "Führen Sie während der Installation automatisch ldconfig aus. Wenn dies zu Problemen führt, führen Sie zuerst den ioBroker-Fixer aus!",
+                "ru": "Автоматически запускать ldconfig во время установки. Если это вызывает проблемы, пожалуйста, сначала запустите ioBroker fixer!",
+                "pt": "Execute automaticamente o ldconfig durante a instalação. Se isso causar problemas, execute o fixador ioBroker primeiro!",
+                "nl": "Voer ldconfig automatisch uit tijdens de installatie. Als dit problemen veroorzaakt, voer dan eerst de ioBroker-fixer uit!",
+                "fr": "Exécutez automatiquement ldconfig pendant l'installation. Si cela cause des problèmes, veuillez d'abord exécuter le fixateur ioBroker!",
+                "it": "Esegui automaticamente ldconfig durante l'installazione. Se ciò causa problemi, eseguire prima il riparatore ioBroker!",
+                "es": "Ejecute automáticamente ldconfig durante la instalación. Si esto causa problemas, ejecute primero el fijador ioBroker.",
+                "pl": "Automatycznie uruchom ldconfig podczas instalacji. Jeśli powoduje to problemy, najpierw uruchom narzędzie naprawcze ioBroker!",
+                "zh-cn": "在安装过程中自动运行ldconfig。如果这引起问题，请首先运行ioBroker修复程序！"
             },
             "1.7.2": {
                 "en": "fixed a crash",
