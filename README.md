@@ -154,6 +154,9 @@ Following global Actions are current supported:
 
 ## Changelog
 
+### 1.7.3
+* (cburghardt) Updated openzwave
+
 ### 1.7.2
 * (cburghardt) Fixed a crash
 
