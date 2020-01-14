@@ -91,7 +91,9 @@
             "Christian Baumgartner",
             "husky-koglhof <husky.koglhof@icloud.com>"
         ],
-        "libs": ["pkg-config", "libudev-dev", "build-essential", "curl", "unzip"],
+        "osDependencies": {
+            "linux": ["pkg-config", "libudev-dev", "build-essential", "curl", "unzip"]
+        },
         "license": "LGPL-3.0-or-later",
         "readme": "https://github.com/ioBroker/ioBroker.zwave/blob/master/README.md",
         "icon": "zwave.png",
