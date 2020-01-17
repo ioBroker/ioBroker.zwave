@@ -77,12 +77,12 @@ function startAdapter(options) {
         name: 'zwave',
 
         ready: function () {
-            adapter.objects.getObjectList({
+            adapter.getObjectList({
                 startkey: adapter.namespace + '.',
                 endkey:   adapter.namespace + '.\u9999',
                 include_docs: true
             }, function (err, res) {
-                adapter.objects.getObjectList({
+                adapter.getObjectList({
                     startkey: 'enum.rooms.',
                     endkey:   'enum.rooms.\u9999',
                     include_docs: true

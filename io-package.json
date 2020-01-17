@@ -79,6 +79,11 @@
         },
         "mode": "daemon",
         "platform": "javascript/Node.js",
+        "dependencies": [
+            {
+                "js-controller": ">=2.0.0"
+            }
+        ],
         "loglevel": "info",
         "keywords": [
             "zwave",
