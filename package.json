@@ -44,13 +44,13 @@
     "@iobroker/adapter-core": "^1.0.3"
   },
   "devDependencies": {
-    "@iobroker/testing": "^1.2.0",
+    "@iobroker/testing": "^2.0.1",
     "@types/iobroker": "^1.4.0",
     "@types/node": "^4.2.23",
+    "axios": "^0.19.1",
     "chai": "^4.1.2",
     "gulp": "^4.0.0",
-    "mocha": "^6.0.2",
-    "axios": "^0.18.0"
+    "mocha": "^6.0.2"
   },
   "bugs": {
     "url": "https://github.com/ioBroker/ioBroker.zwave/issues"
