@@ -1,12 +1,12 @@
 version: 'test-{build}'
 environment:
   matrix:
-    - nodejs_version: '8'
     - nodejs_version: '10'
     - nodejs_version: '12'
+    - nodejs_version: '14'
 matrix:
   allow_failures:
-    - nodejs_version: '12'
+    - nodejs_version: '14'
 platform:
   - x86
   - x64
