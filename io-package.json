@@ -14,8 +14,20 @@
             "pl": "ZWave wsparcie oparte na pakiecie openzwave",
             "zh-cn": "ZWave支持基于openzwave数据包"
         },
-        "version": "2.0.0",
+        "version": "2.0.1",
         "news": {
+            "2.0.1": {
+                "en": "Removed usage of `adapter.objects` for compatibility with JS-Controller 3.x\nUpdated dependencies",
+                "de": "Die Verwendung von \"adapter.objects\" wurde aus Gründen der Kompatibilität mit JS-Controller 3.x entfernt\nAktualisierte Abhängigkeiten",
+                "ru": "Убрано использование файла adapter.objects для совместимости с JS-Controller 3.x\nОбновленные зависимости",
+                "pt": "Foi removido o uso de `adapter.objects` para compatibilidade com o JS-Controller 3.x\nDependências atualizadas",
+                "nl": "Gebruik van `adapter.objects` verwijderd voor compatibiliteit met JS-Controller 3.x\nBijgewerkte afhankelijkheden",
+                "fr": "Suppression de l'utilisation de `adapter.objects` pour la compatibilité avec JS-Controller 3.x\nDépendances mises à jour",
+                "it": "Rimosso l'utilizzo di `adapter.objects` per la compatibilità con JS-Controller 3.x\nDipendenze aggiornate",
+                "es": "Se eliminó el uso de `adapter.objects` para compatibilidad con JS-Controller 3.x\nDependencias actualizadas",
+                "pl": "Usunięto użycie `adapter.objects` dla kompatybilności z JS-Controller 3.x\nZaktualizowano zależności",
+                "zh-cn": "删除了对与JS-Controller 3.x兼容的adapter.objects用法\n更新了依赖性"
+            },
             "2.0.0": {
                 "en": "Automatically run ldconfig during installation. If this causes issues, please run the ioBroker fixer first!",
                 "de": "Führen Sie während der Installation automatisch ldconfig aus. Wenn dies zu Problemen führt, führen Sie zuerst den ioBroker-Fixer aus!",

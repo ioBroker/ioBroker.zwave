@@ -1,7 +1,7 @@
 {
   "name": "iobroker.zwave",
   "description": "ZWave support for ioBroker based on OpenZWave",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "author": {
     "name": "bluefox",
     "email": "dogafox@gmail.com"
@@ -40,12 +40,11 @@
     "url": "git+https://github.com/ioBroker/ioBroker.zwave.git"
   },
   "dependencies": {
-    "openzwave-shared": "^1.5.8",
-    "@iobroker/adapter-core": "^1.0.3"
+    "@iobroker/adapter-core": "^2.3.1",
+    "openzwave-shared": "^1.5.8"
   },
   "devDependencies": {
     "@iobroker/testing": "^2.0.1",
-    "@types/iobroker": "^1.4.0",
     "@types/node": "^4.2.23",
     "axios": "^0.19.1",
     "chai": "^4.1.2",
