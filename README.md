@@ -6,6 +6,16 @@
 
 [![NPM](https://nodei.co/npm/iobroker.zwave.png?downloads=true)](https://nodei.co/npm/iobroker.zwave/)
 
+---
+
+# WARNING: This adapter is no longer maintained!
+
+Use [ioBroker.zwave2](https://github.com/AlCalzone/ioBroker.zwave2/) instead.
+
+_The main developer of OpenZWave has announced that he'll focus on other things from now on. As a result, OpenZWave and this adapter won't get any updates going forward._
+
+---
+
 Zwave support with openzwave.
 
 For this adapter is used rather good supported npm module: https://github.com/OpenZWave/node-openzwave-shared
